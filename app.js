@@ -208,10 +208,18 @@ $("#copyLink").onclick = async () => {
 $("#closeAfterCreate").onclick = () => closeModal("#customizeModal");
 
 async function loadSharedWish() {
-  const id = new URLSearchParams(location.search).get("wish");
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get("wish");
   if (!id) return;
   try {
-    if (!firebaseReady || !db) return;
+    // Wait for Firebase even if the page was opened directly from a shared URL.
+    if (!firebaseReady || !db) {
+      await initFirebase();
+    }
+    if (!firebaseReady || !db) {
+      toast("This wish could not load because Firebase is not connected.");
+      return;
+    }
     const { getDoc, doc } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
     const snapshot = await getDoc(doc(db, "wishes", id));
     if (!snapshot.exists()) {
@@ -226,7 +234,15 @@ async function loadSharedWish() {
     $("#modalPreview").innerHTML = `<div class="preview-art ${selectedCard.art}"><span class="preview-icon">${selectedCard.icon}</span><h3>${wish.to ? `For ${wish.to}` : selectedCard.title}</h3><p>${wish.message || selectedCard.desc}</p><small>From ${wish.from || "someone special"}</small></div>`;
     $("#cardModal").classList.remove("hidden");
     toast("Shared wish loaded");
-  } catch (e) { console.log("Shared wish unavailable", e); }
+  } catch (e) {
+    console.error("Shared wish unavailable:", e);
+    const code = e?.code || "";
+    if (code.includes("permission-denied")) {
+      toast("Wish read blocked. Upload the Firestore rules from this ZIP.");
+    } else {
+      toast("This wish link could not be loaded. Please try again.");
+    }
+  }
 }
 
 renderChips();
@@ -241,6 +257,9 @@ if (menuToggle) {
 }
 
 (async () => {
+  const sharedId = new URLSearchParams(window.location.search).get("wish");
+  if (sharedId) document.body.classList.add("loading-shared-wish");
   await initFirebase();
   await loadSharedWish();
+  document.body.classList.remove("loading-shared-wish");
 })();
