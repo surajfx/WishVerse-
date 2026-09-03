@@ -1,204 +1,209 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {
+  getFirestore, collection, addDoc, getDocs, query, orderBy, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCPZ39YnVkITns2UpnPM6LzSw1lPDDrZGQ",
-  authDomain: "surajfx3-731fb.firebaseapp.com",
-  databaseURL: "https://surajfx3-731fb-default-rtdb.firebaseio.com",
-  projectId: "surajfx3-731fb",
-  storageBucket: "surajfx3-731fb.firebasestorage.app",
-  messagingSenderId: "346279566901",
-  appId: "1:346279566901:web:32d331a9051da9caa55b7c",
-  measurementId: "G-80CTS299RN"
+  apiKey: "AIzaSyDhH_fplGM0SYhXYQyGEmSgsxchuUgi43I",
+  authDomain: "surajfx2.firebaseapp.com",
+  databaseURL: "https://surajfx2-default-rtdb.firebaseio.com",
+  projectId: "surajfx2",
+  storageBucket: "surajfx2.firebasestorage.app",
+  messagingSenderId: "386646596801",
+  appId: "1:386646596801:web:db3b3fc2a212d644b28840",
+  measurementId: "G-N6KNJJ5B3D"
 };
 
-const CLOUDINARY_CLOUD_NAME = "wtlx95j4";
-const CLOUDINARY_UPLOAD_PRESET = "ml_default";
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-let db = null;
-try { db = getFirestore(initializeApp(firebaseConfig)); } catch (error) { console.warn("Firebase is not configured:", error); }
-
-const wishes = [
-  ["proposal","💍","Proposal","Love","A beautiful question deserves a beautiful moment.","Will you be mine?"],
-  ["girlfriend","🌹","Girlfriend Special","Love","A sweet little surprise for your favorite person.","You make my world softer and brighter."],
-  ["boyfriend","🖤","Boyfriend Special","Love","A heartfelt card for the person who feels like home.","Life feels better with you in it."],
-  ["distance","💞","Long Distance Love","Love","For two hearts that are far away but never apart.","Miles cannot change what you mean to me."],
-  ["anniversary","❤️","Anniversary","Love","Celebrate the memories, the growth and the love.","Every chapter with you is my favorite."],
-  ["letter","💌","Love Letter","Love","A timeless letter-style experience for honest feelings.","If I could write one thing forever, it would be us."],
-  ["confession","💕","Love Confession","Love","Say the words you have been keeping in your heart.","I think I have fallen for you."],
-  ["miss","☁️","Miss You","Emotion","A soft, emotional card for someone you wish was near.","I wish you were here right now."],
-  ["sorry","🥺","Sorry","Emotion","A gentle way to say what matters after a difficult moment.","I am sorry. You matter more than my pride."],
-  ["special","💖","You Are Special","Special","Remind someone that they are deeply appreciated.","You are one of the best things in my life."],
-  ["birthday","🎂","Birthday Surprise","Celebration","A joyful birthday reveal with room for your own message.","Today is all about celebrating you."],
-  ["bestfriend","👑","Best Friend Special","Friends","For the friend who turns ordinary days into memories.","Thank you for being my person."],
-  ["countdown","📅","Countdown Until We Meet","Long Distance","A sweet anticipation card for the next meeting.","Counting every day until I see you again."],
-  ["morning","🌞","Good Morning","Daily","Start someone's day with a warm, personal message.","Good morning. I hope today is kind to you."],
-  ["night","🌙","Good Night","Daily","A peaceful good-night message for a special person.","Good night. You are my favorite thought before sleep."]
+const cards = [
+ {id:"birthday",title:"Birthday Surprise",category:"Celebration",desc:"Make their special day unforgettable.",colors:["#ffd6e7","#ffc2d8"]},
+ {id:"love",title:"Just For You",category:"Love",desc:"A little message from your heart.",colors:["#ffd1dc","#ffb3c6"]},
+ {id:"eid",title:"Eid Mubarak",category:"Festival",desc:"Warm wishes, peace and blessings.",colors:["#d8f3dc","#95d5b2"]},
+ {id:"diwali",title:"Happy Diwali",category:"Festival",desc:"Light, joy and beautiful beginnings.",colors:["#ffe8b6","#ffc971"]},
+ {id:"friendship",title:"Best Friends",category:"Friends",desc:"For the person who makes life brighter.",colors:["#cde7ff","#a8dadc"]},
+ {id:"family",title:"With Love, Family",category:"Family",desc:"A heartfelt note for your loved ones.",colors:["#e5d4ff","#cdb4db"]},
+ {id:"anniversary",title:"Our Anniversary",category:"Love",desc:"Celebrate every beautiful chapter.",colors:["#ffd6a5","#ffadad"]},
+ {id:"proposal",title:"One Question",category:"Love",desc:"A special moment deserves a special wish.",colors:["#ffc8dd","#bde0fe"]},
+ {id:"thankyou",title:"Thank You",category:"Daily",desc:"Say thanks in a meaningful way.",colors:["#d9ed92","#b5e48c"]},
+ {id:"goodmorning",title:"Good Morning",category:"Daily",desc:"Start their day with a smile.",colors:["#ffef9f","#ffd166"]},
+ {id:"goodnight",title:"Good Night",category:"Daily",desc:"A peaceful wish before sleep.",colors:["#c8b6ff","#b8c0ff"]},
+ {id:"girlfriend",title:"Girlfriend Day",category:"Love",desc:"A sweet reminder of how special she is.",colors:["#ffcad4","#f4acb7"]},
+ {id:"brother",title:"For My Brother",category:"Family",desc:"A bond that keeps getting stronger.",colors:["#bde0fe","#a2d2ff"]},
+ {id:"sister",title:"For My Sister",category:"Family",desc:"A beautiful wish for your favorite person.",colors:["#e2afff","#cdb4db"]},
+ {id:"congratulations",title:"Congratulations",category:"Celebration",desc:"Celebrate their success with love.",colors:["#caffbf","#9bf6ff"]}
 ];
 
-let selectedWish = wishes[0];
-let selectedPhoto = "";
-const favorites = new Set(JSON.parse(localStorage.getItem("wishverse-favorites") || "[]"));
+let selectedCard = cards[0];
+let activeCategory = "All";
+let favorites = JSON.parse(localStorage.getItem("wishverse-favorites") || "[]");
+let uploadedImageUrl = "";
 
-const $ = (id) => document.getElementById(id);
-const grid = $("wishGrid"), favoriteGrid = $("favoriteGrid");
+const $ = s => document.querySelector(s);
+const wishGrid = $("#wishGrid");
+const favoriteGrid = $("#favoriteGrid");
 
-function cardHTML(wish) {
-  const [id, icon, title, type, description] = wish;
-  return `<article class="wish-card" data-id="${id}">
-    <div class="wish-art art-${id}">
-      <button class="heart-button ${favorites.has(id) ? "active" : ""}" data-favorite="${id}" aria-label="Save ${title}">${favorites.has(id) ? "♥" : "♡"}</button>
-      <span class="art-icon">${icon}</span><span class="art-label">${title}</span>
+function categories() {
+  return ["All", ...new Set(cards.map(c => c.category))];
+}
+
+function renderChips() {
+  $("#categoryChips").innerHTML = categories().map(c =>
+    `<button class="chip ${c===activeCategory?"active":""}" data-category="${c}">${c}</button>`
+  ).join("");
+  document.querySelectorAll("[data-category]").forEach(b => b.onclick = () => {
+    activeCategory = b.dataset.category; renderChips(); renderCards();
+  });
+}
+
+function filteredCards() {
+  const term = ($("#searchInput").value || "").toLowerCase().trim();
+  return cards.filter(c => (activeCategory==="All" || c.category===activeCategory) &&
+    `${c.title} ${c.category} ${c.desc}`.toLowerCase().includes(term));
+}
+
+function cardHTML(card) {
+  const fav = favorites.includes(card.id);
+  return `<article class="wish-card">
+    <div class="card-art" style="background:linear-gradient(135deg,${card.colors[0]},${card.colors[1]})">
+      <p>${card.category.toUpperCase()}</p><h3>${card.title}</h3><p>Made with love ✦</p>
     </div>
-    <div class="wish-card-info"><h3>${title}</h3><p>${type} · ${description}</p></div>
+    <div class="card-meta"><div><strong>${card.title}</strong><br><small>${card.desc}</small></div>
+      <div class="card-actions">
+        <button class="small-btn favorite-btn ${fav?"active":""}" data-fav="${card.id}" aria-label="Favorite">${fav?"♥":"♡"}</button>
+        <button class="small-btn" data-open="${card.id}">Open</button>
+      </div>
+    </div>
   </article>`;
 }
 
-function render(list = wishes) {
-  grid.innerHTML = list.map(cardHTML).join("");
-  const favs = wishes.filter(w => favorites.has(w[0]));
-  favoriteGrid.innerHTML = favs.map(cardHTML).join("");
-  $("favoriteEmpty").classList.toggle("hidden", favs.length > 0);
-  $("emptyState").classList.toggle("hidden", list.length > 0);
+function bindCardButtons() {
+  document.querySelectorAll("[data-open]").forEach(b => b.onclick = () => openCard(b.dataset.open));
+  document.querySelectorAll("[data-fav]").forEach(b => b.onclick = () => toggleFavorite(b.dataset.fav));
+}
+
+function renderCards() {
+  const list = filteredCards();
+  wishGrid.innerHTML = list.map(cardHTML).join("");
+  $("#emptyState").classList.toggle("hidden", list.length > 0);
+  bindCardButtons();
+  renderFavorites();
+}
+
+function renderFavorites() {
+  const list = cards.filter(c => favorites.includes(c.id));
+  favoriteGrid.innerHTML = list.map(cardHTML).join("");
+  $("#noFavorites").classList.toggle("hidden", list.length > 0);
+  $("#favoriteCount").textContent = favorites.length;
+  bindCardButtons();
+}
+
+function toggleFavorite(id) {
+  favorites = favorites.includes(id) ? favorites.filter(x => x!==id) : [...favorites,id];
+  localStorage.setItem("wishverse-favorites", JSON.stringify(favorites));
+  renderCards();
+  toast(favorites.includes(id) ? "Saved to favorites" : "Removed from favorites");
 }
 
 function openCard(id) {
-  selectedWish = wishes.find(w => w[0] === id) || wishes[0];
-  const [key, icon, title, type, description, demo] = selectedWish;
-  $("modalEyebrow").textContent = type;
-  $("modalTitle").textContent = title;
-  $("modalDescription").textContent = description;
-  $("modalPreview").innerHTML = previewHTML(selectedWish, demo);
-  $("modalFavorite").textContent = favorites.has(key) ? "♥ Saved" : "♡ Save";
-  $("cardModal").classList.remove("hidden");
+  selectedCard = cards.find(c => c.id === id) || cards[0];
+  $("#modalCategory").textContent = selectedCard.category.toUpperCase();
+  $("#modalTitle").textContent = selectedCard.title;
+  $("#modalDescription").textContent = selectedCard.desc;
+  $("#modalPreview").style.background = `linear-gradient(135deg,${selectedCard.colors[0]},${selectedCard.colors[1]})`;
+  $("#modalPreview").innerHTML = `<div class="card-art" style="height:100%;background:transparent"><p>${selectedCard.category.toUpperCase()}</p><h3>${selectedCard.title}</h3><p>Every feeling deserves a beautiful place.</p></div>`;
+  $("#cardModal").classList.remove("hidden");
 }
 
-function previewHTML(wish, message) {
-  const [key, icon, title] = wish;
-  return `<div class="preview-art art-${key}"><div class="preview-icon">${icon}</div><h3>${title}</h3><p>${message || wish[5] || ""}</p><span class="hero-signature">With love, always ♥</span></div>`;
+function closeModal(id) { $(id).classList.add("hidden"); }
+
+function openCustomize() {
+  closeModal("#cardModal");
+  $("#wishForm").classList.remove("hidden");
+  $("#createdResult").classList.add("hidden");
+  $("#customizeModal").classList.remove("hidden");
 }
 
-function openCreator() {
-  $("creatorTitle").textContent = `Create ${selectedWish[2]}`;
-  $("wishForm").reset();
-  selectedPhoto = "";
-  $("formStatus").textContent = "";
-  updateLivePreview();
-  $("creatorModal").classList.remove("hidden");
-}
-
-function updateLivePreview() {
-  const data = new FormData($("wishForm"));
-  const from = data.get("from") || "Your name";
-  const to = data.get("to") || "Someone special";
-  const message = data.get("message") || selectedWish[5] || "Write something from your heart...";
-  $("livePreview").innerHTML = previewHTML(selectedWish, message) + `<small class="preview-names">${from} → ${to}</small>`;
+function toast(message) {
+  const t = $("#toast"); t.textContent = message; t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2500);
 }
 
 async function uploadToCloudinary(file) {
-  if (!file) return "";
-  const body = new FormData();
-  body.append("file", file);
-  body.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
-  const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, { method:"POST", body });
-  if (!response.ok) throw new Error("Image upload failed");
+  // Add your Cloudinary cloud name and unsigned upload preset here.
+  const cloudName = "YOUR_CLOUDINARY_CLOUD_NAME";
+  const uploadPreset = "YOUR_UNSIGNED_UPLOAD_PRESET";
+  if (cloudName.startsWith("YOUR_") || uploadPreset.startsWith("YOUR_")) return "";
+  const data = new FormData();
+  data.append("file", file); data.append("upload_preset", uploadPreset);
+  const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {method:"POST",body:data});
+  if (!response.ok) throw new Error("Cloudinary upload failed");
   const result = await response.json();
   return result.secure_url;
 }
 
-function makeLocalShareId() {
-  return crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-}
+$("#searchInput").addEventListener("input", renderCards);
+$("#heroCreate").onclick = () => openCustomize();
+$("#customizeBtn").onclick = openCustomize;
+$("#demoBtn").onclick = () => toast("Live demo preview is shown above.");
+document.querySelectorAll("[data-close-modal]").forEach(x => x.onclick = () => closeModal("#cardModal"));
+document.querySelectorAll("[data-close-customize]").forEach(x => x.onclick = () => closeModal("#customizeModal"));
+$("#themeToggle").onclick = () => {
+  document.documentElement.classList.toggle("light");
+  localStorage.setItem("wishverse-theme", document.documentElement.classList.contains("light") ? "light" : "dark");
+};
+if (localStorage.getItem("wishverse-theme")==="light") document.documentElement.classList.add("light");
 
-async function createWish(event) {
-  event.preventDefault();
-  const form = new FormData($("wishForm"));
-  const status = $("formStatus");
-  status.textContent = "Preparing your wish...";
+$("#imageInput").onchange = async e => {
+  const file = e.target.files[0]; if (!file) return;
+  $("#uploadStatus").textContent = "Uploading image...";
+  try { uploadedImageUrl = await uploadToCloudinary(file); $("#uploadStatus").textContent = uploadedImageUrl ? "Image uploaded successfully." : "Image selected. Add Cloudinary keys to enable upload."; }
+  catch { uploadedImageUrl = ""; $("#uploadStatus").textContent = "Upload failed. You can continue without an image."; }
+};
+
+$("#wishForm").onsubmit = async e => {
+  e.preventDefault();
+  const payload = {
+    templateId: selectedCard.id, templateTitle: selectedCard.title,
+    category: selectedCard.category, from: $("#fromInput").value.trim(),
+    to: $("#toInput").value.trim(), message: $("#messageInput").value.trim(),
+    imageUrl: uploadedImageUrl, createdAt: serverTimestamp()
+  };
   try {
-    let imageUrl = "";
-    const file = $("photoInput").files[0];
-    if (file) {
-      status.textContent = "Uploading your photo...";
-      imageUrl = await uploadToCloudinary(file);
-    }
-    const wishData = {
-      templateId: selectedWish[0],
-      templateTitle: selectedWish[2],
-      from: form.get("from") || "",
-      to: form.get("to") || "",
-      message: form.get("message") || selectedWish[5] || "",
-      imageUrl,
-      createdAt: new Date().toISOString()
-    };
-    let shareId = makeLocalShareId();
-    if (db) {
-      const doc = await addDoc(collection(db, "wishes"), { ...wishData, createdAt: serverTimestamp() });
-      shareId = doc.id;
-    } else {
-      localStorage.setItem(`wish-${shareId}`, JSON.stringify(wishData));
-    }
-    const link = `${location.origin}${location.pathname}#wish/${shareId}`;
-    $("shareLink").value = link;
-    $("creatorModal").classList.add("hidden");
-    $("shareModal").classList.remove("hidden");
+    const ref = await addDoc(collection(db, "wishes"), payload);
+    const link = `${location.origin}${location.pathname}?wish=${ref.id}`;
+    $("#shareLink").value = link;
+    $("#wishForm").classList.add("hidden"); $("#createdResult").classList.remove("hidden");
+    toast("Wish saved successfully");
   } catch (error) {
     console.error(error);
-    status.textContent = "Something went wrong. Please check Firebase/Cloudinary settings.";
+    toast("Firebase error. Check Firestore rules and setup.");
   }
+};
+
+$("#copyLink").onclick = async () => {
+  await navigator.clipboard.writeText($("#shareLink").value);
+  toast("Link copied");
+};
+$("#closeAfterCreate").onclick = () => closeModal("#customizeModal");
+
+async function loadSharedWish() {
+  const id = new URLSearchParams(location.search).get("wish");
+  if (!id) return;
+  try {
+    const snapshot = await getDocs(collection(db, "wishes"));
+    const match = snapshot.docs.find(d => d.id === id);
+    if (!match) return;
+    const wish = match.data();
+    selectedCard = cards.find(c => c.id === wish.templateId) || cards[0];
+    openCustomize();
+    $("#fromInput").value = wish.from || "";
+    $("#toInput").value = wish.to || "";
+    $("#messageInput").value = wish.message || "";
+    toast("Shared wish loaded");
+  } catch (e) { console.log("Shared wish unavailable", e); }
 }
 
-function toggleFavorite(id) {
-  favorites.has(id) ? favorites.delete(id) : favorites.add(id);
-  localStorage.setItem("wishverse-favorites", JSON.stringify([...favorites]));
-  render();
-}
-
-document.addEventListener("click", (event) => {
-  const wishCard = event.target.closest(".wish-card");
-  const favButton = event.target.closest("[data-favorite]");
-  if (favButton) { event.stopPropagation(); toggleFavorite(favButton.dataset.favorite); return; }
-  if (wishCard) { openCard(wishCard.dataset.id); return; }
-  if (event.target.matches("[data-close]") || event.target.classList.contains("modal-backdrop")) {
-    event.target.closest(".modal-backdrop")?.classList.add("hidden");
-  }
-});
-$("modalStart").addEventListener("click", () => { $("cardModal").classList.add("hidden"); openCreator(); });
-$("modalFavorite").addEventListener("click", () => { toggleFavorite(selectedWish[0]); $("modalFavorite").textContent = favorites.has(selectedWish[0]) ? "♥ Saved" : "♡ Save"; });
-$("wishForm").addEventListener("input", updateLivePreview);
-$("wishForm").addEventListener("submit", createWish);
-$("photoInput").addEventListener("change", updateLivePreview);
-$("searchInput").addEventListener("input", (e) => {
-  const query = e.target.value.toLowerCase().trim();
-  render(wishes.filter(w => w.join(" ").toLowerCase().includes(query)));
-});
-$("heroExplore").addEventListener("click", () => $("explore").scrollIntoView({behavior:"smooth"}));
-["heroCreate","headerCreate"].forEach(id => $(id).addEventListener("click", () => { selectedWish = wishes[0]; openCreator(); }));
-$("themeToggle").addEventListener("click", () => {
-  document.documentElement.classList.toggle("light");
-  $("themeToggle").textContent = document.documentElement.classList.contains("light") ? "☀" : "☾";
-});
-$("copyLink").addEventListener("click", async () => {
-  await navigator.clipboard.writeText($("shareLink").value);
-  $("copyLink").textContent = "Copied!";
-  setTimeout(() => $("copyLink").textContent = "Copy", 1500);
-});
-
-function showSharedWish() {
-  const hash = location.hash;
-  if (!hash.startsWith("#wish/")) return;
-  const id = hash.slice(6);
-  const saved = JSON.parse(localStorage.getItem(`wish-${id}`) || "null");
-  if (!saved) return;
-  const template = wishes.find(w => w[0] === saved.templateId) || wishes[0];
-  selectedWish = template;
-  $("modalEyebrow").textContent = "A shared wish";
-  $("modalTitle").textContent = `${saved.from || "Someone"} sent a wish`;
-  $("modalDescription").textContent = saved.to ? `For ${saved.to}` : "A message from the heart";
-  $("modalPreview").innerHTML = previewHTML(template, saved.message);
-  $("cardModal").classList.remove("hidden");
-}
-window.addEventListener("hashchange", showSharedWish);
-render();
-showSharedWish();
-
+renderChips(); renderCards(); loadSharedWish();
+  
