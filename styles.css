@@ -99,3 +99,7 @@ input:focus,textarea:focus{border-color:var(--primary)}
 .card-actions{margin-top:12px}.small-btn{padding:9px 16px;border-radius:12px;border:1px solid var(--line);background:var(--surface-2);color:var(--text);cursor:pointer;font:inherit}
 .preview-art{width:100%;height:100%;min-height:430px;border-radius:24px;padding:35px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;position:relative;overflow:hidden;color:#fff}.preview-art:before{content:"";position:absolute;inset:18px;border:1px solid rgba(255,255,255,.3);border-radius:18px}.preview-art>*{position:relative;z-index:1}.preview-icon{font-size:60px}.preview-art h3{font-family:"Playfair Display",serif;font-size:35px;margin:22px 0 12px}.preview-art p{max-width:270px;color:#f0eaf5;line-height:1.7;font-size:13px}.preview-art small{margin-top:14px;color:#fff}
 @media(max-width:520px){.wish-grid{grid-template-columns:1fr}.wish-art{height:245px}}
+
+/* V3 stability and demo polish */
+#cardModal .modal-preview{background:var(--surface-2)}
+#demoBtn{cursor:pointer}
