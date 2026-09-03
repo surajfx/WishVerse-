@@ -11,6 +11,7 @@ const firebaseConfig = {
 
 let db = null;
 let firebaseReady = false;
+let firestoreApi = null;
 async function initFirebase(){
   try {
     const [{ initializeApp }, firestore] = await Promise.all([
@@ -18,6 +19,7 @@ async function initFirebase(){
       import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js")
     ]);
     db = firestore.getFirestore(initializeApp(firebaseConfig));
+    firestoreApi = firestore;
     firebaseReady = true;
   } catch (error) {
     console.error("Firebase could not initialize:", error);
@@ -176,7 +178,7 @@ $("#wishForm").onsubmit = async e => {
     templateId: selectedCard.id, templateTitle: selectedCard.title,
     category: selectedCard.category, from: $("#fromInput").value.trim(),
     to: $("#toInput").value.trim(), message: $("#messageInput").value.trim(),
-    imageUrl: uploadedImageUrl, createdAt: serverTimestamp()
+    imageUrl: uploadedImageUrl, createdAt: firestoreApi.serverTimestamp()
   };
   try {
     if (!firebaseReady || !db) {
@@ -222,5 +224,15 @@ async function loadSharedWish() {
 
 renderChips();
 renderCards();
+
+// Mobile menu and theme controls
+const menuToggle = $("#menuToggle");
+if (menuToggle) {
+  menuToggle.onclick = () => {
+    document.querySelector(".desktop-nav")?.classList.toggle("mobile-open");
+  };
+}
+
 initFirebase();
 loadSharedWish();
+    
