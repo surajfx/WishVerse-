@@ -1,87 +1,55 @@
-# WishVerse
+# WishVerse v2
 
-A smooth, responsive wish-card website with:
+Mobile-first WishVerse website with:
 
-- Home page and animated wish-card gallery
-- 15 ready-made wish experiences
-- Card preview and customization
-- Photo upload through Cloudinary
-- Firestore wish storage
-- Unique shareable wish links
-- Favorites saved in the browser
+- Responsive mobile layout
+- Home page and wish-card gallery
+- 15 ready-made wish cards
+- Search and category filters
+- Card preview and customization modal
+- Firebase Firestore save
+- Optional Cloudinary image upload
+- Shareable wish links
+- Local favorites
 - Dark/light theme
-- GitHub Pages friendly static deployment
+- GitHub Pages compatible static deployment
 
-## 1. Upload to GitHub
+## Upload files
 
-Upload all files in this folder to the root of your repository:
+Upload these files to the root of your GitHub repository:
 
-```text
-index.html
-styles.css
-app.js
-firestore.rules
-README.md
-```
+- index.html
+- styles.css
+- app.js
+- firestore.rules
 
-## 2. Firebase setup
+## Firebase
 
-The Firebase web configuration is already placed in `app.js`.
+The Firebase configuration for project `surajfx2` is already included in `app.js`.
 
 In Firebase Console:
 
 1. Open Firestore Database.
-2. Create a database.
+2. Create the database.
 3. Open Rules.
-4. Paste the contents of `firestore.rules`.
-5. Publish the rules.
+4. Paste the content of `firestore.rules`.
+5. Click Publish.
 
-The app uses this collection:
+## Cloudinary
 
-```text
-wishes
-  └── automatically generated document ID
-      ├── templateId
-      ├── templateTitle
-      ├── from
-      ├── to
-      ├── message
-      ├── imageUrl
-      └── createdAt
+Open `app.js` and replace:
+
+```js
+const cloudName = "YOUR_CLOUDINARY_CLOUD_NAME";
+const uploadPreset = "YOUR_UNSIGNED_UPLOAD_PRESET";
 ```
 
-## 3. Cloudinary setup
+Use an unsigned upload preset.
 
-The app is configured with:
+## GitHub Pages
 
-```text
-Cloud name: wtlx95j4
-Upload preset: ml_default
-```
+Repository Settings → Pages → Deploy from branch → `main` → `/root` → Save.
 
-The upload preset must be unsigned in Cloudinary:
+Your website URL:
 
-Cloudinary Dashboard → Settings → Upload → Upload presets → ml_default → Signing mode: Unsigned
-
-For production, create a separate unsigned preset with a restricted upload folder.
-
-## 4. GitHub Pages
-
-1. Open the repository on GitHub.
-2. Go to Settings → Pages.
-3. Under Build and deployment, select `Deploy from a branch`.
-4. Select `main` and `/root`.
-5. Save.
-6. Wait for the deployment to finish.
-
-Your website will be available at:
-
-```text
-https://YOUR-USERNAME.github.io/YOUR-REPOSITORY/
-```
-
-## Important note about share links
-
-When Firebase is active, the wish document is saved in Firestore and the generated link contains the document ID. The current front-end includes the complete create-and-save flow.
-
-For a production-grade public share page, add a Firestore document lookup by the hash ID and render that document on page load. The local fallback already works for testing in the same browser.
+https://surajfx.github.io/WishVerse-/

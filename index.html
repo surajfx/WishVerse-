@@ -1,151 +1,123 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#0b1020" />
-  <title>WishVerse — Create Beautiful Wishes</title>
+  <title>WishVerse — Beautiful Wishes</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="ambient ambient-one"></div>
-  <div class="ambient ambient-two"></div>
+  <div class="app-shell">
+    <header class="site-header">
+      <a class="brand" href="#" aria-label="WishVerse home">
+        <span class="brand-mark">✦</span>
+        <span>Wish<span>Verse</span></span>
+      </a>
+      <nav class="desktop-nav">
+        <a href="#explore">Explore Wishes</a>
+        <a href="#favorites">Favorites <span id="favoriteCount" class="count-badge">0</span></a>
+      </nav>
+      <div class="header-actions">
+        <button id="themeToggle" class="icon-btn" aria-label="Toggle theme">☾</button>
+        <button id="menuToggle" class="icon-btn mobile-only" aria-label="Open menu">☰</button>
+      </div>
+    </header>
 
-  <header class="site-header">
-    <a class="brand" href="#home" aria-label="WishVerse home">
-      <span class="brand-mark">✦</span>
-      <span>Wish<span>Verse</span></span>
-    </a>
-    <nav class="desktop-nav">
-      <a href="#home">Home</a>
-      <a href="#explore">Explore Wishes</a>
-      <a href="#favorites">Favorites</a>
-    </nav>
-    <div class="header-actions">
-      <button class="icon-button" id="themeToggle" title="Toggle theme">☾</button>
-      <button class="primary-button small" id="headerCreate">Create Wish</button>
-      <button class="icon-button mobile-menu" id="menuToggle">☰</button>
-    </div>
-  </header>
-
-  <main>
-    <section class="hero section" id="home">
-      <div class="hero-copy">
-        <div class="eyebrow">A little place for meaningful moments</div>
+    <main>
+      <section class="hero">
+        <div class="eyebrow">A LITTLE PLACE FOR MEANINGFUL MOMENTS</div>
         <h1>Create beautiful wishes for every special moment <span>♥</span></h1>
         <p>Turn your feelings into a memorable digital wish. Choose a beautiful card, personalize every word, and share it with someone special.</p>
         <div class="hero-actions">
-          <button class="primary-button" id="heroExplore">Explore Wishes <span>→</span></button>
-          <button class="secondary-button" id="heroCreate">Create Wish <span>✦</span></button>
+          <a class="btn btn-primary" href="#explore">Explore Wishes <b>→</b></a>
+          <button class="btn btn-secondary" id="heroCreate">Create Wish <b>✦</b></button>
         </div>
-        <div class="hero-note"><span class="pulse-dot"></span> Made for love, friendship and unforgettable moments</div>
-      </div>
-      <div class="hero-visual">
-        <div class="floating-chip chip-top">Made with love ✦</div>
-        <div class="hero-card">
-          <div class="hero-card-glow"></div>
-          <div class="hero-card-content">
-            <span class="mini-label">A message from the heart</span>
-            <h2>Some feelings<br><em>deserve a beautiful place.</em></h2>
-            <div class="hero-line"></div>
-            <p>For every person, every memory, every little reason to smile.</p>
-            <span class="hero-signature">With love, always ♥</span>
+        <div class="trust-line"><i></i> Made for love, friendship and unforgettable moments</div>
+      </section>
+
+      <section id="explore" class="section">
+        <div class="section-heading">
+          <div>
+            <div class="eyebrow">FIND YOUR MOMENT</div>
+            <h2>Choose a wish card</h2>
+          </div>
+          <div class="search-wrap">
+            <input id="searchInput" type="search" placeholder="Search wishes..." aria-label="Search wishes">
           </div>
         </div>
-        <div class="floating-chip chip-bottom">Your story. Your words.</div>
-      </div>
-    </section>
-
-    <section class="section explore-section" id="explore">
-      <div class="section-heading">
-        <div>
-          <div class="eyebrow">Choose your moment</div>
-          <h2>Beautiful wishes, ready for you</h2>
-          <p>Pick a card and make it yours. Every card has its own visual experience.</p>
+        <div id="categoryChips" class="chips"></div>
+        <div id="wishGrid" class="wish-grid"></div>
+        <div id="emptyState" class="empty-state hidden">
+          <div>✦</div>
+          <h3>No wishes found</h3>
+          <p>Try another search or category.</p>
         </div>
-        <div class="search-wrap">
-          <span>⌕</span>
-          <input id="searchInput" type="search" placeholder="Search wishes..." />
+      </section>
+
+      <section id="favorites" class="section favorites-section">
+        <div class="section-heading">
+          <div>
+            <div class="eyebrow">YOUR COLLECTION</div>
+            <h2>Saved favorites</h2>
+          </div>
         </div>
-      </div>
-      <div class="wish-grid" id="wishGrid"></div>
-      <div class="empty-state hidden" id="emptyState">No wishes found. Try another search.</div>
-    </section>
+        <div id="favoriteGrid" class="wish-grid"></div>
+        <p id="noFavorites" class="muted">Your favorite cards will appear here.</p>
+      </section>
+    </main>
 
-    <section class="section favorites-section" id="favorites">
-      <div class="section-heading compact">
-        <div>
-          <div class="eyebrow">Saved for later</div>
-          <h2>Your favorite wishes</h2>
-          <p>Save cards you love and return to them anytime on this device.</p>
-        </div>
-      </div>
-      <div class="wish-grid" id="favoriteGrid"></div>
-      <div class="empty-state" id="favoriteEmpty">You have not saved any wishes yet.</div>
-    </section>
-  </main>
+    <footer>
+      <span>© 2026 WishVerse</span>
+      <span>Made for meaningful moments.</span>
+    </footer>
+  </div>
 
-  <footer class="site-footer">
-    <div class="brand"><span class="brand-mark">✦</span><span>Wish<span>Verse</span></span></div>
-    <p>Small words. Beautiful memories.</p>
-  </footer>
-
-  <div class="modal-backdrop hidden" id="cardModal">
-    <div class="modal card-modal">
-      <button class="modal-close" data-close>×</button>
-      <div class="modal-card-preview" id="modalPreview"></div>
-      <div class="modal-info">
-        <div class="eyebrow" id="modalEyebrow"></div>
+  <div id="cardModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-panel">
+      <button class="modal-close" data-close-modal aria-label="Close">×</button>
+      <div id="modalPreview" class="modal-preview"></div>
+      <div class="modal-content">
+        <div class="eyebrow" id="modalCategory"></div>
         <h2 id="modalTitle"></h2>
         <p id="modalDescription"></p>
-        <div class="modal-actions">
-          <button class="secondary-button" id="modalFavorite">♡ Save</button>
-          <button class="primary-button" id="modalStart">Create Your Wish <span>→</span></button>
+        <div class="modal-buttons">
+          <button id="customizeBtn" class="btn btn-primary">Customize Wish ✦</button>
+          <button id="demoBtn" class="btn btn-secondary">Live Demo</button>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="modal-backdrop hidden" id="creatorModal">
-    <div class="modal creator-modal">
-      <button class="modal-close" data-close>×</button>
-      <div class="creator-header">
-        <div class="eyebrow">Make it personal</div>
-        <h2 id="creatorTitle">Create your wish</h2>
-        <p>Keep the demo text or replace it with your own words.</p>
-      </div>
-      <div class="creator-layout">
-        <div class="live-preview" id="livePreview"></div>
-        <form id="wishForm">
-          <label>From<input name="from" placeholder="Your name" /></label>
-          <label>To<input name="to" placeholder="Their name" /></label>
-          <label>Your message<textarea name="message" rows="5" placeholder="Write something from your heart..."></textarea></label>
-          <label>Upload a photo<input type="file" id="photoInput" accept="image/*" /></label>
-          <div class="form-actions">
-            <button type="button" class="secondary-button" data-close>Cancel</button>
-            <button type="submit" class="primary-button">Create Shareable Wish <span>↗</span></button>
-          </div>
-          <div class="form-status" id="formStatus"></div>
-        </form>
+  <div id="customizeModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="customizeTitle">
+    <div class="modal-backdrop" data-close-customize></div>
+    <div class="modal-panel form-panel">
+      <button class="modal-close" data-close-customize aria-label="Close">×</button>
+      <div class="eyebrow">MAKE IT YOURS</div>
+      <h2 id="customizeTitle">Customize your wish</h2>
+      <form id="wishForm">
+        <label>From<input id="fromInput" required maxlength="40" placeholder="Your name"></label>
+        <label>To<input id="toInput" required maxlength="40" placeholder="Their name"></label>
+        <label>Your message<textarea id="messageInput" required maxlength="500" rows="5" placeholder="Write something heartfelt..."></textarea></label>
+        <label>Photo <span class="optional">(optional)</span><input id="imageInput" type="file" accept="image/*"></label>
+        <div id="uploadStatus" class="upload-status"></div>
+        <button class="btn btn-primary full-width" type="submit">Create & Save Wish ✦</button>
+      </form>
+      <div id="createdResult" class="created-result hidden">
+        <div class="success-icon">✓</div>
+        <h3>Your wish is ready!</h3>
+        <p>Copy the link and share your beautiful moment.</p>
+        <div class="share-row"><input id="shareLink" readonly><button id="copyLink" class="btn btn-secondary">Copy</button></div>
+        <button id="closeAfterCreate" class="btn btn-primary full-width">Done</button>
       </div>
     </div>
   </div>
 
-  <div class="modal-backdrop hidden" id="shareModal">
-    <div class="modal share-modal">
-      <button class="modal-close" data-close>×</button>
-      <div class="success-icon">✓</div>
-      <div class="eyebrow">Your wish is ready</div>
-      <h2>Share your beautiful moment</h2>
-      <p>Your unique wish link has been created. Copy it and send it to someone special.</p>
-      <div class="share-link-row"><input id="shareLink" readonly /><button class="primary-button small" id="copyLink">Copy</button></div>
-      <button class="secondary-button full" data-close>Done</button>
-    </div>
-  </div>
-
+  <div id="toast" class="toast" role="status"></div>
   <script type="module" src="app.js"></script>
 </body>
 </html>
