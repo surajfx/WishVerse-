@@ -80,3 +80,11 @@ input:focus,textarea:focus{border-color:var(--primary)}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 @media(max-width:800px){.app-shell{padding:0 16px}.site-header{height:72px}.desktop-nav{display:none}.mobile-only{display:block}.hero{padding:60px 0 45px}.hero h1{font-size:clamp(42px,12vw,65px);letter-spacing:-2px}.hero p{font-size:16px;line-height:1.75}.section{padding:40px 0}.section-heading{display:block}.section h2{font-size:34px;margin-bottom:18px}.search-wrap input{width:100%}.wish-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.card-art{height:170px;padding:16px}.card-art h3{font-size:23px}.card-meta{display:block}.card-actions{margin-top:10px}.small-btn{padding:8px 10px}.modal-preview{height:220px}.modal-content,.form-panel{padding-left:20px;padding-right:20px}}
 @media(max-width:480px){.brand{font-size:22px}.brand-mark{width:36px;height:36px}.hero-actions{display:grid}.hero-actions .btn{width:100%}.wish-grid{grid-template-columns:1fr}.card-art{height:190px}.section h2{font-size:31px}.modal-buttons{display:grid}.modal-buttons .btn{width:100%}footer{display:block;line-height:2}}
+
+/* Mobile fixes */
+@media(max-width:800px){
+  .site-header{position:relative;z-index:100}
+  .desktop-nav.mobile-open{display:flex;position:absolute;top:78px;left:0;right:0;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:0 0 18px 18px;flex-direction:column;gap:14px;box-shadow:var(--shadow)}
+  .wish-grid{display:grid!important;visibility:visible!important;opacity:1!important}
+  .wish-card{display:block!important;visibility:visible!important}
+}
