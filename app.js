@@ -28,21 +28,21 @@ async function initFirebase(){
 }
 
 const cards = [
- {id:"birthday",title:"Birthday Surprise",category:"Celebration",desc:"Make their special day unforgettable.",colors:["#ffd6e7","#ffc2d8"]},
- {id:"love",title:"Just For You",category:"Love",desc:"A little message from your heart.",colors:["#ffd1dc","#ffb3c6"]},
- {id:"eid",title:"Eid Mubarak",category:"Festival",desc:"Warm wishes, peace and blessings.",colors:["#d8f3dc","#95d5b2"]},
- {id:"diwali",title:"Happy Diwali",category:"Festival",desc:"Light, joy and beautiful beginnings.",colors:["#ffe8b6","#ffc971"]},
- {id:"friendship",title:"Best Friends",category:"Friends",desc:"For the person who makes life brighter.",colors:["#cde7ff","#a8dadc"]},
- {id:"family",title:"With Love, Family",category:"Family",desc:"A heartfelt note for your loved ones.",colors:["#e5d4ff","#cdb4db"]},
- {id:"anniversary",title:"Our Anniversary",category:"Love",desc:"Celebrate every beautiful chapter.",colors:["#ffd6a5","#ffadad"]},
- {id:"proposal",title:"One Question",category:"Love",desc:"A special moment deserves a special wish.",colors:["#ffc8dd","#bde0fe"]},
- {id:"thankyou",title:"Thank You",category:"Daily",desc:"Say thanks in a meaningful way.",colors:["#d9ed92","#b5e48c"]},
- {id:"goodmorning",title:"Good Morning",category:"Daily",desc:"Start their day with a smile.",colors:["#ffef9f","#ffd166"]},
- {id:"goodnight",title:"Good Night",category:"Daily",desc:"A peaceful wish before sleep.",colors:["#c8b6ff","#b8c0ff"]},
- {id:"girlfriend",title:"Girlfriend Day",category:"Love",desc:"A sweet reminder of how special she is.",colors:["#ffcad4","#f4acb7"]},
- {id:"brother",title:"For My Brother",category:"Family",desc:"A bond that keeps getting stronger.",colors:["#bde0fe","#a2d2ff"]},
- {id:"sister",title:"For My Sister",category:"Family",desc:"A beautiful wish for your favorite person.",colors:["#e2afff","#cdb4db"]},
- {id:"congratulations",title:"Congratulations",category:"Celebration",desc:"Celebrate their success with love.",colors:["#caffbf","#9bf6ff"]}
+ {id:"proposal",title:"Proposal",category:"Love",desc:"A beautiful question deserves a beautiful moment.",colors:["#b85d78","#1a172c"]},
+ {id:"girlfriend",title:"Girlfriend Special",category:"Love",desc:"A sweet little surprise for your favorite person.",colors:["#ffb6c9","#24152e"]},
+ {id:"boyfriend",title:"Boyfriend Special",category:"Love",desc:"A heartfelt card for the person who feels like home.",colors:["#6ec6e8","#111b32"]},
+ {id:"distance",title:"Long Distance Love",category:"Love",desc:"For two hearts that are far away but never apart.",colors:["#d8a86d","#20263b"]},
+ {id:"anniversary",title:"Anniversary",category:"Love",desc:"Celebrate the memories, the growth and the love.",colors:["#e3a2b2","#20182e"]},
+ {id:"letter",title:"Love Letter",category:"Love",desc:"A timeless letter-style experience for honest feelings.",colors:["#f4d49b","#2a2033"]},
+ {id:"confession",title:"Love Confession",category:"Love",desc:"Say the words you have been keeping in your heart.",colors:["#ff7d91","#21152d"]},
+ {id:"miss",title:"Miss You",category:"Emotion",desc:"A soft, emotional card for someone you wish was near.",colors:["#91c6e9","#151b30"]},
+ {id:"sorry",title:"Sorry",category:"Emotion",desc:"A gentle way to say what matters after a difficult moment.",colors:["#b9b9d9","#1a1c31"]},
+ {id:"special",title:"You Are Special",category:"Special",desc:"Remind someone that they are deeply appreciated.",colors:["#ffe59a","#2d2030"]},
+ {id:"birthday",title:"Birthday Surprise",category:"Celebration",desc:"A joyful birthday reveal with room for your own message.",colors:["#ffd276","#32204a"]},
+ {id:"bestfriend",title:"Best Friend Special",category:"Friends",desc:"For the friend who turns ordinary days into memories.",colors:["#9fe2bd","#182b38"]},
+ {id:"countdown",title:"Countdown Until We Meet",category:"Long Distance",desc:"A sweet anticipation card for the next meeting.",colors:["#f5c078","#26233d"]},
+ {id:"morning",title:"Good Morning",category:"Daily",desc:"Start someone's day with a warm, personal message.",colors:["#ffe8a6","#40314c"]},
+ {id:"night",title:"Good Night",category:"Daily",desc:"A peaceful good-night message for a special person.",colors:["#9b9be7","#12162f"]}
 ];
 
 let selectedCard = cards[0];
@@ -76,15 +76,12 @@ function filteredCards() {
 function cardHTML(card) {
   const fav = favorites.includes(card.id);
   return `<article class="wish-card">
-    <div class="card-art" style="background:linear-gradient(135deg,${card.colors[0]},${card.colors[1]})">
-      <p>${card.category.toUpperCase()}</p><h3>${card.title}</h3><p>Made with love ✦</p>
+    <div class="wish-art art-${card.id}">
+      <button class="heart-button ${fav ? "active" : ""}" data-fav="${card.id}" aria-label="Favorite">${fav ? "♥" : "♡"}</button>
+      <span class="art-icon">${({proposal:"💍",girlfriend:"🌹",boyfriend:"🖤",distance:"💞",anniversary:"❤️",letter:"💌",confession:"💕",miss:"☁️",sorry:"🥺",special:"💖",birthday:"🎂",bestfriend:"👑",countdown:"📅",morning:"🌞",night:"🌙"})[card.id] || "✦"}</span>
+      <span class="art-label">${card.title}</span>
     </div>
-    <div class="card-meta"><div><strong>${card.title}</strong><br><small>${card.desc}</small></div>
-      <div class="card-actions">
-        <button class="small-btn favorite-btn ${fav?"active":""}" data-fav="${card.id}" aria-label="Favorite">${fav?"♥":"♡"}</button>
-        <button class="small-btn" data-open="${card.id}">Open</button>
-      </div>
-    </div>
+    <div class="wish-card-info"><h3>${card.title}</h3><p>${card.category} · ${card.desc}</p></div>
   </article>`;
 }
 
@@ -235,4 +232,3 @@ if (menuToggle) {
 
 initFirebase();
 loadSharedWish();
-    
