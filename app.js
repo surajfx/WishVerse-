@@ -153,7 +153,14 @@ async function uploadToCloudinary(file) {
 $("#searchInput").addEventListener("input", renderCards);
 $("#heroCreate").onclick = () => openCustomize();
 $("#customizeBtn").onclick = openCustomize;
-$("#demoBtn").onclick = () => toast("Live demo preview is shown above.");
+$("#demoBtn").onclick = () => {
+  const demoName = selectedCard.category === "Daily" ? "Someone Special" : "Your Special Person";
+  $("#modalCategory").textContent = selectedCard.category.toUpperCase();
+  $("#modalTitle").textContent = `For ${demoName}`;
+  $("#modalDescription").textContent = selectedCard.desc;
+  $("#modalPreview").innerHTML = `<div class="preview-art ${selectedCard.art}"><span class="preview-icon">${selectedCard.icon}</span><h3>For ${demoName}</h3><p>${selectedCard.desc}</p><small>From someone who cares ✦</small></div>`;
+  toast("Live demo opened");
+};
 document.querySelectorAll("[data-close-modal]").forEach(x => x.onclick = () => closeModal("#cardModal"));
 document.querySelectorAll("[data-close-customize]").forEach(x => x.onclick = () => closeModal("#customizeModal"));
 $("#themeToggle").onclick = () => {
@@ -205,11 +212,13 @@ async function loadSharedWish() {
   if (!id) return;
   try {
     if (!firebaseReady || !db) return;
-    const { getDocs, collection } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
-    const snapshot = await getDocs(collection(db, "wishes"));
-    const match = snapshot.docs.find(d => d.id === id);
-    if (!match) return;
-    const wish = match.data();
+    const { getDoc, doc } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+    const snapshot = await getDoc(doc(db, "wishes", id));
+    if (!snapshot.exists()) {
+      toast("This wish link is not available.");
+      return;
+    }
+    const wish = snapshot.data();
     selectedCard = cards.find(c => c.id === wish.templateId) || cards[0];
     $("#modalCategory").textContent = wish.category || selectedCard.category;
     $("#modalTitle").textContent = wish.to ? `For ${wish.to}` : selectedCard.title;
@@ -231,5 +240,7 @@ if (menuToggle) {
   };
 }
 
-initFirebase();
-loadSharedWish();
+(async () => {
+  await initFirebase();
+  await loadSharedWish();
+})();
