@@ -103,3 +103,17 @@ input:focus,textarea:focus{border-color:var(--primary)}
 /* V3 stability and demo polish */
 #cardModal .modal-preview{background:var(--surface-2)}
 #demoBtn{cursor:pointer}
+
+/* Shared-wish loading state */
+.loading-shared-wish::before {
+  content: "Loading your wish…";
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  background: rgba(7, 12, 27, .96);
+  color: #fff;
+  font: 600 16px/1.4 DM Sans, sans-serif;
+  letter-spacing: .04em;
+}
