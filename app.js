@@ -1,8 +1,3 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {
-  getFirestore, collection, addDoc, getDocs, query, orderBy, serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
 const firebaseConfig = {
   apiKey: "AIzaSyDhH_fplGM0SYhXYQyGEmSgsxchuUgi43I",
   authDomain: "surajfx2.firebaseapp.com",
@@ -14,8 +9,21 @@ const firebaseConfig = {
   measurementId: "G-N6KNJJ5B3D"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+let db = null;
+let firebaseReady = false;
+async function initFirebase(){
+  try {
+    const [{ initializeApp }, firestore] = await Promise.all([
+      import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"),
+      import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js")
+    ]);
+    db = firestore.getFirestore(initializeApp(firebaseConfig));
+    firebaseReady = true;
+  } catch (error) {
+    console.error("Firebase could not initialize:", error);
+    toast("Cards are ready. Firebase setup is not connected yet.");
+  }
+}
 
 const cards = [
  {id:"birthday",title:"Birthday Surprise",category:"Celebration",desc:"Make their special day unforgettable.",colors:["#ffd6e7","#ffc2d8"]},
@@ -171,6 +179,11 @@ $("#wishForm").onsubmit = async e => {
     imageUrl: uploadedImageUrl, createdAt: serverTimestamp()
   };
   try {
+    if (!firebaseReady || !db) {
+      toast("Firebase is not connected. Check Firebase setup.");
+      return;
+    }
+    const { addDoc, collection } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
     const ref = await addDoc(collection(db, "wishes"), payload);
     const link = `${location.origin}${location.pathname}?wish=${ref.id}`;
     $("#shareLink").value = link;
@@ -192,6 +205,8 @@ async function loadSharedWish() {
   const id = new URLSearchParams(location.search).get("wish");
   if (!id) return;
   try {
+    if (!firebaseReady || !db) return;
+    const { getDocs, collection } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
     const snapshot = await getDocs(collection(db, "wishes"));
     const match = snapshot.docs.find(d => d.id === id);
     if (!match) return;
@@ -205,5 +220,7 @@ async function loadSharedWish() {
   } catch (e) { console.log("Shared wish unavailable", e); }
 }
 
-renderChips(); renderCards(); loadSharedWish();
-  
+renderChips();
+renderCards();
+initFirebase();
+loadSharedWish();
