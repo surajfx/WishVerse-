@@ -28,21 +28,21 @@ async function initFirebase(){
 }
 
 const cards = [
- {id:"proposal",title:"Proposal",category:"Love",desc:"A beautiful question deserves a beautiful moment.",colors:["#b85d78","#1a172c"]},
- {id:"girlfriend",title:"Girlfriend Special",category:"Love",desc:"A sweet little surprise for your favorite person.",colors:["#ffb6c9","#24152e"]},
- {id:"boyfriend",title:"Boyfriend Special",category:"Love",desc:"A heartfelt card for the person who feels like home.",colors:["#6ec6e8","#111b32"]},
- {id:"distance",title:"Long Distance Love",category:"Love",desc:"For two hearts that are far away but never apart.",colors:["#d8a86d","#20263b"]},
- {id:"anniversary",title:"Anniversary",category:"Love",desc:"Celebrate the memories, the growth and the love.",colors:["#e3a2b2","#20182e"]},
- {id:"letter",title:"Love Letter",category:"Love",desc:"A timeless letter-style experience for honest feelings.",colors:["#f4d49b","#2a2033"]},
- {id:"confession",title:"Love Confession",category:"Love",desc:"Say the words you have been keeping in your heart.",colors:["#ff7d91","#21152d"]},
- {id:"miss",title:"Miss You",category:"Emotion",desc:"A soft, emotional card for someone you wish was near.",colors:["#91c6e9","#151b30"]},
- {id:"sorry",title:"Sorry",category:"Emotion",desc:"A gentle way to say what matters after a difficult moment.",colors:["#b9b9d9","#1a1c31"]},
- {id:"special",title:"You Are Special",category:"Special",desc:"Remind someone that they are deeply appreciated.",colors:["#ffe59a","#2d2030"]},
- {id:"birthday",title:"Birthday Surprise",category:"Celebration",desc:"A joyful birthday reveal with room for your own message.",colors:["#ffd276","#32204a"]},
- {id:"bestfriend",title:"Best Friend Special",category:"Friends",desc:"For the friend who turns ordinary days into memories.",colors:["#9fe2bd","#182b38"]},
- {id:"countdown",title:"Countdown Until We Meet",category:"Long Distance",desc:"A sweet anticipation card for the next meeting.",colors:["#f5c078","#26233d"]},
- {id:"morning",title:"Good Morning",category:"Daily",desc:"Start someone's day with a warm, personal message.",colors:["#ffe8a6","#40314c"]},
- {id:"night",title:"Good Night",category:"Daily",desc:"A peaceful good-night message for a special person.",colors:["#9b9be7","#12162f"]}
+ {id:"proposal",title:"Proposal",category:"Love",desc:"A beautiful question deserves a beautiful moment.",icon:"💍",art:"art-proposal"},
+ {id:"girlfriend",title:"Girlfriend Special",category:"Love",desc:"A sweet little surprise for your favorite person.",icon:"🌹",art:"art-girlfriend"},
+ {id:"boyfriend",title:"Boyfriend Special",category:"Love",desc:"A heartfelt card for the person who feels like home.",icon:"🖤",art:"art-boyfriend"},
+ {id:"distance",title:"Long Distance Love",category:"Love",desc:"For two hearts that are far away but never apart.",icon:"💞",art:"art-distance"},
+ {id:"anniversary",title:"Anniversary",category:"Love",desc:"Celebrate the memories, the growth and the love.",icon:"❤️",art:"art-anniversary"},
+ {id:"letter",title:"Love Letter",category:"Love",desc:"A timeless letter-style experience for honest feelings.",icon:"💌",art:"art-letter"},
+ {id:"confession",title:"Love Confession",category:"Love",desc:"Say the words you have been keeping in your heart.",icon:"💕",art:"art-confession"},
+ {id:"miss",title:"Miss You",category:"Emotion",desc:"A soft, emotional card for someone you wish was near.",icon:"☁️",art:"art-miss"},
+ {id:"sorry",title:"Sorry",category:"Emotion",desc:"A gentle way to say what matters after a difficult moment.",icon:"🥺",art:"art-sorry"},
+ {id:"special",title:"You Are Special",category:"Special",desc:"Remind someone that they are deeply appreciated.",icon:"💖",art:"art-special"},
+ {id:"birthday",title:"Birthday Surprise",category:"Celebration",desc:"A joyful birthday reveal with room for your own message.",icon:"🎂",art:"art-birthday"},
+ {id:"bestfriend",title:"Best Friend Special",category:"Friends",desc:"For the friend who turns ordinary days into memories.",icon:"👑",art:"art-bestfriend"},
+ {id:"countdown",title:"Countdown Until We Meet",category:"Long Distance",desc:"A sweet anticipation card for the next meeting.",icon:"📅",art:"art-countdown"},
+ {id:"morning",title:"Good Morning",category:"Daily",desc:"Start someone's day with a warm, personal message.",icon:"🌞",art:"art-morning"},
+ {id:"night",title:"Good Night",category:"Daily",desc:"A peaceful good-night message for a special person.",icon:"🌙",art:"art-night"}
 ];
 
 let selectedCard = cards[0];
@@ -76,12 +76,13 @@ function filteredCards() {
 function cardHTML(card) {
   const fav = favorites.includes(card.id);
   return `<article class="wish-card">
-    <div class="wish-art art-${card.id}">
-      <button class="heart-button ${fav ? "active" : ""}" data-fav="${card.id}" aria-label="Favorite">${fav ? "♥" : "♡"}</button>
-      <span class="art-icon">${({proposal:"💍",girlfriend:"🌹",boyfriend:"🖤",distance:"💞",anniversary:"❤️",letter:"💌",confession:"💕",miss:"☁️",sorry:"🥺",special:"💖",birthday:"🎂",bestfriend:"👑",countdown:"📅",morning:"🌞",night:"🌙"})[card.id] || "✦"}</span>
-      <span class="art-label">${card.title}</span>
+    <div class="wish-art ${card.art}">
+      <button class="heart-button ${fav?"active":""}" data-fav="${card.id}" aria-label="Favorite">${fav?"♥":"♡"}</button>
+      <span class="art-icon">${card.icon}</span><span class="art-label">${card.title}</span>
     </div>
-    <div class="wish-card-info"><h3>${card.title}</h3><p>${card.category} · ${card.desc}</p></div>
+    <div class="wish-card-info"><h3>${card.title}</h3><p>${card.category} · ${card.desc}</p>
+      <div class="card-actions"><button class="small-btn" data-open="${card.id}">Open</button></div>
+    </div>
   </article>`;
 }
 
@@ -118,8 +119,7 @@ function openCard(id) {
   $("#modalCategory").textContent = selectedCard.category.toUpperCase();
   $("#modalTitle").textContent = selectedCard.title;
   $("#modalDescription").textContent = selectedCard.desc;
-  $("#modalPreview").style.background = `linear-gradient(135deg,${selectedCard.colors[0]},${selectedCard.colors[1]})`;
-  $("#modalPreview").innerHTML = `<div class="card-art" style="height:100%;background:transparent"><p>${selectedCard.category.toUpperCase()}</p><h3>${selectedCard.title}</h3><p>Every feeling deserves a beautiful place.</p></div>`;
+  $("#modalPreview").innerHTML = `<div class="preview-art ${selectedCard.art}"><span class="preview-icon">${selectedCard.icon}</span><h3>${selectedCard.title}</h3><p>${selectedCard.desc}</p></div>`;
   $("#cardModal").classList.remove("hidden");
 }
 
@@ -211,10 +211,11 @@ async function loadSharedWish() {
     if (!match) return;
     const wish = match.data();
     selectedCard = cards.find(c => c.id === wish.templateId) || cards[0];
-    openCustomize();
-    $("#fromInput").value = wish.from || "";
-    $("#toInput").value = wish.to || "";
-    $("#messageInput").value = wish.message || "";
+    $("#modalCategory").textContent = wish.category || selectedCard.category;
+    $("#modalTitle").textContent = wish.to ? `For ${wish.to}` : selectedCard.title;
+    $("#modalDescription").textContent = wish.message || selectedCard.desc;
+    $("#modalPreview").innerHTML = `<div class="preview-art ${selectedCard.art}"><span class="preview-icon">${selectedCard.icon}</span><h3>${wish.to ? `For ${wish.to}` : selectedCard.title}</h3><p>${wish.message || selectedCard.desc}</p><small>From ${wish.from || "someone special"}</small></div>`;
+    $("#cardModal").classList.remove("hidden");
     toast("Shared wish loaded");
   } catch (e) { console.log("Shared wish unavailable", e); }
 }
