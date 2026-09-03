@@ -1,54 +1,27 @@
-rules_version = '2';
+// Firebase
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  doc,
+  getDoc,
+  query,
+  orderBy,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-service cloud.firestore {
-  match /databases/{database}/documents {
+const firebaseConfig = {
+  apiKey: "AIzaSyDhH_fplGM0SYhXYQyGEmSgsxchuUgi43I",
+  authDomain: "surajfx2.firebaseapp.com",
+  databaseURL: "https://surajfx2-default-rtdb.firebaseio.com",
+  projectId: "surajfx2",
+  storageBucket: "surajfx2.firebasestorage.app",
+  messagingSenderId: "386646596801",
+  appId: "1:386646596801:web:db3b3fc2a212d644b28840",
+  measurementId: "G-N6KNJJ5B3D"
+};
 
-    // =====================================================
-    // WISHES
-    // =====================================================
-
-    match /wishes/{wishId} {
-
-      // Anyone can view shared wishes.
-      allow read: if true;
-
-      // Anyone can create a wish.
-      // Only the allowed fields can be submitted.
-      allow create: if
-        request.resource.data.keys().hasOnly([
-          'templateId',
-          'templateTitle',
-          'from',
-          'to',
-          'message',
-          'imageUrl',
-          'createdAt'
-        ])
-        && request.resource.data.templateId is string
-        && request.resource.data.templateTitle is string
-        && request.resource.data.from is string
-        && request.resource.data.to is string
-        && request.resource.data.message is string
-        && request.resource.data.imageUrl is string
-        && request.resource.data.createdAt is timestamp
-        && request.resource.data.from.size() <= 100
-        && request.resource.data.to.size() <= 100
-        && request.resource.data.message.size() <= 5000
-        && request.resource.data.imageUrl.size() <= 2000;
-
-      // Do not allow users to modify existing wishes.
-      allow update: if false;
-
-      // Do not allow users to delete existing wishes.
-      allow delete: if false;
-    }
-
-    // =====================================================
-    // DEFAULT DENY
-    // =====================================================
-
-    match /{document=**} {
-      allow read, write: if false;
-    }
-  }
-}
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
