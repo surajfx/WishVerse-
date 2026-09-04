@@ -1,3 +1,5 @@
+const canvasScript=document.createElement("script");canvasScript.src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";document.head.appendChild(canvasScript);
+
 const firebaseConfig = {
   apiKey: "AIzaSyDhH_fplGM0SYhXYQyGEmSgsxchuUgi43I",
   authDomain: "surajfx2.firebaseapp.com",
@@ -28,21 +30,11 @@ async function initFirebase(){
 }
 
 const cards = [
- {id:"proposal",title:"Proposal",category:"Love",desc:"A beautiful question deserves a beautiful moment.",example:"I have something important to ask you... You make my world brighter every day. Will you be my forever? ❤️",icon:"💍",art:"art-proposal"},
- {id:"girlfriend",title:"Girlfriend Special",category:"Love",desc:"A sweet little surprise for your favorite person.",example:"You are my favorite person, my happiest thought, and my sweetest surprise.",icon:"🌹",art:"art-girlfriend"},
- {id:"boyfriend",title:"Boyfriend Special",category:"Love",desc:"A heartfelt card for the person who feels like home.",example:"No matter where life takes us, you will always feel like home to me.",icon:"🖤",art:"art-boyfriend"},
- {id:"distance",title:"Long Distance Love",category:"Love",desc:"For two hearts that are far away but never apart.",example:"Miles may separate us, but my heart is always right beside you.",icon:"💞",art:"art-distance"},
- {id:"anniversary",title:"Anniversary",category:"Love",desc:"Celebrate the memories, the growth and the love.",example:"Another year of memories, laughter, and choosing each other. Happy anniversary! ❤️",icon:"❤️",art:"art-anniversary"},
- {id:"letter",title:"Love Letter",category:"Love",desc:"A timeless letter-style experience for honest feelings.",example:"There are so many things I want to say, but they all begin with how much you mean to me.",icon:"💌",art:"art-letter"},
- {id:"confession",title:"Love Confession",category:"Love",desc:"Say the words you have been keeping in your heart.",example:"I have been wanting to tell you this for so long: I really, really like you. 💕",icon:"💕",art:"art-confession"},
- {id:"miss",title:"Miss You",category:"Emotion",desc:"A soft, emotional card for someone you wish was near.",example:"I miss your voice, your smile, and all the little moments we share.",icon:"☁️",art:"art-miss"},
- {id:"sorry",title:"Sorry",category:"Emotion",desc:"A gentle way to say what matters after a difficult moment.",example:"I am sorry. You matter to me more than my pride, and I hope we can make things right.",icon:"🥺",art:"art-sorry"},
- {id:"special",title:"You Are Special",category:"Special",desc:"Remind someone that they are deeply appreciated.",example:"You are more special to me than words can ever explain. Thank you for being you.",icon:"💖",art:"art-special"},
- {id:"birthday",title:"Birthday Surprise",category:"Celebration",desc:"A joyful birthday reveal with room for your own message.",example:"Happy Birthday! May your day be full of love, laughter, beautiful surprises, and everything you wish for. 🎂",icon:"🎂",art:"art-birthday"},
- {id:"bestfriend",title:"Best Friend Special",category:"Friends",desc:"For the friend who turns ordinary days into memories.",example:"Life is better, funnier, and brighter with a best friend like you. Thank you for every memory.",icon:"👑",art:"art-bestfriend"},
- {id:"countdown",title:"Countdown Until We Meet",category:"Long Distance",desc:"A sweet anticipation card for the next meeting.",example:"Counting the days until I can finally see you, hug you, and make new memories together.",icon:"📅",art:"art-countdown"},
- {id:"morning",title:"Good Morning",category:"Daily",desc:"Start someone's day with a warm, personal message.",example:"Good morning, sunshine. I hope today brings you the same happiness you bring into my life. ☀️",icon:"🌞",art:"art-morning"},
- {id:"night",title:"Good Night",category:"Daily",desc:"A peaceful good-night message for a special person.",example:"Good night, my favorite person. Rest well and remember that you are always in my thoughts. 🌙",icon:"🌙",art:"art-night"}
+ {id:"proposal",title:"Proposal",category:"Love",desc:"A beautiful question deserves a beautiful moment.",example:"I have something important to ask you... You make my world brighter every day. Will you be my forever? ❤️",icon:"💍",art:"art-proposal",formHint:"Write a message that feels like your heart speaking."},
+ {id:"birthday",title:"Happy Birthday",category:"Celebration",desc:"A joyful birthday surprise made just for them.",example:"Happy Birthday! May this year bring you happiness, success, love and beautiful memories. You deserve the best. 🎂✨",icon:"🎂",art:"art-birthday",formHint:"Add a birthday message they will want to read again."},
+ {id:"girlfriend",title:"Girlfriend / Boyfriend Day",category:"Love",desc:"A personal surprise for your favourite person.",example:"You are my favourite person, my safest place and my sweetest part of every day. I am so lucky to have you. ❤️",icon:"💖",art:"art-girlfriend",formHint:"Tell them what makes your relationship special."},
+ {id:"sorry",title:"Sorry",category:"Emotion",desc:"A gentle way to say what matters after a difficult moment.",example:"I am truly sorry. You matter to me more than my pride, and I hope we can make things right. 🤍",icon:"🥺",art:"art-sorry",formHint:"Say what you feel honestly, in your own words."},
+ {id:"miss",title:"Miss You",category:"Emotion",desc:"A soft memory journey for someone you wish was near.",example:"I miss your voice, your smile and all the little moments we share. I wish you were here. 🌙❤️",icon:"🌙",art:"art-miss",formHint:"Write the little things you miss most."}
 ];
 
 let selectedCard = cards[0];
@@ -126,9 +118,16 @@ function openCard(id) {
 function closeModal(id) { $(id).classList.add("hidden"); }
 
 function openCustomize() {
+  if (!selectedCard) selectedCard = cards[0];
   closeModal("#cardModal");
   $("#wishForm").classList.remove("hidden");
   $("#createdResult").classList.add("hidden");
+  $("#customizeTitle").textContent = `Create ${selectedCard.title} ${selectedCard.icon}`;
+  $("#messageInput").value = selectedCard.example;
+  $("#messageInput").placeholder = selectedCard.formHint;
+  $("#messageExample").textContent = `Example: ${selectedCard.example}`;
+  uploadedImageUrls = [];
+  $("#uploadStatus").textContent = "";
   $("#customizeModal").classList.remove("hidden");
 }
 
@@ -151,7 +150,7 @@ async function uploadToCloudinary(file) {
 }
 
 $("#searchInput").addEventListener("input", renderCards);
-$("#heroCreate").onclick = () => openCustomize();
+$("#heroCreate").onclick = () => { selectedCard = cards[0]; openCustomize(); };
 $("#customizeBtn").onclick = openCustomize;
 $("#demoBtn").onclick = () => {
   closeModal("#cardModal");
@@ -166,7 +165,7 @@ $("#themeToggle").onclick = () => {
 if (localStorage.getItem("wishverse-theme")==="light") document.documentElement.classList.add("light");
 
 $("#imageInput").onchange = async e => {
-  const files = [...e.target.files].slice(0,3); if (!files.length) return;
+  const files = [...e.target.files].slice(0,4); if (!files.length) return;
   $("#uploadStatus").textContent = `Uploading ${files.length} photo${files.length>1?"s":""}...`;
   try { uploadedImageUrls = []; for (const file of files) { const url = await uploadToCloudinary(file); if (url) uploadedImageUrls.push(url); } $("#uploadStatus").textContent = uploadedImageUrls.length ? `${uploadedImageUrls.length} photo${uploadedImageUrls.length>1?"s":""} uploaded successfully.` : "Photos selected."; }
   catch { uploadedImageUrls = []; $("#uploadStatus").textContent = "Upload failed. You can continue without photos."; }
@@ -205,61 +204,27 @@ $("#closeAfterCreate").onclick = () => closeModal("#customizeModal");
 
 let sharedWish = null;
 let sharedStep = 0;
-
-function escapeHTML(value="") {
-  return String(value).replace(/[&<>'"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));
+let sharedIsDemo = false;
+function escapeHTML(value=""){return String(value).replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));}
+function getPhotos(w){return (w.imageUrls&&w.imageUrls.length?w.imageUrls:(w.imageUrl?[w.imageUrl]:[])).slice(0,4);}
+function showSharedExperience(wish,isDemo=false){sharedWish=wish;sharedStep=0;sharedIsDemo=isDemo;document.body.classList.add('shared-mode');$('#sharedExperience').classList.remove('hidden');$('#sharedActions').classList.add('hidden');renderSharedStage();}
+function renderSharedStage(){
+ const w=sharedWish||{}, card=cards.find(c=>c.id===w.templateId)||cards[0], name=escapeHTML(w.to||'Someone Special'), from=escapeHTML(w.from||'Someone who cares'), msg=escapeHTML(w.message||card.example), photos=getPhotos(w), photoIndex=Math.min(Math.max(sharedStep-2,0),Math.max(photos.length-1,0));
+ const photo=photos.length?`<img class="memory-photo" src="${escapeHTML(photos[photoIndex])}" alt="A memory">`:`<div class="memory-placeholder">${card.icon}<small>Add your beautiful memory</small></div>`;
+ const themes={proposal:{k:'A QUESTION FROM THE HEART',open:'There is something I need to ask you…',memory:'Our Beautiful Memories',final:'Will You Be My Forever? ❤️'},birthday:{k:'A LITTLE SURPRISE FOR',open:'Happy Birthday',memory:'Birthday Memories',final:'Make a Wish 🎂'},girlfriend:{k:'MADE JUST FOR YOU',open:'You Make My World Brighter',memory:'Our Little Moments',final:'You Are My Favourite Person ❤️'},sorry:{k:'A MESSAGE FROM MY HEART',open:'I Owe You An Apology',memory:'The Moments That Matter',final:'Can We Make Things Right? 🤍'},miss:{k:'FOR SOMEONE I WISH WAS HERE',open:'I Miss You',memory:'Memories I Hold Close',final:'Until We Meet Again 🌙'}}[card.id];
+ let html='';
+ if(sharedStep===0) html=`<div class="experience-orb ${card.art}"><span>${card.icon}</span></div><div class="shared-kicker">${themes.k}</div><h1>${themes.open}<span>${name}</span></h1><p class="shared-intro">Someone made this little experience just for you.</p><button class="shared-cta" data-next>Tap to open <b>→</b></button>`;
+ else if(sharedStep<=4) html=`<div class="shared-kicker">${themes.memory}</div><h2>One photo. One memory. One feeling.</h2><div class="memory-frame ${card.art}">${photo}</div><p class="memory-count">Memory ${Math.min(sharedStep,4)} of 4</p><button class="shared-cta" data-next>${sharedStep<4?'Next Memory':'Read the message'} <b>→</b></button>`;
+ else if(sharedStep===5) html=`<div class="shared-kicker">FROM THE HEART</div><h2>A message for ${name}</h2><div class="letter-card ${card.art}"><p>${msg}</p><div class="letter-sign">With love,<br><strong>${from}</strong></div></div><button class="shared-cta" data-next>Open the final surprise <b>→</b></button>`;
+ else html=`<div class="shared-kicker">THE FINAL MOMENT</div><h2>${themes.final}</h2><div class="final-card ${card.art}">${photos.length?`<div class="final-collage">${photos.map((u,i)=>`<img src="${escapeHTML(u)}" alt="Memory ${i+1}">`).join('')}</div>`:''}<p>${msg}</p><div class="letter-sign">With love,<br><strong>${from}</strong></div></div>`;
+ $('#sharedStage').innerHTML=html; document.querySelectorAll('[data-next]').forEach(b=>b.onclick=()=>{sharedStep=Math.min(sharedStep+1,6);renderSharedStage();});
+ if(sharedStep===6) $('#sharedActions').classList.remove('hidden'); else $('#sharedActions').classList.add('hidden');
+ document.querySelectorAll('.shared-progress i').forEach((el,i)=>el.classList.toggle('active',i<=Math.min(sharedStep,3)));
 }
-
-function showSharedExperience(wish, isDemo=false) {
-  sharedWish = wish;
-  sharedStep = 0;
-  document.body.classList.add("shared-mode");
-  $("#sharedExperience").classList.remove("hidden");
-  renderSharedStage(isDemo);
-}
-
-function renderSharedStage(isDemo=false) {
-  const w = sharedWish || {};
-  const card = cards.find(c => c.id === w.templateId) || cards[0];
-  const name = escapeHTML(w.to || "Someone Special");
-  const from = escapeHTML(w.from || "Someone who cares");
-  const message = escapeHTML(w.message || card.desc);
-  const photos = (w.imageUrls && w.imageUrls.length ? w.imageUrls : (w.imageUrl ? [w.imageUrl] : []));
-  const photo = photos.length ? `<img class="memory-photo" src="${escapeHTML(photos[Math.min(Math.max(sharedStep-1,0), photos.length-1)])}" alt="A shared memory">` : `<div class="memory-placeholder">${card.icon}<small>Your beautiful memory</small></div>`;
-  const stages = [
-    `<div class="shared-kicker">A LITTLE SURPRISE FOR</div><h1>For ${name}<span>♥</span></h1><p class="shared-intro">Someone made this little corner of the internet just for you.</p><button class="shared-cta" data-next>Open your wish <b>→</b></button>`,
-    `<div class="shared-kicker">OUR BEAUTIFUL MEMORIES</div><h2>One moment, one memory, one feeling.</h2><div class="memory-frame">${photo}</div><p class="memory-count">Photo ${Math.min(Math.max(sharedStep,1), Math.max(photos.length,1))} of ${Math.max(photos.length,1)} · tap the frame to continue</p><button class="shared-cta" data-next>Next Memory <b>→</b></button>`,
-    `<div class="shared-kicker">FROM THE HEART</div><h2>A message for ${name}</h2><div class="letter-card"><p>${message}</p><div class="letter-sign">With love,<br><strong>${from}</strong></div></div><button class="shared-cta" data-next>Read the final surprise <b>→</b></button>`,
-    `<div class="shared-kicker">BE MY FOREVER</div><h2>${name}, you are special.</h2><div class="final-card">${photo}<p>${message}</p><div class="letter-sign">Always,<br><strong>${from}</strong></div></div><button class="shared-cta" id="sharedClose">Back to WishVerse <b>↗</b></button>`
-  ];
-  $("#sharedStage").innerHTML = stages[sharedStep];
-  document.querySelectorAll("[data-next]").forEach(btn => btn.onclick = () => { sharedStep=Math.min(sharedStep+1,3); renderSharedStage(isDemo); });
-  $("#sharedClose")?.addEventListener("click", closeSharedExperience);
-  document.querySelectorAll(".shared-progress i").forEach((el,i)=>el.classList.toggle("active",i<=Math.min(sharedStep,2)));
-}
-
-function closeSharedExperience() {
-  $("#sharedExperience").classList.add("hidden");
-  document.body.classList.remove("shared-mode");
-  if (new URLSearchParams(location.search).has("wish")) history.replaceState({},"",location.pathname);
-}
-$("#sharedBack").onclick = closeSharedExperience;
-
-async function loadSharedWish() {
-  const id = new URLSearchParams(window.location.search).get("wish");
-  if (!id) return;
-  try {
-    if (!firebaseReady || !db) await initFirebase();
-    if (!firebaseReady || !db) throw new Error("Firebase is not connected");
-    const { getDoc, doc } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
-    const snapshot = await getDoc(doc(db, "wishes", id));
-    if (!snapshot.exists()) throw new Error("This wish link is not available.");
-    showSharedExperience(snapshot.data());
-  } catch (e) {
-    console.error("Shared wish unavailable:", e);
-    toast(e?.code?.includes("permission-denied") ? "Firestore read permission is blocked. Publish the rules from this ZIP." : (e.message || "This wish link could not be loaded."));
-  }
-}
+function closeSharedExperience(){if(sharedIsDemo){$('#sharedExperience').classList.add('hidden');$('#sharedActions').classList.add('hidden');document.body.classList.remove('shared-mode');return;}location.href=location.pathname;}
+$('#sharedBack').onclick=closeSharedExperience; $('#watchAgain').onclick=()=>{sharedStep=0;renderSharedStage();};
+$('#downloadKeepsake').onclick=async()=>{const target=document.querySelector('.final-card');if(!target)return; if(!window.html2canvas){toast('Download engine is loading…');return;}const canvas=await window.html2canvas(target,{backgroundColor:null,scale:2,useCORS:true});const a=document.createElement('a');a.download=`wishverse-${(sharedWish?.to||'keepsake').replace(/[^a-z0-9]+/gi,'-').toLowerCase()}.png`;a.href=canvas.toDataURL('image/png');a.click();};
+async function loadSharedWish(){const id=new URLSearchParams(location.search).get('wish');if(!id)return;try{if(!firebaseReady||!db)await initFirebase();const {getDoc,doc}=firestoreApi;const snap=await getDoc(doc(db,'wishes',id));if(!snap.exists())throw new Error('This wish link is not available.');showSharedExperience(snap.data());}catch(e){console.error(e);toast(e.message||'This wish could not be loaded.');}}
 renderChips();
 renderCards();
 
@@ -278,3 +243,4 @@ if (menuToggle) {
   await loadSharedWish();
   document.body.classList.remove("loading-shared-wish");
 })();
+  
