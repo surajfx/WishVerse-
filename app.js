@@ -12,34 +12,19 @@ const firebaseConfig = {
 let db = null;
 let firebaseReady = false;
 let firestoreApi = null;
-let firebaseInitPromise = null;
-
-function withTimeout(promise, ms, label) {
-  return Promise.race([
-    promise,
-    new Promise((_, reject) => setTimeout(() => reject(new Error(`${label} timed out`)), ms))
-  ]);
-}
-
-// Guarded so multiple callers (grid render + shared-link loader) share one init instead of racing.
-function initFirebase(){
-  if (firebaseInitPromise) return firebaseInitPromise;
-  firebaseInitPromise = (async () => {
-    try {
-      const [{ initializeApp }, firestore] = await withTimeout(Promise.all([
-        import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"),
-        import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js")
-      ]), 10000, "Firebase SDK load");
-      db = firestore.getFirestore(initializeApp(firebaseConfig));
-      firestoreApi = firestore;
-      firebaseReady = true;
-    } catch (error) {
-      console.error("Firebase could not initialize:", error);
-      firebaseReady = false;
-      toast("Cards are ready. Firebase setup is not connected yet.");
-    }
-  })();
-  return firebaseInitPromise;
+async function initFirebase(){
+  try {
+    const [{ initializeApp }, firestore] = await Promise.all([
+      import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"),
+      import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js")
+    ]);
+    db = firestore.getFirestore(initializeApp(firebaseConfig));
+    firestoreApi = firestore;
+    firebaseReady = true;
+  } catch (error) {
+    console.error("Firebase could not initialize:", error);
+    toast("Cards are ready. Firebase setup is not connected yet.");
+  }
 }
 
 const cards = [
@@ -154,8 +139,8 @@ function toast(message) {
 
 async function uploadToCloudinary(file) {
   // Add your Cloudinary cloud name and unsigned upload preset here.
-  const cloudName = "YOUR_CLOUDINARY_CLOUD_NAME";
-  const uploadPreset = "YOUR_UNSIGNED_UPLOAD_PRESET";
+  const cloudName = "wtlx95j4";
+  const uploadPreset = "ml_default";
   if (cloudName.startsWith("YOUR_") || uploadPreset.startsWith("YOUR_")) return "";
   const data = new FormData();
   data.append("file", file); data.append("upload_preset", uploadPreset);
@@ -165,49 +150,12 @@ async function uploadToCloudinary(file) {
   return result.secure_url;
 }
 
-function showFullWish({ art, icon, category, title, message, from, isDemo }) {
-  const el = $("#wishFullArt");
-  el.className = `wish-full-art ${art}`;
-  $("#wishFullBadge").classList.toggle("hidden", !isDemo);
-  $("#wishFullIcon").textContent = icon || "";
-  $("#wishFullCategory").textContent = (category || "").toUpperCase();
-  $("#wishFullTitle").textContent = title || "";
-  $("#wishFullMessage").textContent = message || "";
-  $("#wishFullFrom").textContent = from ? `From ${from}` : "";
-  $("#wishFullView").classList.remove("hidden");
-}
-function hideFullWish() {
-  $("#wishFullView").classList.add("hidden");
-}
-$("#wishFullClose").onclick = () => {
-  hideFullWish();
-  // If we arrived here from a ?wish= link, drop the param so the back
-  // button and a page refresh land on the plain homepage, not the view again.
-  if (new URLSearchParams(window.location.search).get("wish")) {
-    history.replaceState(null, "", location.pathname);
-  }
-};
-
 $("#searchInput").addEventListener("input", renderCards);
 $("#heroCreate").onclick = () => openCustomize();
 $("#customizeBtn").onclick = openCustomize;
 $("#demoBtn").onclick = () => {
-  if (!selectedCard) return; // Guard: demo needs a card to already be selected.
-  const demoName = selectedCard.category === "Daily" ? "Someone Special" : "Your Special Person";
   closeModal("#cardModal");
-  showFullWish({
-    art: selectedCard.art,
-    icon: selectedCard.icon,
-    category: selectedCard.category,
-    title: `For ${demoName}`,
-    message: selectedCard.desc,
-    from: "someone who cares ✦",
-    isDemo: true
-  });
-};
-$("#wishErrorClose").onclick = () => {
-  hideWishError();
-  history.replaceState(null, "", location.pathname);
+  showSharedExperience({templateId:selectedCard.id, templateTitle:selectedCard.title, category:selectedCard.category, from:"Someone who cares", to:"Your Special Person", message:selectedCard.desc, imageUrl:""}, true);
 };
 document.querySelectorAll("[data-close-modal]").forEach(x => x.onclick = () => closeModal("#cardModal"));
 document.querySelectorAll("[data-close-customize]").forEach(x => x.onclick = () => closeModal("#customizeModal"));
@@ -255,78 +203,62 @@ $("#copyLink").onclick = async () => {
 };
 $("#closeAfterCreate").onclick = () => closeModal("#customizeModal");
 
-function showWishError(title, message) {
-  $("#wishErrorTitle").textContent = title;
-  $("#wishErrorMessage").textContent = message;
-  $("#wishError").classList.remove("hidden");
+let sharedWish = null;
+let sharedStep = 0;
+
+function escapeHTML(value="") {
+  return String(value).replace(/[&<>'"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));
 }
-function hideWishError() {
-  $("#wishError").classList.add("hidden");
+
+function showSharedExperience(wish, isDemo=false) {
+  sharedWish = wish;
+  sharedStep = 0;
+  document.body.classList.add("shared-mode");
+  $("#sharedExperience").classList.remove("hidden");
+  renderSharedStage(isDemo);
 }
+
+function renderSharedStage(isDemo=false) {
+  const w = sharedWish || {};
+  const card = cards.find(c => c.id === w.templateId) || cards[0];
+  const name = escapeHTML(w.to || "Someone Special");
+  const from = escapeHTML(w.from || "Someone who cares");
+  const message = escapeHTML(w.message || card.desc);
+  const photo = w.imageUrl ? `<img class="memory-photo" src="${escapeHTML(w.imageUrl)}" alt="A shared memory">` : `<div class="memory-placeholder">${card.icon}<small>Your beautiful memory</small></div>`;
+  const stages = [
+    `<div class="shared-kicker">A LITTLE SURPRISE FOR</div><h1>For ${name}<span>♥</span></h1><p class="shared-intro">Someone made this little corner of the internet just for you.</p><button class="shared-cta" data-next>Open your wish <b>→</b></button>`,
+    `<div class="shared-kicker">OUR BEAUTIFUL MEMORIES</div><h2>One moment, one memory, one feeling.</h2><div class="memory-frame">${photo}</div><p class="memory-count">Photo 1 of 1 · tap the frame to continue</p><button class="shared-cta" data-next>Next Memory <b>→</b></button>`,
+    `<div class="shared-kicker">FROM THE HEART</div><h2>A message for ${name}</h2><div class="letter-card"><p>${message}</p><div class="letter-sign">With love,<br><strong>${from}</strong></div></div><button class="shared-cta" data-next>Read the final surprise <b>→</b></button>`,
+    `<div class="shared-kicker">BE MY FOREVER</div><h2>${name}, you are special.</h2><div class="final-card">${photo}<p>${message}</p><div class="letter-sign">Always,<br><strong>${from}</strong></div></div><button class="shared-cta" id="sharedClose">Back to WishVerse <b>↗</b></button>`
+  ];
+  $("#sharedStage").innerHTML = stages[sharedStep];
+  document.querySelectorAll("[data-next]").forEach(btn => btn.onclick = () => { sharedStep=Math.min(sharedStep+1,3); renderSharedStage(isDemo); });
+  $("#sharedClose")?.addEventListener("click", closeSharedExperience);
+  document.querySelectorAll(".shared-progress i").forEach((el,i)=>el.classList.toggle("active",i<=Math.min(sharedStep,2)));
+}
+
+function closeSharedExperience() {
+  $("#sharedExperience").classList.add("hidden");
+  document.body.classList.remove("shared-mode");
+  if (new URLSearchParams(location.search).has("wish")) history.replaceState({},"",location.pathname);
+}
+$("#sharedBack").onclick = closeSharedExperience;
 
 async function loadSharedWish() {
-  const params = new URLSearchParams(window.location.search);
-  const id = params.get("wish");
-  if (!id) return; // No ?wish= param: this is a normal homepage visit, nothing to do.
-
+  const id = new URLSearchParams(window.location.search).get("wish");
+  if (!id) return;
   try {
-    // Wait for Firebase even if the page was opened directly from a shared URL
-    // (a cold visit to a share link has no other code path that initializes it).
-    if (!firebaseReady || !db) {
-      await initFirebase();
-    }
-    if (!firebaseReady || !db) {
-      showWishError(
-        "This wish couldn't load",
-        "We couldn't connect to the database that stores wishes. Please check your connection and try opening the link again."
-      );
-      return;
-    }
-
+    if (!firebaseReady || !db) await initFirebase();
+    if (!firebaseReady || !db) throw new Error("Firebase is not connected");
     const { getDoc, doc } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
-    const snapshot = await withTimeout(getDoc(doc(db, "wishes", id)), 10000, "Wish lookup");
-
-    if (!snapshot.exists()) {
-      showWishError(
-        "This wish link isn't available",
-        "We looked for this wish and couldn't find it. The link may be mistyped, or the wish may have been removed."
-      );
-      return;
-    }
-
-    const wish = snapshot.data();
-    selectedCard = cards.find(c => c.id === wish.templateId) || cards[0];
-    showFullWish({
-      art: selectedCard.art,
-      icon: selectedCard.icon,
-      category: wish.category || selectedCard.category,
-      title: wish.to ? `For ${wish.to}` : selectedCard.title,
-      message: wish.message || selectedCard.desc,
-      from: wish.from || "someone special",
-      isDemo: false
-    });
-    toast("Shared wish loaded");
+    const snapshot = await getDoc(doc(db, "wishes", id));
+    if (!snapshot.exists()) throw new Error("This wish link is not available.");
+    showSharedExperience(snapshot.data());
   } catch (e) {
     console.error("Shared wish unavailable:", e);
-    const code = e?.code || "";
-    if (code.includes("permission-denied")) {
-      // This almost always means the Firestore Rules deployed in the Firebase
-      // Console for this project no longer contain the `wishes` match block
-      // below (e.g. they were overwritten by rules from another app sharing
-      // the same Firebase project). Re-publish firestore.rules to fix it.
-      showWishError(
-        "This wish is blocked by database rules",
-        "Firestore's security rules for this project don't currently allow reading wishes. Re-publish the rules from firestore.rules in the Firebase Console (Firestore Database → Rules)."
-      );
-    } else {
-      showWishError(
-        "This wish link could not be loaded",
-        "Something went wrong while loading this wish. Please check your connection and try again."
-      );
-    }
+    toast(e?.code?.includes("permission-denied") ? "Firestore read permission is blocked. Publish the rules from this ZIP." : (e.message || "This wish link could not be loaded."));
   }
 }
-
 renderChips();
 renderCards();
 
@@ -345,4 +277,4 @@ if (menuToggle) {
   await loadSharedWish();
   document.body.classList.remove("loading-shared-wish");
 })();
-                  
+                               
