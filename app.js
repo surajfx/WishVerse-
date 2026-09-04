@@ -28,27 +28,27 @@ async function initFirebase(){
 }
 
 const cards = [
- {id:"proposal",title:"Proposal",category:"Love",desc:"A beautiful question deserves a beautiful moment.",icon:"💍",art:"art-proposal"},
- {id:"girlfriend",title:"Girlfriend Special",category:"Love",desc:"A sweet little surprise for your favorite person.",icon:"🌹",art:"art-girlfriend"},
- {id:"boyfriend",title:"Boyfriend Special",category:"Love",desc:"A heartfelt card for the person who feels like home.",icon:"🖤",art:"art-boyfriend"},
- {id:"distance",title:"Long Distance Love",category:"Love",desc:"For two hearts that are far away but never apart.",icon:"💞",art:"art-distance"},
- {id:"anniversary",title:"Anniversary",category:"Love",desc:"Celebrate the memories, the growth and the love.",icon:"❤️",art:"art-anniversary"},
- {id:"letter",title:"Love Letter",category:"Love",desc:"A timeless letter-style experience for honest feelings.",icon:"💌",art:"art-letter"},
- {id:"confession",title:"Love Confession",category:"Love",desc:"Say the words you have been keeping in your heart.",icon:"💕",art:"art-confession"},
- {id:"miss",title:"Miss You",category:"Emotion",desc:"A soft, emotional card for someone you wish was near.",icon:"☁️",art:"art-miss"},
- {id:"sorry",title:"Sorry",category:"Emotion",desc:"A gentle way to say what matters after a difficult moment.",icon:"🥺",art:"art-sorry"},
- {id:"special",title:"You Are Special",category:"Special",desc:"Remind someone that they are deeply appreciated.",icon:"💖",art:"art-special"},
- {id:"birthday",title:"Birthday Surprise",category:"Celebration",desc:"A joyful birthday reveal with room for your own message.",icon:"🎂",art:"art-birthday"},
- {id:"bestfriend",title:"Best Friend Special",category:"Friends",desc:"For the friend who turns ordinary days into memories.",icon:"👑",art:"art-bestfriend"},
- {id:"countdown",title:"Countdown Until We Meet",category:"Long Distance",desc:"A sweet anticipation card for the next meeting.",icon:"📅",art:"art-countdown"},
- {id:"morning",title:"Good Morning",category:"Daily",desc:"Start someone's day with a warm, personal message.",icon:"🌞",art:"art-morning"},
- {id:"night",title:"Good Night",category:"Daily",desc:"A peaceful good-night message for a special person.",icon:"🌙",art:"art-night"}
+ {id:"proposal",title:"Proposal",category:"Love",desc:"A beautiful question deserves a beautiful moment.",example:"I have something important to ask you... You make my world brighter every day. Will you be my forever? ❤️",icon:"💍",art:"art-proposal"},
+ {id:"girlfriend",title:"Girlfriend Special",category:"Love",desc:"A sweet little surprise for your favorite person.",example:"You are my favorite person, my happiest thought, and my sweetest surprise.",icon:"🌹",art:"art-girlfriend"},
+ {id:"boyfriend",title:"Boyfriend Special",category:"Love",desc:"A heartfelt card for the person who feels like home.",example:"No matter where life takes us, you will always feel like home to me.",icon:"🖤",art:"art-boyfriend"},
+ {id:"distance",title:"Long Distance Love",category:"Love",desc:"For two hearts that are far away but never apart.",example:"Miles may separate us, but my heart is always right beside you.",icon:"💞",art:"art-distance"},
+ {id:"anniversary",title:"Anniversary",category:"Love",desc:"Celebrate the memories, the growth and the love.",example:"Another year of memories, laughter, and choosing each other. Happy anniversary! ❤️",icon:"❤️",art:"art-anniversary"},
+ {id:"letter",title:"Love Letter",category:"Love",desc:"A timeless letter-style experience for honest feelings.",example:"There are so many things I want to say, but they all begin with how much you mean to me.",icon:"💌",art:"art-letter"},
+ {id:"confession",title:"Love Confession",category:"Love",desc:"Say the words you have been keeping in your heart.",example:"I have been wanting to tell you this for so long: I really, really like you. 💕",icon:"💕",art:"art-confession"},
+ {id:"miss",title:"Miss You",category:"Emotion",desc:"A soft, emotional card for someone you wish was near.",example:"I miss your voice, your smile, and all the little moments we share.",icon:"☁️",art:"art-miss"},
+ {id:"sorry",title:"Sorry",category:"Emotion",desc:"A gentle way to say what matters after a difficult moment.",example:"I am sorry. You matter to me more than my pride, and I hope we can make things right.",icon:"🥺",art:"art-sorry"},
+ {id:"special",title:"You Are Special",category:"Special",desc:"Remind someone that they are deeply appreciated.",example:"You are more special to me than words can ever explain. Thank you for being you.",icon:"💖",art:"art-special"},
+ {id:"birthday",title:"Birthday Surprise",category:"Celebration",desc:"A joyful birthday reveal with room for your own message.",example:"Happy Birthday! May your day be full of love, laughter, beautiful surprises, and everything you wish for. 🎂",icon:"🎂",art:"art-birthday"},
+ {id:"bestfriend",title:"Best Friend Special",category:"Friends",desc:"For the friend who turns ordinary days into memories.",example:"Life is better, funnier, and brighter with a best friend like you. Thank you for every memory.",icon:"👑",art:"art-bestfriend"},
+ {id:"countdown",title:"Countdown Until We Meet",category:"Long Distance",desc:"A sweet anticipation card for the next meeting.",example:"Counting the days until I can finally see you, hug you, and make new memories together.",icon:"📅",art:"art-countdown"},
+ {id:"morning",title:"Good Morning",category:"Daily",desc:"Start someone's day with a warm, personal message.",example:"Good morning, sunshine. I hope today brings you the same happiness you bring into my life. ☀️",icon:"🌞",art:"art-morning"},
+ {id:"night",title:"Good Night",category:"Daily",desc:"A peaceful good-night message for a special person.",example:"Good night, my favorite person. Rest well and remember that you are always in my thoughts. 🌙",icon:"🌙",art:"art-night"}
 ];
 
 let selectedCard = cards[0];
 let activeCategory = "All";
 let favorites = JSON.parse(localStorage.getItem("wishverse-favorites") || "[]");
-let uploadedImageUrl = "";
+let uploadedImageUrls = [];
 
 const $ = s => document.querySelector(s);
 const wishGrid = $("#wishGrid");
@@ -166,10 +166,10 @@ $("#themeToggle").onclick = () => {
 if (localStorage.getItem("wishverse-theme")==="light") document.documentElement.classList.add("light");
 
 $("#imageInput").onchange = async e => {
-  const file = e.target.files[0]; if (!file) return;
-  $("#uploadStatus").textContent = "Uploading image...";
-  try { uploadedImageUrl = await uploadToCloudinary(file); $("#uploadStatus").textContent = uploadedImageUrl ? "Image uploaded successfully." : "Image selected. Add Cloudinary keys to enable upload."; }
-  catch { uploadedImageUrl = ""; $("#uploadStatus").textContent = "Upload failed. You can continue without an image."; }
+  const files = [...e.target.files].slice(0,3); if (!files.length) return;
+  $("#uploadStatus").textContent = `Uploading ${files.length} photo${files.length>1?"s":""}...`;
+  try { uploadedImageUrls = []; for (const file of files) { const url = await uploadToCloudinary(file); if (url) uploadedImageUrls.push(url); } $("#uploadStatus").textContent = uploadedImageUrls.length ? `${uploadedImageUrls.length} photo${uploadedImageUrls.length>1?"s":""} uploaded successfully.` : "Photos selected."; }
+  catch { uploadedImageUrls = []; $("#uploadStatus").textContent = "Upload failed. You can continue without photos."; }
 };
 
 $("#wishForm").onsubmit = async e => {
@@ -178,7 +178,7 @@ $("#wishForm").onsubmit = async e => {
     templateId: selectedCard.id, templateTitle: selectedCard.title,
     category: selectedCard.category, from: $("#fromInput").value.trim(),
     to: $("#toInput").value.trim(), message: $("#messageInput").value.trim(),
-    imageUrl: uploadedImageUrl, createdAt: firestoreApi.serverTimestamp()
+    imageUrl: uploadedImageUrls[0] || "", imageUrls: uploadedImageUrls, createdAt: firestoreApi.serverTimestamp()
   };
   try {
     if (!firebaseReady || !db) {
@@ -224,10 +224,11 @@ function renderSharedStage(isDemo=false) {
   const name = escapeHTML(w.to || "Someone Special");
   const from = escapeHTML(w.from || "Someone who cares");
   const message = escapeHTML(w.message || card.desc);
-  const photo = w.imageUrl ? `<img class="memory-photo" src="${escapeHTML(w.imageUrl)}" alt="A shared memory">` : `<div class="memory-placeholder">${card.icon}<small>Your beautiful memory</small></div>`;
+  const photos = (w.imageUrls && w.imageUrls.length ? w.imageUrls : (w.imageUrl ? [w.imageUrl] : []));
+  const photo = photos.length ? `<img class="memory-photo" src="${escapeHTML(photos[Math.min(Math.max(sharedStep-1,0), photos.length-1)])}" alt="A shared memory">` : `<div class="memory-placeholder">${card.icon}<small>Your beautiful memory</small></div>`;
   const stages = [
     `<div class="shared-kicker">A LITTLE SURPRISE FOR</div><h1>For ${name}<span>♥</span></h1><p class="shared-intro">Someone made this little corner of the internet just for you.</p><button class="shared-cta" data-next>Open your wish <b>→</b></button>`,
-    `<div class="shared-kicker">OUR BEAUTIFUL MEMORIES</div><h2>One moment, one memory, one feeling.</h2><div class="memory-frame">${photo}</div><p class="memory-count">Photo 1 of 1 · tap the frame to continue</p><button class="shared-cta" data-next>Next Memory <b>→</b></button>`,
+    `<div class="shared-kicker">OUR BEAUTIFUL MEMORIES</div><h2>One moment, one memory, one feeling.</h2><div class="memory-frame">${photo}</div><p class="memory-count">Photo ${Math.min(Math.max(sharedStep,1), Math.max(photos.length,1))} of ${Math.max(photos.length,1)} · tap the frame to continue</p><button class="shared-cta" data-next>Next Memory <b>→</b></button>`,
     `<div class="shared-kicker">FROM THE HEART</div><h2>A message for ${name}</h2><div class="letter-card"><p>${message}</p><div class="letter-sign">With love,<br><strong>${from}</strong></div></div><button class="shared-cta" data-next>Read the final surprise <b>→</b></button>`,
     `<div class="shared-kicker">BE MY FOREVER</div><h2>${name}, you are special.</h2><div class="final-card">${photo}<p>${message}</p><div class="letter-sign">Always,<br><strong>${from}</strong></div></div><button class="shared-cta" id="sharedClose">Back to WishVerse <b>↗</b></button>`
   ];
@@ -277,4 +278,3 @@ if (menuToggle) {
   await loadSharedWish();
   document.body.classList.remove("loading-shared-wish");
 })();
-                               
