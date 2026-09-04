@@ -12,19 +12,34 @@ const firebaseConfig = {
 let db = null;
 let firebaseReady = false;
 let firestoreApi = null;
-async function initFirebase(){
-  try {
-    const [{ initializeApp }, firestore] = await Promise.all([
-      import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"),
-      import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js")
-    ]);
-    db = firestore.getFirestore(initializeApp(firebaseConfig));
-    firestoreApi = firestore;
-    firebaseReady = true;
-  } catch (error) {
-    console.error("Firebase could not initialize:", error);
-    toast("Cards are ready. Firebase setup is not connected yet.");
-  }
+let firebaseInitPromise = null;
+
+function withTimeout(promise, ms, label) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error(`${label} timed out`)), ms))
+  ]);
+}
+
+// Guarded so multiple callers (grid render + shared-link loader) share one init instead of racing.
+function initFirebase(){
+  if (firebaseInitPromise) return firebaseInitPromise;
+  firebaseInitPromise = (async () => {
+    try {
+      const [{ initializeApp }, firestore] = await withTimeout(Promise.all([
+        import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"),
+        import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js")
+      ]), 10000, "Firebase SDK load");
+      db = firestore.getFirestore(initializeApp(firebaseConfig));
+      firestoreApi = firestore;
+      firebaseReady = true;
+    } catch (error) {
+      console.error("Firebase could not initialize:", error);
+      firebaseReady = false;
+      toast("Cards are ready. Firebase setup is not connected yet.");
+    }
+  })();
+  return firebaseInitPromise;
 }
 
 const cards = [
@@ -154,12 +169,20 @@ $("#searchInput").addEventListener("input", renderCards);
 $("#heroCreate").onclick = () => openCustomize();
 $("#customizeBtn").onclick = openCustomize;
 $("#demoBtn").onclick = () => {
+  if (!selectedCard) return; // Guard: demo needs a card to already be selected.
   const demoName = selectedCard.category === "Daily" ? "Someone Special" : "Your Special Person";
   $("#modalCategory").textContent = selectedCard.category.toUpperCase();
   $("#modalTitle").textContent = `For ${demoName}`;
   $("#modalDescription").textContent = selectedCard.desc;
-  $("#modalPreview").innerHTML = `<div class="preview-art ${selectedCard.art}"><span class="preview-icon">${selectedCard.icon}</span><h3>For ${demoName}</h3><p>${selectedCard.desc}</p><small>From someone who cares ✦</small></div>`;
+  $("#modalPreview").innerHTML = `<div class="preview-art ${selectedCard.art}"><span class="demo-badge">Live Demo</span><span class="preview-icon">${selectedCard.icon}</span><h3>For ${demoName}</h3><p>${selectedCard.desc}</p><small>From someone who cares ✦</small></div>`;
+  // Make sure the modal is actually visible — demoBtn can only be pressed
+  // from inside cardModal today, but this keeps it correct if that changes.
+  $("#cardModal").classList.remove("hidden");
   toast("Live demo opened");
+};
+$("#wishErrorClose").onclick = () => {
+  hideWishError();
+  history.replaceState(null, "", location.pathname);
 };
 document.querySelectorAll("[data-close-modal]").forEach(x => x.onclick = () => closeModal("#cardModal"));
 document.querySelectorAll("[data-close-customize]").forEach(x => x.onclick = () => closeModal("#customizeModal"));
@@ -207,25 +230,45 @@ $("#copyLink").onclick = async () => {
 };
 $("#closeAfterCreate").onclick = () => closeModal("#customizeModal");
 
+function showWishError(title, message) {
+  $("#wishErrorTitle").textContent = title;
+  $("#wishErrorMessage").textContent = message;
+  $("#wishError").classList.remove("hidden");
+}
+function hideWishError() {
+  $("#wishError").classList.add("hidden");
+}
+
 async function loadSharedWish() {
   const params = new URLSearchParams(window.location.search);
   const id = params.get("wish");
-  if (!id) return;
+  if (!id) return; // No ?wish= param: this is a normal homepage visit, nothing to do.
+
   try {
-    // Wait for Firebase even if the page was opened directly from a shared URL.
+    // Wait for Firebase even if the page was opened directly from a shared URL
+    // (a cold visit to a share link has no other code path that initializes it).
     if (!firebaseReady || !db) {
       await initFirebase();
     }
     if (!firebaseReady || !db) {
-      toast("This wish could not load because Firebase is not connected.");
+      showWishError(
+        "This wish couldn't load",
+        "We couldn't connect to the database that stores wishes. Please check your connection and try opening the link again."
+      );
       return;
     }
+
     const { getDoc, doc } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
-    const snapshot = await getDoc(doc(db, "wishes", id));
+    const snapshot = await withTimeout(getDoc(doc(db, "wishes", id)), 10000, "Wish lookup");
+
     if (!snapshot.exists()) {
-      toast("This wish link is not available.");
+      showWishError(
+        "This wish link isn't available",
+        "We looked for this wish and couldn't find it. The link may be mistyped, or the wish may have been removed."
+      );
       return;
     }
+
     const wish = snapshot.data();
     selectedCard = cards.find(c => c.id === wish.templateId) || cards[0];
     $("#modalCategory").textContent = wish.category || selectedCard.category;
@@ -238,9 +281,19 @@ async function loadSharedWish() {
     console.error("Shared wish unavailable:", e);
     const code = e?.code || "";
     if (code.includes("permission-denied")) {
-      toast("Wish read blocked. Upload the Firestore rules from this ZIP.");
+      // This almost always means the Firestore Rules deployed in the Firebase
+      // Console for this project no longer contain the `wishes` match block
+      // below (e.g. they were overwritten by rules from another app sharing
+      // the same Firebase project). Re-publish firestore.rules to fix it.
+      showWishError(
+        "This wish is blocked by database rules",
+        "Firestore's security rules for this project don't currently allow reading wishes. Re-publish the rules from firestore.rules in the Firebase Console (Firestore Database → Rules)."
+      );
     } else {
-      toast("This wish link could not be loaded. Please try again.");
+      showWishError(
+        "This wish link could not be loaded",
+        "Something went wrong while loading this wish. Please check your connection and try again."
+      );
     }
   }
 }
@@ -263,3 +316,4 @@ if (menuToggle) {
   await loadSharedWish();
   document.body.classList.remove("loading-shared-wish");
 })();
+      
