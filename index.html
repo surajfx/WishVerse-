@@ -102,8 +102,8 @@
       <form id="wishForm">
         <label>From<input id="fromInput" required maxlength="40" placeholder="Your name"></label>
         <label>To<input id="toInput" required maxlength="40" placeholder="Their name"></label>
-        <label>Your message<textarea id="messageInput" required maxlength="500" rows="5" placeholder="Write something heartfelt..."></textarea></label>
-        <label>Photo <span class="optional">(optional)</span><input id="imageInput" type="file" accept="image/*"></label>
+        <label>Your message<textarea id="messageInput" required maxlength="500" rows="5" placeholder="Write something heartfelt..."></textarea><small id="messageExample" class="field-hint">Example: You make every ordinary day feel special. I am so lucky to have you in my life. ❤️</small></label>
+        <label>Photos <span class="optional">(up to 3)</span><input id="imageInput" type="file" accept="image/*" multiple></label>
         <div id="uploadStatus" class="upload-status"></div>
         <button class="btn btn-primary full-width" type="submit">Create & Save Wish ✦</button>
       </form>
