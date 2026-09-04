@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=6" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div class="app-shell">
@@ -117,30 +117,14 @@
     </div>
   </div>
 
-  <div id="wishFullView" class="wish-full-view hidden" role="dialog" aria-modal="true" aria-labelledby="wishFullTitle">
-    <button id="wishFullClose" class="icon-btn full-view-close" aria-label="Close">×</button>
-    <div id="wishFullArt" class="wish-full-art">
-      <span id="wishFullBadge" class="demo-badge hidden">Live Demo</span>
-      <div class="wish-full-content">
-        <span id="wishFullIcon" class="wish-full-icon"></span>
-        <div class="eyebrow" id="wishFullCategory"></div>
-        <h2 id="wishFullTitle"></h2>
-        <p id="wishFullMessage"></p>
-        <small id="wishFullFrom"></small>
-      </div>
-    </div>
-  </div>
 
-  <div id="wishError" class="hidden" role="alert">
-    <div class="wish-error-box">
-      <div class="wish-error-icon">✦</div>
-      <h3 id="wishErrorTitle">This wish link isn't available</h3>
-      <p id="wishErrorMessage">The wish you're looking for may have been removed, or the link is incorrect.</p>
-      <button id="wishErrorClose" class="btn btn-primary full-width">Go to WishVerse home</button>
-    </div>
-  </div>
+  <section id="sharedExperience" class="shared-experience hidden" aria-live="polite">
+    <div class="shared-topbar"><button id="sharedBack" class="shared-back">← Home</button><span>WishVerse ✦</span></div>
+    <div class="shared-progress"><i></i><i></i><i></i></div>
+    <div id="sharedStage" class="shared-stage"></div>
+  </section>
 
   <div id="toast" class="toast" role="status"></div>
-  <script type="module" src="app.js?v=6"></script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>

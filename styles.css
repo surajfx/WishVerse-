@@ -89,21 +89,20 @@ input:focus,textarea:focus{border-color:var(--primary)}
   .wish-card{display:block!important;visibility:visible!important}
 }
 /* V1 card design restoration */
-.wish-card{padding:0;background:var(--surface);border:1px solid var(--border);border-radius:22px;overflow:hidden}
+.wish-card{padding:0;background:var(--surface);border:1px solid var(--line);border-radius:22px;overflow:hidden}
 .wish-art{height:235px;padding:22px;position:relative;overflow:hidden;display:flex;align-items:end;color:#fff}
 .wish-art:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 35%,rgba(0,0,0,.38));pointer-events:none}
 .art-icon{position:absolute;top:20px;right:20px;font-size:40px;z-index:1}.art-label{position:relative;z-index:1;font-family:"Playfair Display",serif;font-size:26px;line-height:1.1}
 .wish-card-info{padding:18px}.wish-card-info h3{font-size:16px;margin:0 0 7px}.wish-card-info p{font-size:12px;color:var(--muted);margin:0;line-height:1.5}
 .heart-button{position:absolute;top:14px;left:14px;z-index:3;width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.25);color:white;cursor:pointer;font-size:17px}.heart-button.active{background:#ff9fb8;color:#351321}
 .art-proposal{background:radial-gradient(circle at 50% 25%,#b85d78,#47203e 48%,#1a172c)}.art-girlfriend{background:radial-gradient(circle at 30% 20%,#ffb6c9,#6e315f 50%,#24152e)}.art-boyfriend{background:radial-gradient(circle at 70% 20%,#6ec6e8,#173c63 52%,#111b32)}.art-distance{background:radial-gradient(circle at 50% 20%,#d8a86d,#5b3b3a 45%,#20263b)}.art-anniversary{background:radial-gradient(circle at 50% 20%,#e3a2b2,#633f68 50%,#20182e)}.art-letter{background:radial-gradient(circle at 30% 20%,#f4d49b,#865a5a 52%,#2a2033)}.art-confession{background:radial-gradient(circle at 70% 20%,#ff7d91,#742b5d 52%,#21152d)}.art-miss{background:radial-gradient(circle at 50% 20%,#91c6e9,#354b72 52%,#151b30)}.art-sorry{background:radial-gradient(circle at 50% 20%,#b9b9d9,#4d4a75 52%,#1a1c31)}.art-special{background:radial-gradient(circle at 30% 20%,#ffe59a,#a5684f 52%,#2d2030)}.art-birthday{background:radial-gradient(circle at 50% 20%,#ffd276,#d45e8d 52%,#32204a)}.art-bestfriend{background:radial-gradient(circle at 50% 20%,#9fe2bd,#347b76 52%,#182b38)}.art-countdown{background:radial-gradient(circle at 50% 20%,#f5c078,#9c5261 52%,#26233d)}.art-morning{background:radial-gradient(circle at 50% 20%,#ffe8a6,#e58d74 52%,#40314c)}.art-night{background:radial-gradient(circle at 50% 20%,#9b9be7,#3e3e82 52%,#12162f)}
-.card-actions{margin-top:12px}.small-btn{padding:9px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;font:inherit}
+.card-actions{margin-top:12px}.small-btn{padding:9px 16px;border-radius:12px;border:1px solid var(--line);background:var(--surface-2);color:var(--text);cursor:pointer;font:inherit}
 .preview-art{width:100%;height:100%;min-height:430px;border-radius:24px;padding:35px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;position:relative;overflow:hidden;color:#fff}.preview-art:before{content:"";position:absolute;inset:18px;border:1px solid rgba(255,255,255,.3);border-radius:18px}.preview-art>*{position:relative;z-index:1}.preview-icon{font-size:60px}.preview-art h3{font-family:"Playfair Display",serif;font-size:35px;margin:22px 0 12px}.preview-art p{max-width:270px;color:#f0eaf5;line-height:1.7;font-size:13px}.preview-art small{margin-top:14px;color:#fff}
 @media(max-width:520px){.wish-grid{grid-template-columns:1fr}.wish-art{height:245px}}
 
 /* V3 stability and demo polish */
-#cardModal .modal-preview{background:var(--surface2)}
+#cardModal .modal-preview{background:var(--surface-2)}
 #demoBtn{cursor:pointer}
-.demo-badge{position:absolute;top:18px;left:18px;z-index:2;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.4);color:#fff;font-size:11px;font-weight:700;letter-spacing:.06em;padding:5px 10px;border-radius:999px;text-transform:uppercase}
 
 /* Shared-wish loading state */
 .loading-shared-wish::before {
@@ -119,26 +118,7 @@ input:focus,textarea:focus{border-color:var(--primary)}
   letter-spacing: .04em;
 }
 
-/* Shared-wish error banner (shown instead of silently falling back to the homepage) */
-#wishError{position:fixed;inset:0;z-index:9998;display:grid;place-items:center;padding:24px;background:rgba(7,12,27,.96);text-align:center}
-#wishError.hidden{display:none}
-#wishError .wish-error-box{max-width:420px;background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:34px 28px;box-shadow:var(--shadow)}
-#wishError .wish-error-icon{font-size:34px;margin-bottom:14px}
-#wishError h3{font-family:"Playfair Display",serif;font-size:26px;margin:0 0 10px;color:var(--text)}
-#wishError p{color:var(--muted);line-height:1.7;margin:0 0 22px;font-size:14px}
-
-/* Full-screen wish view — used for BOTH the real shared-link recipient view
-   and the Live Demo preview, so demo genuinely matches what a recipient sees */
-.wish-full-view{position:fixed;inset:0;z-index:9990;overflow-y:auto}
-.wish-full-view.hidden{display:none}
-.wish-full-art{min-height:100vh;min-height:100dvh;padding:90px 24px 60px;display:flex;align-items:center;justify-content:center;text-align:center;position:relative;color:#fff}
-.wish-full-art:before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.1),rgba(0,0,0,.5));pointer-events:none}
-.wish-full-art:after{content:"";position:absolute;inset:18px;border:1px solid rgba(255,255,255,.28);border-radius:26px;pointer-events:none}
-.wish-full-content{position:relative;z-index:1;max-width:460px;animation:pop .35s ease}
-.wish-full-icon{display:block;font-size:56px;margin-bottom:14px}
-.wish-full-content .eyebrow{color:#fff;opacity:.8}
-.wish-full-content h2{font-family:"Playfair Display",serif;font-size:clamp(34px,9vw,50px);margin:14px 0 20px;line-height:1.08}
-.wish-full-content p{font-size:16px;line-height:1.85;color:#f3eefb;margin:0 0 20px;white-space:pre-wrap}
-.wish-full-content small{display:block;font-size:14px;color:#fff;opacity:.9}
-.full-view-close{position:fixed;top:16px;right:16px;z-index:2;background:rgba(0,0,0,.35);border-color:rgba(255,255,255,.3);color:#fff}
-.wish-full-view .demo-badge{position:fixed;top:18px;left:18px;z-index:2}
+/* Dedicated shared-wish experience inspired by the reference video */
+.shared-experience{position:fixed;inset:0;z-index:200;overflow:auto;background:radial-gradient(circle at 50% 0%,#6e263f 0,#2b1028 45%,#120d1d 100%);color:#fff;padding:24px 20px 42px;text-align:center}
+.shared-topbar{max-width:900px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;color:#e8c889;font-size:14px;letter-spacing:.08em}.shared-back{border:1px solid rgba(232,200,137,.35);background:transparent;color:#f8e7bf;border-radius:999px;padding:10px 15px;cursor:pointer}.shared-progress{display:flex;justify-content:center;gap:8px;margin:28px 0}.shared-progress i{width:32px;height:3px;border-radius:9px;background:rgba(255,255,255,.22)}.shared-progress i.active{background:#e7bf73}.shared-stage{min-height:calc(100vh - 150px);max-width:760px;margin:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 0 50px}.shared-kicker{color:#e7bf73;letter-spacing:.25em;font-size:11px;font-weight:700;margin-bottom:22px}.shared-stage h1,.shared-stage h2{font-family:"Playfair Display",serif;font-weight:600;line-height:1.1;margin:0 0 20px}.shared-stage h1{font-size:clamp(48px,10vw,92px)}.shared-stage h1 span{display:block;color:#e7bf73;font-size:.5em;margin-top:12px}.shared-stage h2{font-size:clamp(30px,6vw,54px);max-width:650px}.shared-intro{max-width:440px;color:#e4ced5;line-height:1.8;margin:0 auto 32px}.shared-cta{border:1px solid #e7bf73;background:#e7bf73;color:#2a1025;border-radius:999px;padding:15px 23px;font-weight:800;cursor:pointer;box-shadow:0 8px 30px rgba(0,0,0,.2)}.shared-cta b{margin-left:10px}.memory-frame{width:min(420px,90vw);padding:12px;background:#e6c477;box-shadow:0 18px 55px rgba(0,0,0,.35);transform:rotate(-2deg);margin:20px 0 18px}.memory-photo,.memory-placeholder{width:100%;height:350px;object-fit:cover;background:#4b2139;display:flex;align-items:center;justify-content:center;flex-direction:column;font-size:64px}.memory-placeholder small{font-size:12px;color:#f4dca8;margin-top:10px}.memory-count{font-size:12px;color:#d7bdc8;margin:0 0 24px}.letter-card,.final-card{width:min(620px,92vw);background:rgba(255,247,226,.96);color:#392033;border:1px solid #e7bf73;box-shadow:0 20px 70px rgba(0,0,0,.3);padding:34px 28px;text-align:left}.letter-card p,.final-card p{font-family:"Playfair Display",serif;font-size:clamp(20px,3vw,28px);line-height:1.65;margin:0 0 25px;white-space:pre-wrap}.letter-sign{border-top:1px solid rgba(57,32,51,.2);padding-top:15px;line-height:1.7;color:#70465c}.final-card{display:flex;flex-direction:column;align-items:center;text-align:center;background:linear-gradient(145deg,#fff8e9,#f2d9c7)}.final-card .memory-photo,.final-card .memory-placeholder{height:230px;max-width:330px;margin-bottom:22px}.final-card p{font-size:20px}.shared-mode .app-shell{display:none!important}.shared-mode{overflow:hidden}
+@media(max-width:520px){.shared-experience{padding:18px 14px 30px}.shared-stage{min-height:calc(100vh - 125px)}.memory-photo,.memory-placeholder{height:280px}.letter-card,.final-card{padding:25px 20px}.shared-stage h1{font-size:52px}}
