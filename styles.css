@@ -141,3 +141,23 @@ input:focus,textarea:focus{border-color:var(--primary)}
 .shared-actions{max-width:620px;margin:0 auto;display:grid;gap:12px;text-align:center}.shared-actions .shared-cta{width:100%;font-size:17px}.download-cta{background:linear-gradient(100deg,#ffb21b,#ff4f9a);border:0;color:#fff;box-shadow:0 10px 35px rgba(255,94,145,.28)}.ghost-cta{background:rgba(255,255,255,.06);color:#fff;border-color:rgba(255,255,255,.2)}.made-with{font-size:13px;color:#fff;margin-top:6px;opacity:.9}
 .art-proposal.experience-orb{background:radial-gradient(circle,#ffb45d,#b72b63 45%,#210d2b)}.art-birthday.experience-orb{background:radial-gradient(circle,#ffe48b,#d84d9d 48%,#25134a)}.art-girlfriend.experience-orb{background:radial-gradient(circle,#ffb1d0,#a52d75 48%,#24102d)}.art-sorry.experience-orb{background:radial-gradient(circle,#d5d8ff,#6267a5 48%,#161a32)}.art-miss.experience-orb{background:radial-gradient(circle,#b7d8ff,#42558c 48%,#0d1730)}
 @media(max-width:520px){.experience-orb{width:125px;height:125px}.experience-orb span{font-size:55px}.final-collage img{height:120px}.shared-actions{padding:0 4px}}
+
+/* Cinematic 3D opening and falling ambient effects */
+.shared-experience{perspective:1200px;isolation:isolate}
+.ambient-particles{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:-1}
+.ambient-particles span{position:absolute;left:var(--x);top:-12%;font-size:calc(18px * var(--s));color:rgba(245,195,111,.72);filter:drop-shadow(0 0 10px rgba(255,120,180,.35));animation:fallingPetal var(--d) linear var(--delay) infinite}
+@keyframes fallingPetal{0%{transform:translate3d(0,-10vh,0) rotate(0deg);opacity:0}10%{opacity:.9}50%{transform:translate3d(35px,55vh,0) rotate(180deg)}100%{transform:translate3d(-30px,115vh,0) rotate(360deg);opacity:0}}
+.prelude-icon{width:118px;height:118px;border-radius:35px;display:grid;place-items:center;position:relative;transform-style:preserve-3d;animation:preludeFloat 3s ease-in-out infinite,preludeTilt 5s ease-in-out infinite;box-shadow:inset 0 0 30px rgba(255,255,255,.18),0 25px 70px rgba(0,0,0,.4)}
+.prelude-icon:before{content:'';position:absolute;inset:-14px;border:1px solid rgba(255,220,150,.42);border-radius:40px;transform:translateZ(-20px) rotateX(60deg);animation:orbit3d 4s linear infinite}
+.prelude-icon:after{content:'';position:absolute;inset:-28px;border:1px solid rgba(255,255,255,.14);border-radius:50%;transform:rotateX(68deg);animation:orbit3d 7s linear infinite reverse}
+.prelude-icon span{font-size:58px;filter:drop-shadow(0 12px 12px rgba(0,0,0,.35));transform:translateZ(35px)}
+.loading-ring{width:180px;height:180px;border-radius:50%;position:absolute;margin-top:-2px;border:2px solid rgba(255,255,255,.13);animation:spin 8s linear infinite;pointer-events:none}
+.loading-ring:before{content:'';position:absolute;inset:9px;border-radius:50%;border:3px solid transparent;border-top-color:#f0c56d;border-right-color:#ff5b9a;animation:spin 2.2s linear infinite}
+.loading-ring:after{content:'';position:absolute;inset:24px;border-radius:50%;border:1px dashed rgba(255,255,255,.25);animation:spin 5s linear infinite reverse}
+.loading-ring i{position:absolute;width:9px;height:9px;border-radius:50%;background:#fff0b4;box-shadow:0 0 22px #ff8eb5;top:5px;left:50%;transform:translateX(-50%)}
+.prelude-title{font-size:clamp(38px,8vw,72px)!important;margin-top:22px!important}
+.prelude-title span{font-size:.5em!important;color:#f8d68e!important}
+@keyframes preludeFloat{50%{transform:translateY(-10px) rotateY(8deg)}}@keyframes preludeTilt{0%,100%{rotate:0deg}50%{rotate:2deg}}@keyframes orbit3d{to{transform:rotateZ(360deg) rotateX(60deg)}}
+.final-title{font-family:'Playfair Display',serif;font-size:clamp(28px,6vw,52px);color:#9b5c35;margin-bottom:22px}
+.final-card .final-collage{position:relative;z-index:2}
+@media(max-width:520px){.loading-ring{width:155px;height:155px}.prelude-icon{width:105px;height:105px}.prelude-icon span{font-size:50px}}
