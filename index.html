@@ -103,7 +103,7 @@
         <label>From<input id="fromInput" required maxlength="40" placeholder="Your name"></label>
         <label>To<input id="toInput" required maxlength="40" placeholder="Their name"></label>
         <label>Your message<textarea id="messageInput" required maxlength="500" rows="5" placeholder="Write something heartfelt..."></textarea><small id="messageExample" class="field-hint">Example: You make every ordinary day feel special. I am so lucky to have you in my life. ❤️</small></label>
-        <label>Photos <span class="optional">(up to 3)</span><input id="imageInput" type="file" accept="image/*" multiple></label>
+        <label>Photos <span class="optional">(up to 4)</span><input id="imageInput" type="file" accept="image/*" multiple></label>
         <div id="uploadStatus" class="upload-status"></div>
         <button class="btn btn-primary full-width" type="submit">Create & Save Wish ✦</button>
       </form>
@@ -121,7 +121,7 @@
   <section id="sharedExperience" class="shared-experience hidden" aria-live="polite">
     <div class="shared-topbar"><button id="sharedBack" class="shared-back">← Home</button><span>WishVerse ✦</span></div>
     <div class="shared-progress"><i></i><i></i><i></i></div>
-    <div id="sharedStage" class="shared-stage"></div>
+    <div id="sharedStage" class="shared-stage"></div><div id="sharedActions" class="shared-actions hidden"><button id="downloadKeepsake" class="shared-cta download-cta">⇩ Download Keepsake</button><button id="watchAgain" class="shared-cta ghost-cta">↻ Watch Again</button><div class="made-with">✦ Made with WishVerse</div></div>
   </section>
 
   <div id="toast" class="toast" role="status"></div>
