@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=5" />
 </head>
 <body>
   <div class="app-shell">
@@ -117,7 +117,16 @@
     </div>
   </div>
 
+  <div id="wishError" class="hidden" role="alert">
+    <div class="wish-error-box">
+      <div class="wish-error-icon">✦</div>
+      <h3 id="wishErrorTitle">This wish link isn't available</h3>
+      <p id="wishErrorMessage">The wish you're looking for may have been removed, or the link is incorrect.</p>
+      <button id="wishErrorClose" class="btn btn-primary full-width">Go to WishVerse home</button>
+    </div>
+  </div>
+
   <div id="toast" class="toast" role="status"></div>
-  <script type="module" src="app.js"></script>
+  <script type="module" src="app.js?v=5"></script>
 </body>
 </html>
