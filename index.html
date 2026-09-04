@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=5" />
+  <link rel="stylesheet" href="styles.css?v=6" />
 </head>
 <body>
   <div class="app-shell">
@@ -117,6 +117,20 @@
     </div>
   </div>
 
+  <div id="wishFullView" class="wish-full-view hidden" role="dialog" aria-modal="true" aria-labelledby="wishFullTitle">
+    <button id="wishFullClose" class="icon-btn full-view-close" aria-label="Close">×</button>
+    <div id="wishFullArt" class="wish-full-art">
+      <span id="wishFullBadge" class="demo-badge hidden">Live Demo</span>
+      <div class="wish-full-content">
+        <span id="wishFullIcon" class="wish-full-icon"></span>
+        <div class="eyebrow" id="wishFullCategory"></div>
+        <h2 id="wishFullTitle"></h2>
+        <p id="wishFullMessage"></p>
+        <small id="wishFullFrom"></small>
+      </div>
+    </div>
+  </div>
+
   <div id="wishError" class="hidden" role="alert">
     <div class="wish-error-box">
       <div class="wish-error-icon">✦</div>
@@ -127,6 +141,6 @@
   </div>
 
   <div id="toast" class="toast" role="status"></div>
-  <script type="module" src="app.js?v=5"></script>
+  <script type="module" src="app.js?v=6"></script>
 </body>
 </html>
