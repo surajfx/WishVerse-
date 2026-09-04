@@ -165,20 +165,45 @@ async function uploadToCloudinary(file) {
   return result.secure_url;
 }
 
+function showFullWish({ art, icon, category, title, message, from, isDemo }) {
+  const el = $("#wishFullArt");
+  el.className = `wish-full-art ${art}`;
+  $("#wishFullBadge").classList.toggle("hidden", !isDemo);
+  $("#wishFullIcon").textContent = icon || "";
+  $("#wishFullCategory").textContent = (category || "").toUpperCase();
+  $("#wishFullTitle").textContent = title || "";
+  $("#wishFullMessage").textContent = message || "";
+  $("#wishFullFrom").textContent = from ? `From ${from}` : "";
+  $("#wishFullView").classList.remove("hidden");
+}
+function hideFullWish() {
+  $("#wishFullView").classList.add("hidden");
+}
+$("#wishFullClose").onclick = () => {
+  hideFullWish();
+  // If we arrived here from a ?wish= link, drop the param so the back
+  // button and a page refresh land on the plain homepage, not the view again.
+  if (new URLSearchParams(window.location.search).get("wish")) {
+    history.replaceState(null, "", location.pathname);
+  }
+};
+
 $("#searchInput").addEventListener("input", renderCards);
 $("#heroCreate").onclick = () => openCustomize();
 $("#customizeBtn").onclick = openCustomize;
 $("#demoBtn").onclick = () => {
   if (!selectedCard) return; // Guard: demo needs a card to already be selected.
   const demoName = selectedCard.category === "Daily" ? "Someone Special" : "Your Special Person";
-  $("#modalCategory").textContent = selectedCard.category.toUpperCase();
-  $("#modalTitle").textContent = `For ${demoName}`;
-  $("#modalDescription").textContent = selectedCard.desc;
-  $("#modalPreview").innerHTML = `<div class="preview-art ${selectedCard.art}"><span class="demo-badge">Live Demo</span><span class="preview-icon">${selectedCard.icon}</span><h3>For ${demoName}</h3><p>${selectedCard.desc}</p><small>From someone who cares ✦</small></div>`;
-  // Make sure the modal is actually visible — demoBtn can only be pressed
-  // from inside cardModal today, but this keeps it correct if that changes.
-  $("#cardModal").classList.remove("hidden");
-  toast("Live demo opened");
+  closeModal("#cardModal");
+  showFullWish({
+    art: selectedCard.art,
+    icon: selectedCard.icon,
+    category: selectedCard.category,
+    title: `For ${demoName}`,
+    message: selectedCard.desc,
+    from: "someone who cares ✦",
+    isDemo: true
+  });
 };
 $("#wishErrorClose").onclick = () => {
   hideWishError();
@@ -271,11 +296,15 @@ async function loadSharedWish() {
 
     const wish = snapshot.data();
     selectedCard = cards.find(c => c.id === wish.templateId) || cards[0];
-    $("#modalCategory").textContent = wish.category || selectedCard.category;
-    $("#modalTitle").textContent = wish.to ? `For ${wish.to}` : selectedCard.title;
-    $("#modalDescription").textContent = wish.message || selectedCard.desc;
-    $("#modalPreview").innerHTML = `<div class="preview-art ${selectedCard.art}"><span class="preview-icon">${selectedCard.icon}</span><h3>${wish.to ? `For ${wish.to}` : selectedCard.title}</h3><p>${wish.message || selectedCard.desc}</p><small>From ${wish.from || "someone special"}</small></div>`;
-    $("#cardModal").classList.remove("hidden");
+    showFullWish({
+      art: selectedCard.art,
+      icon: selectedCard.icon,
+      category: wish.category || selectedCard.category,
+      title: wish.to ? `For ${wish.to}` : selectedCard.title,
+      message: wish.message || selectedCard.desc,
+      from: wish.from || "someone special",
+      isDemo: false
+    });
     toast("Shared wish loaded");
   } catch (e) {
     console.error("Shared wish unavailable:", e);
@@ -316,4 +345,4 @@ if (menuToggle) {
   await loadSharedWish();
   document.body.classList.remove("loading-shared-wish");
 })();
-      
+                  
