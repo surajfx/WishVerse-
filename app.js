@@ -32,78 +32,7 @@ async function initFirebase(){
 // Each card carries everything needed to drive the shared cinematic
 // experience: its own colours (via the theme-<id> CSS class), its own
 // copy for every step, its own memory captions and its own final reveal.
-const cards = [
-  {
-    id:"proposal", title:"Proposal", category:"Love", icon:"💍", art:"art-proposal",
-    desc:"A beautiful question deserves a beautiful moment.",
-    example:"I have something important to ask you... You make my world brighter every day. Will you be my forever? ❤️",
-    formHint:"Write a message that feels like your heart speaking.",
-    kicker:"A QUESTION FROM THE HEART",
-    openIntro:"There is something I need to ask you…",
-    memoryHeading:"Our Beautiful Memories",
-    memoryCaptions:["The day it all began","A moment I never want to forget","Just us, being us","The smile I fell for"],
-    letterHeading:"FROM THE HEART",
-    finalTitle:"Will You Be My Forever?",
-    statusMessages:["Preparing something special…","Gathering our memories…","Finding the right words…","Almost ready…"],
-    particles:["♥","✦","❋"]
-  },
-  {
-    id:"birthday", title:"Happy Birthday", category:"Celebration", icon:"🎂", art:"art-birthday",
-    desc:"A joyful birthday surprise made just for them.",
-    example:"Happy Birthday! May this year bring you happiness, success, love and beautiful memories. You deserve the best. 🎂✨",
-    formHint:"Add a birthday message they will want to read again.",
-    kicker:"A LITTLE SURPRISE FOR",
-    openIntro:"A little surprise for you…",
-    memoryHeading:"Birthday Memories",
-    memoryCaptions:["A favourite portrait","A beautiful memory","A fun moment together","A special celebration"],
-    letterHeading:"A NOTE FOR YOU",
-    finalTitle:"Happy Birthday",
-    statusMessages:["Preparing your birthday surprise…","Lighting the candles…","Wrapping up the wishes…","Almost ready…"],
-    particles:["🎈","✨","🎉"]
-  },
-  {
-    id:"girlfriend", title:"Girlfriend / Boyfriend Day", category:"Love", icon:"💖", art:"art-girlfriend",
-    desc:"A personal surprise for your favourite person.",
-    example:"You are my favourite person, my safest place and my sweetest part of every day. I am so lucky to have you. ❤️",
-    formHint:"Tell them what makes your relationship special.",
-    kicker:"MADE JUST FOR YOU",
-    openIntro:"A little celebration of us…",
-    memoryHeading:"Our Little Moments",
-    memoryCaptions:["Where it all started","A moment worth keeping","Us, on an ordinary day","My favourite memory of you"],
-    letterHeading:"FROM THE HEART",
-    finalTitle:"You Mean the World to Me",
-    statusMessages:["Creating a special moment for you…","Gathering our memories…","Adding a little more love…","Almost ready…"],
-    particles:["♥","✦","💕"]
-  },
-  {
-    id:"sorry", title:"Sorry", category:"Emotion", icon:"🥺", art:"art-sorry",
-    desc:"A gentle way to say what matters after a difficult moment.",
-    example:"I am truly sorry. You matter to me more than my pride, and I hope we can make things right. 🤍",
-    formHint:"Say what you feel honestly, in your own words.",
-    kicker:"A MESSAGE FROM MY HEART",
-    openIntro:"There is something I need to say…",
-    memoryHeading:"The Moments That Matter",
-    memoryCaptions:["A memory I hold onto","A moment I'm grateful for","Something worth making right","A memory worth keeping"],
-    letterHeading:"AN HONEST WORD",
-    finalTitle:"I'm Truly Sorry",
-    statusMessages:["Putting my feelings into words…","Finding the courage to say it…","Choosing my words carefully…","Almost ready…"],
-    particles:["❋","·","🤍"]
-  },
-  {
-    id:"miss", title:"Miss You", category:"Emotion", icon:"🌙", art:"art-miss",
-    desc:"A soft memory journey for someone you wish was near.",
-    example:"I miss your voice, your smile and all the little moments we share. I wish you were here. 🌙❤️",
-    formHint:"Write the little things you miss most.",
-    kicker:"FOR SOMEONE I WISH WAS HERE",
-    openIntro:"There is something I wish you were here for…",
-    memoryHeading:"Memories I Hold Close",
-    memoryCaptions:["A memory I keep replaying","A moment I miss most","Somewhere I wish we were","A little piece of you"],
-    letterHeading:"UNDER THE SAME MOON",
-    finalTitle:"I Miss You",
-    statusMessages:["Gathering your memories…","Counting the stars…","Finding the right words…","Almost ready…"],
-    particles:["★","☾","✦"]
-  }
-];
+import { cards } from "./cards/index.js";
 
 let selectedCard = cards[0];
 let activeCategory = "All";
@@ -459,3 +388,4 @@ if (menuToggle) {
   await loadSharedWish();
   document.body.classList.remove("loading-shared-wish");
 })();
+  
