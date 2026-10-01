@@ -121,6 +121,24 @@ function openCard(id) {
 
 function closeModal(id) { $(id).classList.add("hidden"); }
 
+const GF_DEFAULTS = {
+  notes: [
+    "Every little moment with you feels like this.",
+    "I keep coming back to this one in my head.",
+    "Small, silly, and completely ours.",
+    "You made an ordinary day feel like this."
+  ],
+  boxLetter: "Every little thing about you makes an ordinary day feel like a memory worth keeping. I just wanted you to know that.",
+  reasons: [
+    "Because you make every ordinary day feel like a good one.",
+    "Because you listen, even when I ramble about nothing.",
+    "Because your laugh is my favourite sound.",
+    "Because you believe in me even when I doubt myself.",
+    "Because being loved by you feels like home."
+  ]
+};
+let gfCollagePhotos = [];
+
 function openCustomize() {
   if (!selectedCard) selectedCard = cards[0];
   closeModal("#cardModal");
@@ -130,8 +148,17 @@ function openCustomize() {
   $("#messageInput").value = selectedCard.example;
   $("#messageInput").placeholder = selectedCard.formHint;
   $("#messageExample").textContent = `Example: ${selectedCard.example}`;
-  uploadedImageUrls = [];
+  uploadedImageUrls = []; gfCollagePhotos = [];
   $("#uploadStatus").textContent = "";
+  const isGirlfriend = selectedCard.id === "girlfriend";
+  $("#girlfriendExtra").classList.toggle("hidden", !isGirlfriend);
+  $("#gfCollagePicker").classList.add("hidden");
+  $("#gfCollageThumbs").innerHTML = "";
+  if (isGirlfriend) {
+    GF_DEFAULTS.notes.forEach((v,i)=>{ $(`#gfNote${i+1}`).value = v; });
+    $("#gfBoxLetter").value = GF_DEFAULTS.boxLetter;
+    GF_DEFAULTS.reasons.forEach((v,i)=>{ $(`#gfReason${i+1}`).value = v; });
+  }
   $("#customizeModal").classList.remove("hidden");
 }
 
@@ -176,7 +203,25 @@ $("#imageInput").onchange = async e => {
   $("#uploadStatus").textContent = `Uploading ${files.length} photo${files.length>1?"s":""}...`;
   try { uploadedImageUrls = []; for (const file of files) { const url = await uploadToCloudinary(file); if (url) uploadedImageUrls.push(url); } $("#uploadStatus").textContent = uploadedImageUrls.length ? `${uploadedImageUrls.length} photo${uploadedImageUrls.length>1?"s":""} uploaded successfully.` : "Photos selected."; }
   catch { uploadedImageUrls = []; $("#uploadStatus").textContent = "Upload failed. You can continue without photos."; }
+  renderGfCollagePicker();
 };
+
+function renderGfCollagePicker(){
+  if (!selectedCard || selectedCard.id !== "girlfriend") return;
+  const wrap = $("#gfCollageThumbs");
+  gfCollagePhotos = uploadedImageUrls.slice(0,2);
+  if (!uploadedImageUrls.length) { $("#gfCollagePicker").classList.add("hidden"); wrap.innerHTML = ""; return; }
+  $("#gfCollagePicker").classList.remove("hidden");
+  wrap.innerHTML = uploadedImageUrls.map((url,i) =>
+    `<div class="gf-thumb${gfCollagePhotos.includes(url)?" selected":""}" data-url="${escapeHTML(url)}"><img src="${escapeHTML(url)}"><span class="gf-thumb-badge">✓</span></div>`
+  ).join("");
+  wrap.querySelectorAll(".gf-thumb").forEach(el => el.onclick = () => {
+    const url = el.dataset.url;
+    if (gfCollagePhotos.includes(url)) { gfCollagePhotos = gfCollagePhotos.filter(u => u !== url); }
+    else { if (gfCollagePhotos.length >= 2) gfCollagePhotos.shift(); gfCollagePhotos.push(url); }
+    renderGfCollagePicker();
+  });
+}
 
 $("#wishForm").onsubmit = async e => {
   e.preventDefault();
@@ -186,6 +231,12 @@ $("#wishForm").onsubmit = async e => {
     to: $("#toInput").value.trim(), message: $("#messageInput").value.trim(),
     imageUrl: uploadedImageUrls[0] || "", imageUrls: uploadedImageUrls, createdAt: firestoreApi.serverTimestamp()
   };
+  if (selectedCard.id === "girlfriend") {
+    payload.gfNotes = [1,2,3,4].map(i => $(`#gfNote${i}`).value.trim() || GF_DEFAULTS.notes[i-1]);
+    payload.gfBoxLetter = $("#gfBoxLetter").value.trim() || GF_DEFAULTS.boxLetter;
+    payload.gfReasons = [1,2,3,4,5].map(i => $(`#gfReason${i}`).value.trim() || GF_DEFAULTS.reasons[i-1]);
+    payload.gfCollage = gfCollagePhotos.length ? gfCollagePhotos : uploadedImageUrls.slice(0,2);
+  }
   try {
     if (!firebaseReady || !db) {
       toast("Firebase is not connected. Check Firebase setup.");
@@ -266,7 +317,11 @@ function renderGirlfriendExperience(w){
   const from = encodeURIComponent(w.from || "Someone who loves you");
   const msg = encodeURIComponent(w.message || "");
   const photos = encodeURIComponent(getPhotos(w).join(","));
-  $("#sharedStage").innerHTML = `<iframe class="girlfriend-frame" src="cards/girlfriend-experience/index.html?to=${to}&from=${from}&msg=${msg}&photos=${photos}" title="A little surprise" allow="autoplay"></iframe>`;
+  const notes = encodeURIComponent((w.gfNotes || []).join("|"));
+  const boxletter = encodeURIComponent(w.gfBoxLetter || "");
+  const reasons = encodeURIComponent((w.gfReasons || []).join("|"));
+  const collage = encodeURIComponent((w.gfCollage && w.gfCollage.length ? w.gfCollage : getPhotos(w).slice(0,2)).join(","));
+  $("#sharedStage").innerHTML = `<iframe class="girlfriend-frame" src="cards/girlfriend-experience/index.html?to=${to}&from=${from}&msg=${msg}&photos=${photos}&notes=${notes}&boxletter=${boxletter}&reasons=${reasons}&collage=${collage}" title="A little surprise" allow="autoplay"></iframe>`;
 }
 
 function showSharedExperience(wish, isDemo=false){
@@ -414,4 +469,3 @@ if (menuToggle) {
   await loadSharedWish();
   document.body.classList.remove("loading-shared-wish");
 })();
-    
