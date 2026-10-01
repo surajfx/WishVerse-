@@ -137,7 +137,7 @@ const GF_DEFAULTS = {
     "Because being loved by you feels like home."
   ]
 };
-let gfCollagePhotos = [];
+let gfCollageIdx = [];
 
 function openCustomize() {
   if (!selectedCard) selectedCard = cards[0];
@@ -148,7 +148,7 @@ function openCustomize() {
   $("#messageInput").value = selectedCard.example;
   $("#messageInput").placeholder = selectedCard.formHint;
   $("#messageExample").textContent = `Example: ${selectedCard.example}`;
-  uploadedImageUrls = []; gfCollagePhotos = [];
+  uploadedImageUrls = []; gfCollageIdx = [];
   $("#uploadStatus").textContent = "";
   const isGirlfriend = selectedCard.id === "girlfriend";
   $("#girlfriendExtra").classList.toggle("hidden", !isGirlfriend);
@@ -209,16 +209,16 @@ $("#imageInput").onchange = async e => {
 function renderGfCollagePicker(){
   if (!selectedCard || selectedCard.id !== "girlfriend") return;
   const wrap = $("#gfCollageThumbs");
-  gfCollagePhotos = uploadedImageUrls.slice(0,2);
-  if (!uploadedImageUrls.length) { $("#gfCollagePicker").classList.add("hidden"); wrap.innerHTML = ""; return; }
+  if (!uploadedImageUrls.length) { $("#gfCollagePicker").classList.add("hidden"); wrap.innerHTML = ""; gfCollageIdx = []; return; }
+  if (!gfCollageIdx.length) gfCollageIdx = uploadedImageUrls.map((_,i)=>i).slice(0,2);
   $("#gfCollagePicker").classList.remove("hidden");
   wrap.innerHTML = uploadedImageUrls.map((url,i) =>
-    `<div class="gf-thumb${gfCollagePhotos.includes(url)?" selected":""}" data-url="${escapeHTML(url)}"><img src="${escapeHTML(url)}"><span class="gf-thumb-badge">✓</span></div>`
+    `<div class="gf-thumb${gfCollageIdx.includes(i)?" selected":""}" data-idx="${i}"><img src="${escapeHTML(url)}"><span class="gf-thumb-badge">✓</span></div>`
   ).join("");
   wrap.querySelectorAll(".gf-thumb").forEach(el => el.onclick = () => {
-    const url = el.dataset.url;
-    if (gfCollagePhotos.includes(url)) { gfCollagePhotos = gfCollagePhotos.filter(u => u !== url); }
-    else { if (gfCollagePhotos.length >= 2) gfCollagePhotos.shift(); gfCollagePhotos.push(url); }
+    const idx = Number(el.dataset.idx);
+    if (gfCollageIdx.includes(idx)) { gfCollageIdx = gfCollageIdx.filter(i => i !== idx); }
+    else { if (gfCollageIdx.length >= 2) gfCollageIdx.shift(); gfCollageIdx.push(idx); }
     renderGfCollagePicker();
   });
 }
@@ -235,7 +235,7 @@ $("#wishForm").onsubmit = async e => {
     payload.gfNotes = [1,2,3,4].map(i => $(`#gfNote${i}`).value.trim() || GF_DEFAULTS.notes[i-1]);
     payload.gfBoxLetter = $("#gfBoxLetter").value.trim() || GF_DEFAULTS.boxLetter;
     payload.gfReasons = [1,2,3,4,5].map(i => $(`#gfReason${i}`).value.trim() || GF_DEFAULTS.reasons[i-1]);
-    payload.gfCollage = gfCollagePhotos.length ? gfCollagePhotos : uploadedImageUrls.slice(0,2);
+    payload.gfCollage = (gfCollageIdx.length ? gfCollageIdx : [0,1]).map(i => uploadedImageUrls[i]).filter(Boolean);
   }
   try {
     if (!firebaseReady || !db) {
@@ -334,11 +334,12 @@ function showSharedExperience(wish, isDemo=false){
   if (card.id === "girlfriend") {
     if (progressBar) progressBar.classList.add("hidden");
     $("#sharedExperience").classList.add("girlfriend-live");
+    $("#sharedExperience").classList.toggle("no-topbar", !isDemo);
     applyTheme(card);
     renderGirlfriendExperience(wish);
     return;
   }
-  $("#sharedExperience").classList.remove("girlfriend-live");
+  $("#sharedExperience").classList.remove("girlfriend-live", "no-topbar");
   if (progressBar) progressBar.classList.remove("hidden");
   sharedSteps = buildSteps(card);
   applyTheme(card);
@@ -388,8 +389,7 @@ function renderSharedStage(){
   }
 
   $("#sharedStage").innerHTML = html;
-
-  document.querySelectorAll("[data-next]").forEach(b => b.onclick = () => {
+document.querySelectorAll("[data-next]").forEach(b => b.onclick = () => {
     sharedStep = Math.min(sharedStep+1, sharedSteps.length-1);
     renderSharedStage();
   });
@@ -469,3 +469,4 @@ if (menuToggle) {
   await loadSharedWish();
   document.body.classList.remove("loading-shared-wish");
 })();
+
