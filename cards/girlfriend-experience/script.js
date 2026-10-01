@@ -1,3 +1,22 @@
+// ---- Dynamic data from the real WishVerse form (?to=&from=&msg=&photos=) ----
+const _params = new URLSearchParams(location.search);
+const TO = _params.get('to') || 'Sona';
+const FROM = _params.get('from') || 'Suraj';
+const MSG = _params.get('msg') || '';
+const PHOTOS = (_params.get('photos') || '').split(',').map(s=>s.trim()).filter(Boolean);
+
+document.title = `For ${TO} — A Little Surprise`;
+const _toEm = document.getElementById('toNameEm'); if(_toEm) _toEm.textContent = TO;
+const _finalName = document.getElementById('finalName'); if(_finalName) _finalName.textContent = TO;
+const _toSub = document.getElementById('toSubLine'); if(_toSub) _toSub.textContent = `To ${TO}`;
+const _finalSig = document.getElementById('finalSig'); if(_finalSig) _finalSig.textContent = `— ${FROM}`;
+const _finalMsgSig = document.getElementById('finalMsgSig'); if(_finalMsgSig) _finalMsgSig.textContent = FROM;
+if(MSG){ const _finalMsg = document.getElementById('finalMsg'); if(_finalMsg) _finalMsg.innerHTML = `${MSG.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]))} ♥ — <span id="finalMsgSig">${FROM}</span>`; }
+const _dearestHeading = document.querySelector('#screen5 .chapter-heading');
+if(_dearestHeading) _dearestHeading.dataset.text = `Dearest ${TO},`;
+const _collagePhotos = document.querySelectorAll('.collage .ph');
+_collagePhotos.forEach((el,i)=>{ if(PHOTOS[i]) el.style.background = `center/cover url('${PHOTOS[i]}')`; });
+
 const particlesEl = document.getElementById('particles');
 const glyphs = ['♥','✦','❋'];
 for(let i=0;i<14;i++){
@@ -114,7 +133,8 @@ function buildStack(){
     card.style.zIndex = memories.length-i;
     const baseTransform = `translateY(${i*6}px) rotate(${(i%2?1:-1)*(i*1.5)}deg) scale(${1-i*0.03})`;
     card.dataset.base = baseTransform; card.style.transform = baseTransform;
-    card.innerHTML = `<div class="card-inner"><div class="card-face card-front"><div class="photo"></div><div class="caption">${m.caption}</div></div><div class="card-face card-back"><p>${m.note}</p></div></div>`;
+    const photoStyle = PHOTOS[i] ? ` style="background-image:url('${PHOTOS[i]}');background-size:cover;background-position:center;"` : '';
+    card.innerHTML = `<div class="card-inner"><div class="card-face card-front"><div class="photo"${photoStyle}></div><div class="caption">${m.caption}</div></div><div class="card-face card-back"><p>${m.note}</p></div></div>`;
     stack.appendChild(card); cards.push(card);
   });
   attachFrontHandlers();
@@ -162,7 +182,7 @@ const envInner = document.getElementById('envInner');
 const tapHint2 = document.getElementById('tapHint2');
 const continueBtn2 = document.getElementById('continueBtn2');
 const envBackText = document.getElementById('envBackText');
-const envBackFull = "Dearest Sona, every little thing about you makes an ordinary day feel like a memory worth keeping. I just wanted you to know that. ♥";
+const envBackFull = `Dearest ${TO}, every little thing about you makes an ordinary day feel like a memory worth keeping. I just wanted you to know that. ♥`;
 let envTyped = false;
 envInner.addEventListener('click', ()=>{
   envInner.classList.toggle('flipped');
@@ -200,7 +220,7 @@ continueBtn3.addEventListener('click', ()=>showScreen(5));
 const letterPaper = document.getElementById('letterPaper');
 const continueBtn4 = document.getElementById('continueBtn4');
 const screen5 = document.getElementById('screen5');
-const letterParagraphs = [
+const letterParagraphs = MSG ? [MSG] : [
   "I don't say this enough, but you are the softest, warmest part of my everyday life.",
   "Thank you for staying, for laughing at my worst jokes, and for loving me exactly as I am.",
   "This is just the beginning of everything I still want to tell you."
@@ -299,4 +319,3 @@ document.getElementById('continueBtn8').addEventListener('click', ()=>showScreen
 document.getElementById('replayBtn').addEventListener('click', ()=>showScreen(1));
 document.getElementById('downloadBtn').addEventListener('click', function(){ this.textContent = 'Saved ✓'; });
 fillProgress(screens[1]);
-                                            
