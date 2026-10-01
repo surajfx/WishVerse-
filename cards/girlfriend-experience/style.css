@@ -66,7 +66,7 @@
   .env-face{ position:absolute; inset:0; backface-visibility:hidden; border-radius:8px; background:var(--paper); box-shadow:0 20px 34px var(--paper-shadow); padding:22px; }
   .env-front{ display:flex; align-items:center; justify-content:center; }
   .env-front .seal{ width:52px; height:52px; border-radius:50%; background:var(--rose); display:flex; align-items:center; justify-content:center; color:var(--paper); font-size:22px; }
-  .env-back{ transform: rotateY(180deg); overflow:hidden; }
+  .env-back{ transform: rotateY(180deg); overflow-y:auto; -webkit-overflow-scrolling:touch; }
   .env-back p{ font-family:var(--script); font-size:19px; color:#5b3a44; line-height:1.6; }
   .continue-btn{ margin-top:18px; padding:10px 22px; border-radius:24px; border:1px solid var(--gold); background:rgba(185,138,98,.12); color:var(--cream); font-family:var(--serif2); font-size:14px; letter-spacing:.04em; cursor:pointer; opacity:0; transform:translateY(8px); transition:opacity .5s ease, transform .5s ease; }
   .continue-btn.show{ opacity:1; transform:translateY(0); }
@@ -137,3 +137,4 @@
   .final-msg{ font-family:var(--script); font-size:20px; color:var(--cream); text-align:center; max-width:280px; margin:8px auto 0; line-height:1.5; }
   .final-buttons{ display:flex; gap:10px; margin-top:16px; }
   .final-buttons .continue-btn{ margin-top:0; opacity:1; transform:none; }
+                
