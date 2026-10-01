@@ -4,6 +4,10 @@ const TO = _params.get('to') || 'Sona';
 const FROM = _params.get('from') || 'Suraj';
 const MSG = _params.get('msg') || '';
 const PHOTOS = (_params.get('photos') || '').split(',').map(s=>s.trim()).filter(Boolean);
+const NOTES = (_params.get('notes') || '').split('|').map(s=>s.trim());
+const BOXLETTER = _params.get('boxletter') || '';
+const REASONS = (_params.get('reasons') || '').split('|').map(s=>s.trim()).filter(Boolean);
+const COLLAGE = (_params.get('collage') || '').split(',').map(s=>s.trim()).filter(Boolean);
 
 document.title = `For ${TO} — A Little Surprise`;
 const _toEm = document.getElementById('toNameEm'); if(_toEm) _toEm.textContent = TO;
@@ -15,7 +19,8 @@ if(MSG){ const _finalMsg = document.getElementById('finalMsg'); if(_finalMsg) _f
 const _dearestHeading = document.querySelector('#screen5 .chapter-heading');
 if(_dearestHeading) _dearestHeading.dataset.text = `Dearest ${TO},`;
 const _collagePhotos = document.querySelectorAll('.collage .ph');
-_collagePhotos.forEach((el,i)=>{ if(PHOTOS[i]) el.style.background = `center/cover url('${PHOTOS[i]}')`; });
+const _collageSrc = COLLAGE.length ? COLLAGE : PHOTOS;
+_collagePhotos.forEach((el,i)=>{ if(_collageSrc[i]) el.style.background = `center/cover url('${_collageSrc[i]}')`; });
 
 const particlesEl = document.getElementById('particles');
 const glyphs = ['♥','✦','❋'];
@@ -115,11 +120,12 @@ function attachHold(btn, ringFillEl, iconEl, holdMs, onComplete, hintEl){
 attachHold(document.getElementById('holdBtn'), document.getElementById('ringCircle'), document.getElementById('heartIcon'), 1400,
   ()=>setTimeout(()=>showScreen(2), 350), document.getElementById('holdHint'));
 
+const _defaultNotes = ['Every little moment with you feels like this.','I keep coming back to this one in my head.','Small, silly, and completely ours.','You made an ordinary day feel like this.'];
 const memories = [
-  {caption:'A memory worth keeping', note:'Every little moment with you feels like this.'},
-  {caption:'A moment I never want to forget', note:'I keep coming back to this one in my head.'},
-  {caption:'A little piece of us', note:'Small, silly, and completely ours.'},
-  {caption:'A beautiful moment', note:'You made an ordinary day feel like this.'}
+  {caption:'A memory worth keeping', note: NOTES[0] || _defaultNotes[0]},
+  {caption:'A moment I never want to forget', note: NOTES[1] || _defaultNotes[1]},
+  {caption:'A little piece of us', note: NOTES[2] || _defaultNotes[2]},
+  {caption:'A beautiful moment', note: NOTES[3] || _defaultNotes[3]}
 ];
 const stack = document.getElementById('stack');
 const tapHint = document.getElementById('tapHint');
@@ -182,7 +188,7 @@ const envInner = document.getElementById('envInner');
 const tapHint2 = document.getElementById('tapHint2');
 const continueBtn2 = document.getElementById('continueBtn2');
 const envBackText = document.getElementById('envBackText');
-const envBackFull = `Dearest ${TO}, every little thing about you makes an ordinary day feel like a memory worth keeping. I just wanted you to know that. ♥`;
+const envBackFull = `Dearest ${TO}, ${BOXLETTER || 'every little thing about you makes an ordinary day feel like a memory worth keeping. I just wanted you to know that.'} ♥`;
 let envTyped = false;
 envInner.addEventListener('click', ()=>{
   envInner.classList.toggle('flipped');
@@ -194,7 +200,7 @@ envInner.addEventListener('click', ()=>{
 });
 continueBtn2.addEventListener('click', ()=>showScreen(4));
 
-const reasons = [
+const reasons = REASONS.length === 5 ? REASONS : [
   'Because you make every ordinary day feel like a good one.',
   'Because you listen, even when I ramble about nothing.',
   'Because your laugh is my favourite sound.',
@@ -319,3 +325,4 @@ document.getElementById('continueBtn8').addEventListener('click', ()=>showScreen
 document.getElementById('replayBtn').addEventListener('click', ()=>showScreen(1));
 document.getElementById('downloadBtn').addEventListener('click', function(){ this.textContent = 'Saved ✓'; });
 fillProgress(screens[1]);
+          
