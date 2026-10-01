@@ -261,4 +261,6 @@ input:focus,textarea:focus{border-color:var(--primary)}
 .gf-thumb.selected{border-color:var(--acc,#e7bf73)}
 .gf-thumb .gf-thumb-badge{position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:var(--acc,#e7bf73);color:#2a1025;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;opacity:0}
 .gf-thumb.selected .gf-thumb-badge{opacity:1}
-                                                                                                                                                                                                               
+
+/* Real shared-link view for Girlfriend Special: hide WishVerse chrome for a clean, unique page */
+.shared-experience.girlfriend-live.no-topbar .shared-topbar{display:none}
