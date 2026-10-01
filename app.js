@@ -261,13 +261,31 @@ function startAmbientParticles(card){
 
 function stopStatusRotation(){ if (statusInterval){ clearInterval(statusInterval); statusInterval = null; } }
 
+function renderGirlfriendExperience(w){
+  const to = encodeURIComponent(w.to || "You");
+  const from = encodeURIComponent(w.from || "Someone who loves you");
+  const msg = encodeURIComponent(w.message || "");
+  const photos = encodeURIComponent(getPhotos(w).join(","));
+  $("#sharedStage").innerHTML = `<iframe class="girlfriend-frame" src="cards/girlfriend-experience/index.html?to=${to}&from=${from}&msg=${msg}&photos=${photos}" title="A little surprise" allow="autoplay"></iframe>`;
+}
+
 function showSharedExperience(wish, isDemo=false){
   sharedWish = wish; sharedStep = 0; sharedIsDemo = isDemo;
   const card = currentCard();
-  sharedSteps = buildSteps(card);
   document.body.classList.add("shared-mode");
   $("#sharedExperience").classList.remove("hidden");
   $("#sharedActions").classList.add("hidden");
+  const progressBar = document.querySelector(".shared-progress");
+  if (card.id === "girlfriend") {
+    if (progressBar) progressBar.classList.add("hidden");
+    $("#sharedExperience").classList.add("girlfriend-live");
+    applyTheme(card);
+    renderGirlfriendExperience(wish);
+    return;
+  }
+  $("#sharedExperience").classList.remove("girlfriend-live");
+  if (progressBar) progressBar.classList.remove("hidden");
+  sharedSteps = buildSteps(card);
   applyTheme(card);
   startAmbientParticles(card);
   renderSharedStage();
@@ -348,7 +366,7 @@ function renderSharedStage(){
 
 function closeSharedExperience(){
   stopStatusRotation();
-  if (sharedIsDemo) { $("#sharedExperience").classList.add("hidden"); $("#sharedActions").classList.add("hidden"); document.body.classList.remove("shared-mode"); return; }
+  if (sharedIsDemo) { $("#sharedExperience").classList.add("hidden"); $("#sharedExperience").classList.remove("girlfriend-live"); $("#sharedActions").classList.add("hidden"); document.body.classList.remove("shared-mode"); return; }
   location.href = location.pathname;
 }
 $("#sharedBack").onclick = closeSharedExperience;
@@ -396,3 +414,4 @@ if (menuToggle) {
   await loadSharedWish();
   document.body.classList.remove("loading-shared-wish");
 })();
+    
