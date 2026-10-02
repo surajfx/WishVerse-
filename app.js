@@ -44,6 +44,7 @@ const wishGrid = $("#wishGrid");
 const favoriteGrid = $("#favoriteGrid");
 const featuredGrid = $("#featuredGrid");
 const featuredIds = ["proposal","girlfriend","boyfriend","miss","sorry","birthday"];
+const CINEMATIC_CARDS = ["girlfriend","boyfriend"];
 
 function categories() {
   return ["All", ...new Set(cards.map(c => c.category))];
@@ -150,7 +151,7 @@ function openCustomize() {
   $("#messageExample").textContent = `Example: ${selectedCard.example}`;
   uploadedImageUrls = []; gfCollageIdx = [];
   $("#uploadStatus").textContent = "";
-  const isGirlfriend = selectedCard.id === "girlfriend";
+  const isGirlfriend = CINEMATIC_CARDS.includes(selectedCard.id);
   $("#girlfriendExtra").classList.toggle("hidden", !isGirlfriend);
   $("#gfCollagePicker").classList.add("hidden");
   $("#gfCollageThumbs").innerHTML = "";
@@ -207,7 +208,7 @@ $("#imageInput").onchange = async e => {
 };
 
 function renderGfCollagePicker(){
-  if (!selectedCard || selectedCard.id !== "girlfriend") return;
+  if (!selectedCard || !CINEMATIC_CARDS.includes(selectedCard.id)) return;
   const wrap = $("#gfCollageThumbs");
   if (!uploadedImageUrls.length) { $("#gfCollagePicker").classList.add("hidden"); wrap.innerHTML = ""; gfCollageIdx = []; return; }
   if (!gfCollageIdx.length) gfCollageIdx = uploadedImageUrls.map((_,i)=>i).slice(0,2);
@@ -231,7 +232,7 @@ $("#wishForm").onsubmit = async e => {
     to: $("#toInput").value.trim(), message: $("#messageInput").value.trim(),
     imageUrl: uploadedImageUrls[0] || "", imageUrls: uploadedImageUrls, createdAt: firestoreApi.serverTimestamp()
   };
-  if (selectedCard.id === "girlfriend") {
+  if (CINEMATIC_CARDS.includes(selectedCard.id)) {
     payload.gfNotes = [1,2,3,4].map(i => $(`#gfNote${i}`).value.trim() || GF_DEFAULTS.notes[i-1]);
     payload.gfBoxLetter = $("#gfBoxLetter").value.trim() || GF_DEFAULTS.boxLetter;
     payload.gfReasons = [1,2,3,4,5].map(i => $(`#gfReason${i}`).value.trim() || GF_DEFAULTS.reasons[i-1]);
@@ -321,7 +322,8 @@ function renderGirlfriendExperience(w){
   const boxletter = encodeURIComponent(w.gfBoxLetter || "");
   const reasons = encodeURIComponent((w.gfReasons || []).join("|"));
   const collage = encodeURIComponent((w.gfCollage && w.gfCollage.length ? w.gfCollage : getPhotos(w).slice(0,2)).join(","));
-  $("#sharedStage").innerHTML = `<iframe class="girlfriend-frame" src="cards/girlfriend-experience/index.html?to=${to}&from=${from}&msg=${msg}&photos=${photos}&notes=${notes}&boxletter=${boxletter}&reasons=${reasons}&collage=${collage}" title="A little surprise" allow="autoplay"></iframe>`;
+  const folder = `cards/${w.templateId}-experience/index.html`;
+  $("#sharedStage").innerHTML = `<iframe class="girlfriend-frame" src="${folder}?to=${to}&from=${from}&msg=${msg}&photos=${photos}&notes=${notes}&boxletter=${boxletter}&reasons=${reasons}&collage=${collage}" title="A little surprise" allow="autoplay"></iframe>`;
 }
 
 function showSharedExperience(wish, isDemo=false){
@@ -331,7 +333,7 @@ function showSharedExperience(wish, isDemo=false){
   $("#sharedExperience").classList.remove("hidden");
   $("#sharedActions").classList.add("hidden");
   const progressBar = document.querySelector(".shared-progress");
-  if (card.id === "girlfriend") {
+  if (CINEMATIC_CARDS.includes(card.id)) {
     if (progressBar) progressBar.classList.add("hidden");
     $("#sharedExperience").classList.add("girlfriend-live");
     $("#sharedExperience").classList.toggle("no-topbar", !isDemo);
@@ -389,7 +391,8 @@ function renderSharedStage(){
   }
 
   $("#sharedStage").innerHTML = html;
-document.querySelectorAll("[data-next]").forEach(b => b.onclick = () => {
+
+  document.querySelectorAll("[data-next]").forEach(b => b.onclick = () => {
     sharedStep = Math.min(sharedStep+1, sharedSteps.length-1);
     renderSharedStage();
   });
@@ -469,4 +472,3 @@ if (menuToggle) {
   await loadSharedWish();
   document.body.classList.remove("loading-shared-wish");
 })();
-
