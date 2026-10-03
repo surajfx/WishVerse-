@@ -1,86 +1,43 @@
-// ---- Dynamic data from the real WishVerse form (?to=&from=&msg=&photos=) ----
+// ---- Dynamic data from the real WishVerse form (?to=&from=&msg=&photos=&notes=&boxletter=&reasons=&collage=) ----
 const _params = new URLSearchParams(location.search);
 const TO = _params.get('to') || 'My Love';
-const FROM = _params.get('from') || 'Suraj';
+const FROM = _params.get('from') || 'Someone';
 const MSG = _params.get('msg') || '';
 const PHOTOS = (_params.get('photos') || '').split(',').map(s=>s.trim()).filter(Boolean);
-const NOTES = (_params.get('notes') || '').split('|').map(s=>s.trim());
+const NOTES = (_params.get('notes') || '').split('|').map(s=>s.trim()).filter(Boolean);
 const BOXLETTER = _params.get('boxletter') || '';
-const REASONS = (_params.get('reasons') || '').split('|').map(s=>s.trim()).filter(Boolean);
 const COLLAGE = (_params.get('collage') || '').split(',').map(s=>s.trim()).filter(Boolean);
 
-document.title = `For ${TO} — A Little Surprise`;
-const _toEm = document.getElementById('toNameEm'); if(_toEm) _toEm.textContent = TO;
-const _finalName = document.getElementById('finalName'); if(_finalName) _finalName.textContent = TO;
-const _toSub = document.getElementById('toSubLine'); if(_toSub) _toSub.textContent = `To ${TO}`;
-const _finalSig = document.getElementById('finalSig'); if(_finalSig) _finalSig.textContent = `— ${FROM}`;
-const _finalMsgSig = document.getElementById('finalMsgSig'); if(_finalMsgSig) _finalMsgSig.textContent = FROM;
-if(MSG){ const _finalMsg = document.getElementById('finalMsg'); if(_finalMsg) _finalMsg.innerHTML = `${MSG.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]))} ♥ — <span id="finalMsgSig">${FROM}</span>`; }
-const _dearestHeading = document.querySelector('#screen5 .chapter-heading');
-if(_dearestHeading) _dearestHeading.dataset.text = `Dearest ${TO},`;
+document.title = `For ${TO} — A Rose Garden Proposal`;
+const _set = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+_set('toNameEm', TO);
+_set('heartIntroName', `${TO}…`);
+_set('letterGreeting', `Dear ${TO},`);
+_set('letterSig', `— ${FROM}`);
+_set('keepsakeTo', `To ${TO}`);
+_set('finalSigScript', `with love, ${FROM}`);
+if (BOXLETTER) _set('ringBoxCaption', BOXLETTER);
+if (MSG) _set('finalMsg', MSG);
 const _collagePhotos = document.querySelectorAll('.collage .ph');
 const _collageSrc = COLLAGE.length ? COLLAGE : PHOTOS;
 _collagePhotos.forEach((el,i)=>{ if(_collageSrc[i]) el.style.background = `center/cover url('${_collageSrc[i]}')`; });
 
-const particlesEl = document.getElementById('particles');
-const glyphs = ['♥','✦','❋'];
-for(let i=0;i<14;i++){
+// ---- Falling rose petals ----
+const petalsEl = document.getElementById('petals');
+for(let i=0;i<16;i++){
   const p = document.createElement('div');
-  p.className='particle'; p.textContent = glyphs[i%3];
+  p.className='rose-petal';
   p.style.left = (Math.random()*100)+'%';
-  p.style.animationDuration = (7+Math.random()*6)+'s';
+  p.style.animationDuration = (6+Math.random()*6)+'s';
   p.style.animationDelay = (Math.random()*6)+'s';
-  p.style.fontSize = (10+Math.random()*10)+'px';
-  particlesEl.appendChild(p);
+  const scale = 0.7 + Math.random()*0.8;
+  p.style.transform = `scale(${scale})`;
+  petalsEl.appendChild(p);
 }
 
-function playHeading(el){
-  const text = el.dataset.text;
-  el.textContent = ''; el.classList.add('typing'); let i = 0;
-  clearInterval(el._typeTimer);
-  el._typeTimer = setInterval(()=>{
-    i++; el.textContent = text.slice(0,i);
-    if(i >= text.length){ clearInterval(el._typeTimer); el.classList.remove('typing'); }
-  }, 38);
-}
-document.querySelectorAll('.chapter-heading').forEach(playHeading);
-
-function typeInto(el, text, speed, cb){
-  clearTimeout(el._penTimer);
-  let i = 0;
-  const pen = document.createElement('span');
-  pen.className='pen'; pen.textContent='🖊️';
-  el.textContent = '';
-  function tick(){
-    i++;
-    el.textContent = text.slice(0,i);
-    el.appendChild(pen);
-    if(i < text.length){ el._penTimer = setTimeout(tick, 26); }
-    else { pen.remove(); if(cb) cb(); }
-  }
-  tick();
-}
-function typeParagraphs(container, paragraphs){
-  container.innerHTML = '';
-  let idx = 0;
-  function next(){
-    if(idx >= paragraphs.length) return;
-    const p = document.createElement('p');
-    container.appendChild(p);
-    typeInto(p, paragraphs[idx], 26, ()=>{ idx++; next(); });
-  }
-  next();
-}
-
-const screens = { 1: document.getElementById('screen1'), 2: document.getElementById('screen2'), 3: document.getElementById('screen3'),
-  4: document.getElementById('screen4'), 5: document.getElementById('screen5'), 6: document.getElementById('screen6'), 7: document.getElementById('screen7'),
-  8: document.getElementById('screen8') };
-function showScreen(n){
-  Object.values(screens).forEach(s=>s.classList.add('hidden'));
-  screens[n].classList.remove('hidden');
-  screens[n].querySelectorAll('.chapter-heading').forEach(playHeading);
-  fillProgress(screens[n]);
-}
+// ---- Screen navigation ----
+const screens = {};
+for(let i=1;i<=8;i++) screens[i] = document.getElementById('screen'+i);
 function fillProgress(screenEl){
   const badge = screenEl.querySelector('.progress-badge');
   if(!badge) return;
@@ -92,243 +49,144 @@ function fillProgress(screenEl){
   fillSvg.style.transition = '';
   requestAnimationFrame(()=>{ fillSvg.style.clipPath = `inset(${100-pct}% 0 0 0)`; });
 }
-
-function attachHold(btn, ringFillEl, iconEl, holdMs, onComplete, hintEl){
-  let holding=false, startTime=0, raf=null;
-  function setRing(pct){
-    const c = 2*Math.PI*40;
-    ringFillEl.style.strokeDashoffset = c - (c*pct);
-    const glowSize = 3 + pct*12;
-    ringFillEl.style.filter = pct>0 ? `drop-shadow(0 0 ${glowSize}px var(--glow))` : 'none';
-    if(iconEl) iconEl.style.filter = pct>0 ? `drop-shadow(0 0 ${4+pct*8}px var(--glow))` : 'none';
-  }
-  function start(){ holding=true; startTime=performance.now(); step(); }
-  function step(){
-    if(!holding) return;
-    const pct = Math.min((performance.now()-startTime)/holdMs,1);
-    setRing(pct);
-    if(pct>=1){ holding=false; cancelAnimationFrame(raf); if(hintEl) hintEl.textContent='sealed ♥'; onComplete(); return; }
-    raf = requestAnimationFrame(step);
-  }
-  function cancel(){ holding=false; cancelAnimationFrame(raf); setRing(0); }
-  btn.addEventListener('pointerdown', e=>{ e.preventDefault(); btn.setPointerCapture(e.pointerId); start(); });
-  btn.addEventListener('pointerup', cancel);
-  btn.addEventListener('pointercancel', cancel);
-  btn.addEventListener('pointerleave', cancel);
+function showScreen(n){
+  Object.values(screens).forEach(s=>s.classList.add('hidden'));
+  screens[n].classList.remove('hidden');
+  fillProgress(screens[n]);
+  if(n===6) playQuestionHeading();
 }
+fillProgress(screens[1]);
 
-attachHold(document.getElementById('holdBtn'), document.getElementById('ringCircle'), document.getElementById('heartIcon'), 1400,
-  ()=>setTimeout(()=>showScreen(2), 350), document.getElementById('holdHint'));
+document.getElementById('enterBtn').addEventListener('click', ()=>showScreen(2));
 
-const _defaultNotes = ['Every little moment with you feels like this.','I keep coming back to this one in my head.','Small, silly, and completely ours.','You made an ordinary day feel like this.'];
-const memories = [
-  {caption:'A memory worth keeping', note: NOTES[0] || _defaultNotes[0]},
-  {caption:'A moment I never want to forget', note: NOTES[1] || _defaultNotes[1]},
-  {caption:'A little piece of us', note: NOTES[2] || _defaultNotes[2]},
-  {caption:'A beautiful moment', note: NOTES[3] || _defaultNotes[3]}
-];
-const stack = document.getElementById('stack');
-const tapHint = document.getElementById('tapHint');
-const continueBtn1 = document.getElementById('continueBtn1');
-let cards=[];
-function buildStack(){
-  stack.innerHTML=''; cards=[];
-  memories.forEach((m,i)=>{
-    const card = document.createElement('div');
-    card.className='polaroid';
-    card.style.zIndex = memories.length-i;
-    const baseTransform = `translateY(${i*6}px) rotate(${(i%2?1:-1)*(i*1.5)}deg) scale(${1-i*0.03})`;
-    card.dataset.base = baseTransform; card.style.transform = baseTransform;
-    const photoStyle = PHOTOS[i] ? ` style="background-image:url('${PHOTOS[i]}');background-size:cover;background-position:center;"` : '';
-    card.innerHTML = `<div class="card-inner"><div class="card-face card-front"><div class="photo"${photoStyle}></div><div class="caption">${m.caption}</div></div><div class="card-face card-back"><p>${m.note}</p></div></div>`;
-    stack.appendChild(card); cards.push(card);
-  });
-  attachFrontHandlers();
+// ---- Screen 2: Photo gallery ----
+const galleryPhoto = document.getElementById('galleryPhoto');
+const galleryCounter = document.getElementById('galleryCounter');
+const galleryCaption = document.getElementById('galleryCaption');
+const nextMemoryBtn = document.getElementById('nextMemoryBtn');
+const galleryPhotos = PHOTOS.length ? PHOTOS : [null,null,null,null];
+const galleryNotes = NOTES.length ? NOTES : ['A memory worth keeping.','A moment I never want to forget.','A little piece of us.','A beautiful moment.'];
+let galleryIdx = 0;
+function renderGallery(){
+  const url = galleryPhotos[galleryIdx];
+  galleryPhoto.style.background = url ? `center/cover url('${url}')` : 'linear-gradient(135deg,#7a2347,#1a0a14)';
+  galleryCounter.textContent = `Photo ${galleryIdx+1} of ${galleryPhotos.length}`;
+  galleryCaption.textContent = galleryNotes[galleryIdx] || '';
+  nextMemoryBtn.textContent = (galleryIdx === galleryPhotos.length-1) ? 'Continue' : 'Next Memory';
 }
-function attachFrontHandlers(){
-  const front = cards[0];
-  if(!front){ tapHint.textContent = "that's all the memories for now"; continueBtn1.classList.add('show'); return; }
-  front.style.touchAction='none';
-  const inner = front.querySelector('.card-inner');
-  let startX=0, startY=0, dx=0, dy=0, dragging=false, moved=false;
-  function onDown(e){
-    startX = e.clientX; startY = e.clientY; dx=0; dy=0; moved=false; dragging=false;
-    front.style.transition='none'; front.setPointerCapture(e.pointerId);
-    front.addEventListener('pointermove', onMove); front.addEventListener('pointerup', onUp); front.addEventListener('pointercancel', onUp);
-  }
-  function onMove(e){
-    dx = e.clientX - startX; dy = e.clientY - startY;
-    if(Math.abs(dx)>8 || Math.abs(dy)>8){ moved=true; dragging=true; front.classList.add('dragging'); }
-    if(dragging){ front.style.transform = `${front.dataset.base} translate(${dx}px, ${dy}px) rotate(${dx/18}deg)`; }
-  }
-  function onUp(){
-    front.removeEventListener('pointermove', onMove); front.removeEventListener('pointerup', onUp); front.removeEventListener('pointercancel', onUp);
-    front.classList.remove('dragging');
-    const dist = Math.hypot(dx,dy);
-    if(dragging && dist > 90){
-      const angle = Math.atan2(dy,dx);
-      front.classList.add('flying');
-      front.style.transform = `${front.dataset.base} translate(${Math.cos(angle)*700}px, ${Math.sin(angle)*700}px) rotate(${dx/10}deg)`;
-      front.style.opacity='0';
-      setTimeout(()=>{
-        front.remove(); cards.shift();
-        cards.forEach((c,i)=>{ c.style.zIndex = cards.length-i; const b = `translateY(${i*6}px) rotate(${(i%2?1:-1)*(i*1.5)}deg) scale(${1-i*0.03})`; c.dataset.base = b; c.style.transform = b; });
-        attachFrontHandlers();
-      },450);
-    } else if(!moved){ inner.classList.toggle('flipped'); front.style.transition=''; front.style.transform = front.dataset.base; }
-    else { front.style.transition=''; front.style.transform = front.dataset.base; }
-    dragging=false;
-  }
-  front.addEventListener('pointerdown', onDown);
-}
-buildStack();
-continueBtn1.addEventListener('click', ()=>showScreen(3));
-
-const envInner = document.getElementById('envInner');
-const tapHint2 = document.getElementById('tapHint2');
-const continueBtn2 = document.getElementById('continueBtn2');
-const envBackText = document.getElementById('envBackText');
-const envBackFull = `Dearest ${TO}, ${BOXLETTER || 'I\'ve been carrying something for a while now, something I\'ve been meaning to ask you.'} ♥`;
-let envTyped = false;
-envInner.addEventListener('click', ()=>{
-  envInner.classList.toggle('flipped');
-  if(envInner.classList.contains('flipped')){
-    tapHint2.textContent = '';
-    if(!envTyped){ envTyped = true; typeInto(envBackText, envBackFull, 24, ()=>continueBtn2.classList.add('show')); }
-    else { continueBtn2.classList.add('show'); }
-  }
+renderGallery();
+nextMemoryBtn.addEventListener('click', ()=>{
+  if(galleryIdx < galleryPhotos.length-1){ galleryIdx++; renderGallery(); }
+  else { showScreen(3); }
 });
-continueBtn2.addEventListener('click', ()=>showScreen(4));
 
-const reasons = REASONS.length === 5 ? REASONS : [
-  'Because I want forever, not just today.',
-  'Because you feel like home, wherever we are.',
-  'Because I want to build a life with you, not just share one.',
-  'Because every version of my future has you in it.',
-  'Because loving you is the easiest decision I have ever made.'
-];
-const envList = document.getElementById('envList');
-const continueBtn3 = document.getElementById('continueBtn3');
-let openedCount = 0;
-reasons.forEach((r,i)=>{
-  const item = document.createElement('div');
-  item.className='env-item';
-  item.innerHTML = `<div class="env-row"><span class="env-num">${i+1}</span><span class="env-row-text">Break this seal</span></div><div class="env-content"><p>${r}</p></div>`;
-  item.querySelector('.env-row').addEventListener('click', ()=>{
-    if(item.classList.contains('open')) return;
-    item.classList.add('open'); item.querySelector('.env-row-text').textContent = 'Sealed with love';
-    openedCount++; if(openedCount === reasons.length) continueBtn3.classList.add('show');
-  });
-  envList.appendChild(item);
-});
-continueBtn3.addEventListener('click', ()=>showScreen(5));
+// ---- Screen 3: Heart introduction ----
+document.getElementById('yesIntroBtn').addEventListener('click', ()=>showScreen(4));
 
-const letterPaper = document.getElementById('letterPaper');
-const continueBtn4 = document.getElementById('continueBtn4');
-const screen5 = document.getElementById('screen5');
+// ---- Screen 4: Ring box ----
+document.getElementById('askBtn').addEventListener('click', ()=>showScreen(5));
+
+// ---- Screen 5: Personal message (typewriter with pen) ----
+function typeInto(el, text, speed, cb){
+  clearTimeout(el._penTimer);
+  let i = 0;
+  const pen = document.createElement('span');
+  pen.className='pen'; pen.textContent='🖊️';
+  el.textContent = '';
+  function tick(){
+    i++;
+    el.textContent = text.slice(0,i);
+    el.appendChild(pen);
+    if(i < text.length){ el._penTimer = setTimeout(tick, speed); }
+    else { pen.remove(); if(cb) cb(); }
+  }
+  tick();
+}
+function typeParagraphs(container, paragraphs, cb){
+  container.innerHTML = '';
+  let idx = 0;
+  function next(){
+    if(idx >= paragraphs.length){ if(cb) cb(); return; }
+    const p = document.createElement('p');
+    p.className = 'body-text';
+    container.appendChild(p);
+    typeInto(p, paragraphs[idx], 24, ()=>{ idx++; next(); });
+  }
+  next();
+}
+const letterCard = document.getElementById('letterCard');
+const letterBody = document.getElementById('letterBody');
+const continueBtn5 = document.getElementById('continueBtn5');
 const letterParagraphs = MSG ? [MSG] : [
-  "I don't say this enough, but you are the softest, warmest part of my everyday life.",
-  "Every memory on this page is real, and I want a lifetime more of them with you.",
-  "This is just the beginning of everything I still want to build with you."
+  "From the very first memory, I knew there was something different about you.",
+  "Every moment since has only made me more certain."
 ];
 let letterStarted = false;
+const screen5 = screens[5];
 new MutationObserver(()=>{
-  if(!screen5.classList.contains('hidden')){
+  if(!screen5.classList.contains('hidden') && !letterStarted){
+    letterStarted = true;
     setTimeout(()=>{
-      letterPaper.classList.add('show');
-      if(!letterStarted){ letterStarted = true; typeParagraphs(letterPaper, letterParagraphs); }
-      setTimeout(()=>continueBtn4.classList.add('show'), letterStarted ? 200 : 3200);
+      letterCard.classList.add('show');
+      typeParagraphs(letterBody, letterParagraphs, ()=>continueBtn5.classList.add('show'));
     }, 200);
-  } else { letterPaper.classList.remove('show'); continueBtn4.classList.remove('show'); }
+  }
 }).observe(screen5, {attributes:true, attributeFilter:['class']});
-continueBtn4.addEventListener('click', ()=>showScreen(6));
+continueBtn5.addEventListener('click', ()=>showScreen(6));
 
-const promiseText = document.getElementById('promiseText');
-const promiseHint = document.getElementById('promiseHint');
-const promiseGlyph = document.getElementById('promiseGlyph');
-const promiseHoldWrap = document.querySelector('#screen7 .hold-wrap');
-const heartRevealWrap = document.getElementById('heartRevealWrap');
-const giftBox = document.getElementById('giftBox');
-const boxRing = document.getElementById('boxRing');
-const giftNote = document.getElementById('giftNote');
-const proposalAsk = document.getElementById('proposalAsk');
-heartRevealWrap.style.display = 'none';
-attachHold(document.getElementById('promiseBtn'), document.getElementById('promiseRingCircle'), null, 1400, onQuestionSealed, promiseHint);
-function onQuestionSealed(){
-  promiseGlyph.style.opacity='0'; promiseGlyph.style.transform='scale(1.3)';
-  setTimeout(()=>{
-    promiseHoldWrap.style.display='none';
-    promiseText.textContent = '';
-    heartRevealWrap.style.display='flex';
-    setTimeout(()=>giftBox.classList.add('open'), 200);
-    setTimeout(()=>{ enableRingDrag(boxRing); giftNote.style.opacity='1'; }, 1550);
-    setTimeout(()=>proposalAsk.classList.add('show'), 2500);
-  }, 500);
+// ---- Screen 6: Question reveal (typewriter heading) ----
+const questionHeading = document.getElementById('questionHeading');
+let questionTyped = false;
+function playQuestionHeading(){
+  if(questionTyped) return; questionTyped = true;
+  const text = questionHeading.dataset.text;
+  questionHeading.textContent = ''; questionHeading.classList.add('typing');
+  let i = 0;
+  const timer = setInterval(()=>{
+    i++; questionHeading.textContent = text.slice(0,i);
+    if(i >= text.length){ clearInterval(timer); questionHeading.classList.remove('typing'); }
+  }, 55);
 }
-function enableRingDrag(el){
-  let startX=0, rot=20;
-  el.addEventListener('pointerdown', e=>{
-    startX = e.clientX; el.setPointerCapture(e.pointerId); el.style.cursor='grabbing';
-    el.addEventListener('pointermove', onMove); el.addEventListener('pointerup', onUp);
-  });
-  function onMove(e){
-    const dx = e.clientX - startX;
-    el.style.transform = `translate(-50%,-46px) scale(1) rotateY(${rot + dx*0.6}deg)`;
-  }
-  function onUp(e){
-    rot += (e.clientX - startX)*0.6;
-    el.style.cursor='grab';
-    el.removeEventListener('pointermove', onMove); el.removeEventListener('pointerup', onUp);
-  }
-}
+document.getElementById('answerBtn').addEventListener('click', ()=>showScreen(7));
+
+// ---- Screen 7: Final proposal — ring reveal + dodging No button ----
 const yesBtn = document.getElementById('yesBtn');
 const noBtn = document.getElementById('noBtn');
-const proposalBtns = document.getElementById('proposalBtns');
+const finalBtns = document.getElementById('finalBtns');
+const dodgeIndicator = document.getElementById('dodgeIndicator');
+const noTeases = ['No','Nope','Not happening','Try again','Nice try','Still no','Almost!','So close','Nuh-uh','Keep trying'];
 let noMoves = 0;
 function dodgeNo(){
-  const wrapRect = proposalBtns.getBoundingClientRect();
-  const btnW = noBtn.offsetWidth, btnH = noBtn.offsetHeight;
-  const maxX = Math.max(0, wrapRect.width - btnW);
-  const maxY = 140;
-  noBtn.style.position = 'relative';
-  noBtn.style.left = (Math.random()*maxX - maxX/2) + 'px';
+  const wrapRect = finalBtns.getBoundingClientRect();
+  const btnW = noBtn.offsetWidth || 70, btnH = noBtn.offsetHeight || 42;
+  const maxX = Math.max(10, wrapRect.width - btnW - 10);
+  const maxY = Math.max(10, wrapRect.height - btnH - 10);
+  noBtn.style.left = (Math.random()*maxX) + 'px';
   noBtn.style.top = (Math.random()*maxY) + 'px';
+  noBtn.style.transform = 'scale(1.12)';
+  setTimeout(()=>{ noBtn.style.transform = 'scale(1)'; }, 180);
   noMoves++;
-  if(noMoves > 2){ noBtn.style.opacity = Math.max(.15, 1 - noMoves*0.12); }
+  noBtn.textContent = noTeases[Math.min(noMoves, noTeases.length-1)];
+  noBtn.style.opacity = Math.max(.35, 1 - noMoves*0.05);
+  dodgeIndicator.textContent = `Running from love (${noMoves}×)`;
+  dodgeIndicator.classList.add('show');
 }
-noBtn.addEventListener('pointerdown', e=>{ e.preventDefault(); dodgeNo(); });
+noBtn.addEventListener('pointerdown', e=>{ e.preventDefault(); dodgeNo(); }, {passive:false});
 noBtn.addEventListener('pointerenter', dodgeNo);
-proposalAsk.addEventListener('pointermove', e=>{
+finalBtns.addEventListener('pointermove', e=>{
   const r = noBtn.getBoundingClientRect();
   const cx = r.left + r.width/2, cy = r.top + r.height/2;
   const dist = Math.hypot(e.clientX-cx, e.clientY-cy);
-  if(dist < 60) dodgeNo();
+  if(dist < 70) dodgeNo();
 });
 yesBtn.addEventListener('click', ()=>showScreen(8));
 
-const track = document.getElementById('carouselTrack');
-const dotsWrap = document.getElementById('carouselDots');
-const cardEls = track.querySelectorAll('.carousel-card');
-let activeIdx = 0;
-cardEls.forEach((_,i)=>{
-  const d = document.createElement('div'); d.className='dot'+(i===0?' active':'');
-  dotsWrap.appendChild(d);
+// ---- Screen 8: Keepsake ----
+document.getElementById('replayBtn').addEventListener('click', ()=>{
+  galleryIdx = 0; renderGallery();
+  letterStarted = false; letterCard.classList.remove('show'); continueBtn5.classList.remove('show'); letterBody.innerHTML='';
+  questionTyped = false;
+  noMoves = 0; noBtn.style.left=''; noBtn.style.top=''; noBtn.style.opacity='1'; noBtn.textContent='No'; dodgeIndicator.classList.remove('show');
+  showScreen(1);
 });
-const dotEls = dotsWrap.querySelectorAll('.dot');
-const cardStep = 256;
-function goTo(i){
-  activeIdx = Math.max(0, Math.min(cardEls.length-1, i));
-  track.style.transition='transform .4s ease';
-  track.style.transform = `translateX(${-activeIdx*cardStep}px)`;
-  dotEls.forEach((d,idx)=>d.classList.toggle('active', idx===activeIdx));
-}
-let cStartX=0, cDx=0, cDragging=false;
-track.addEventListener('pointerdown', e=>{ cStartX=e.clientX; cDx=0; cDragging=true; track.style.transition='none'; track.setPointerCapture(e.pointerId); });
-track.addEventListener('pointermove', e=>{ if(!cDragging) return; cDx = e.clientX-cStartX; track.style.transform = `translateX(${-activeIdx*cardStep+cDx}px)`; });
-track.addEventListener('pointerup', ()=>{ cDragging=false; if(cDx < -50) goTo(activeIdx+1); else if(cDx > 50) goTo(activeIdx-1); else goTo(activeIdx); });
-track.addEventListener('pointercancel', ()=>{ cDragging=false; goTo(activeIdx); });
-document.getElementById('continueBtn6').addEventListener('click', ()=>showScreen(7));
-document.getElementById('replayBtn').addEventListener('click', ()=>showScreen(1));
 document.getElementById('downloadBtn').addEventListener('click', function(){ this.textContent = 'Saved ✓'; });
-fillProgress(screens[1]);
-                                                                    
