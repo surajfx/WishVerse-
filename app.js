@@ -1,4 +1,6 @@
-const canvasScript=document.createElement("script");canvasScript.src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";document.head.appendChild(canvasScript);
+const canvasScript=document.createElement("script");
+canvasScript.src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+document.head.appendChild(canvasScript);
 
 const firebaseConfig = {
   apiKey: "AIzaSyDhH_fplGM0SYhXYQyGEmSgsxchuUgi43I",
@@ -14,6 +16,7 @@ const firebaseConfig = {
 let db = null;
 let firebaseReady = false;
 let firestoreApi = null;
+
 async function initFirebase(){
   try {
     const [{ initializeApp }, firestore] = await Promise.all([
@@ -29,9 +32,6 @@ async function initFirebase(){
   }
 }
 
-// Each card carries everything needed to drive the shared cinematic
-// experience: its own colours (via the theme-<id> CSS class), its own
-// copy for every step, its own memory captions and its own final reveal.
 import { cards } from "./cards/index.js";
 
 let selectedCard = cards[0];
@@ -51,23 +51,31 @@ function categories() {
 }
 
 function renderFeatured(){
-  featuredGrid.innerHTML = featuredIds.map(id => { const card=cards.find(c=>c.id===id); return `<button class="featured-card ${card.art}" data-open="${card.id}"><span class="featured-icon">${card.icon}</span><strong>${card.title}</strong></button>`; }).join("");
-  featuredGrid.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>openCard(b.dataset.open));
+  featuredGrid.innerHTML = featuredIds.map(id => {
+    const card = cards.find(c => c.id === id);
+    return `<button class="featured-card ${card.art}" data-open="${card.id}"><span class="featured-icon">${card.icon}</span><strong>${card.title}</strong></button>`;
+  }).join("");
+  featuredGrid.querySelectorAll("[data-open]").forEach(b => b.onclick = () => openCard(b.dataset.open));
 }
 
 function renderChips() {
   $("#categoryChips").innerHTML = categories().map(c =>
     `<button class="chip ${c===activeCategory?"active":""}" data-category="${c}">${c}</button>`
   ).join("");
+
   document.querySelectorAll("[data-category]").forEach(b => b.onclick = () => {
-    activeCategory = b.dataset.category; renderChips(); renderCards();
+    activeCategory = b.dataset.category;
+    renderChips();
+    renderCards();
   });
 }
 
 function filteredCards() {
   const term = ($("#searchInput").value || "").toLowerCase().trim();
-  return cards.filter(c => (activeCategory==="All" || c.category===activeCategory) &&
-    `${c.title} ${c.category} ${c.desc}`.toLowerCase().includes(term));
+  return cards.filter(c =>
+    (activeCategory==="All" || c.category===activeCategory) &&
+    `${c.title} ${c.category} ${c.desc}`.toLowerCase().includes(term)
+  );
 }
 
 function cardHTML(card) {
@@ -105,7 +113,10 @@ function renderFavorites() {
 }
 
 function toggleFavorite(id) {
-  favorites = favorites.includes(id) ? favorites.filter(x => x!==id) : [...favorites,id];
+  favorites = favorites.includes(id)
+    ? favorites.filter(x => x!==id)
+    : [...favorites,id];
+
   localStorage.setItem("wishverse-favorites", JSON.stringify(favorites));
   renderCards();
   toast(favorites.includes(id) ? "Saved to favorites" : "Removed from favorites");
@@ -120,7 +131,9 @@ function openCard(id) {
   $("#cardModal").classList.remove("hidden");
 }
 
-function closeModal(id) { $(id).classList.add("hidden"); }
+function closeModal(id) {
+  $(id).classList.add("hidden");
+}
 
 const GF_DEFAULTS = {
   notes: [
@@ -138,6 +151,7 @@ const GF_DEFAULTS = {
     "Because being loved by you feels like home."
   ]
 };
+
 const PROPOSAL_DEFAULTS = {
   notes: [
     "I knew even back then I wanted forever with you.",
@@ -154,10 +168,12 @@ const PROPOSAL_DEFAULTS = {
     "Because loving you is the easiest decision I have ever made."
   ]
 };
+
 let gfCollageIdx = [];
 
 function openCustomize() {
   if (!selectedCard) selectedCard = cards[0];
+
   closeModal("#cardModal");
   $("#wishForm").classList.remove("hidden");
   $("#createdResult").classList.add("hidden");
@@ -165,106 +181,196 @@ function openCustomize() {
   $("#messageInput").value = selectedCard.example;
   $("#messageInput").placeholder = selectedCard.formHint;
   $("#messageExample").textContent = `Example: ${selectedCard.example}`;
-  uploadedImageUrls = []; gfCollageIdx = [];
+
+  uploadedImageUrls = [];
+  gfCollageIdx = [];
   $("#uploadStatus").textContent = "";
+
   const isGirlfriend = CINEMATIC_CARDS.includes(selectedCard.id);
   $("#girlfriendExtra").classList.toggle("hidden", !isGirlfriend);
   $("#gfCollagePicker").classList.add("hidden");
   $("#gfCollageThumbs").innerHTML = "";
+
   if (isGirlfriend) {
     const d = selectedCard.id === "proposal" ? PROPOSAL_DEFAULTS : GF_DEFAULTS;
-    d.notes.forEach((v,i)=>{ $(`#gfNote${i+1}`).value = v; });
+    d.notes.forEach((v,i) => { $(`#gfNote${i+1}`).value = v; });
     $("#gfBoxLetter").value = d.boxLetter;
-    d.reasons.forEach((v,i)=>{ $(`#gfReason${i+1}`).value = v; });
+    d.reasons.forEach((v,i) => { $(`#gfReason${i+1}`).value = v; });
   }
+
   $("#customizeModal").classList.remove("hidden");
 }
 
 function toast(message) {
-  const t = $("#toast"); t.textContent = message; t.classList.add("show");
+  const t = $("#toast");
+  t.textContent = message;
+  t.classList.add("show");
   setTimeout(() => t.classList.remove("show"), 2500);
 }
 
 async function uploadToCloudinary(file) {
   const cloudName = "wtlx95j4";
   const uploadPreset = "ml_default";
+
   if (cloudName.startsWith("YOUR_") || uploadPreset.startsWith("YOUR_")) return "";
+
   const data = new FormData();
-  data.append("file", file); data.append("upload_preset", uploadPreset);
-  const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {method:"POST",body:data});
+  data.append("file", file);
+  data.append("upload_preset", uploadPreset);
+
+  const response = await fetch(
+    `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+    {method:"POST", body:data}
+  );
+
   if (!response.ok) throw new Error("Cloudinary upload failed");
+
   const result = await response.json();
   return result.secure_url;
 }
 
 $("#searchInput").addEventListener("input", renderCards);
-$("#heroCreate").onclick = () => { selectedCard = cards[0]; openCustomize(); };
+$("#heroCreate").onclick = () => {
+  selectedCard = cards[0];
+  openCustomize();
+};
 $("#customizeBtn").onclick = openCustomize;
+
 $("#demoBtn").onclick = () => {
   closeModal("#cardModal");
-  showSharedExperience({templateId:selectedCard.id, templateTitle:selectedCard.title, category:selectedCard.category, from:"Someone who cares", to:"Your Special Person", message:selectedCard.desc, imageUrl:""}, true);
+  showSharedExperience({
+    templateId:selectedCard.id,
+    templateTitle:selectedCard.title,
+    category:selectedCard.category,
+    from:"Someone who cares",
+    to:"Your Special Person",
+    message:selectedCard.desc,
+    imageUrl:""
+  }, true);
 };
-document.querySelectorAll("[data-close-modal]").forEach(x => x.onclick = () => closeModal("#cardModal"));
-document.querySelectorAll("[data-close-customize]").forEach(x => x.onclick = () => closeModal("#customizeModal"));
+
+document.querySelectorAll("[data-close-modal]").forEach(x =>
+  x.onclick = () => closeModal("#cardModal")
+);
+document.querySelectorAll("[data-close-customize]").forEach(x =>
+  x.onclick = () => closeModal("#customizeModal")
+);
+
 $("#themeToggle").onclick = () => {
   document.documentElement.classList.toggle("light");
-  localStorage.setItem("wishverse-theme", document.documentElement.classList.contains("light") ? "light" : "dark");
+  localStorage.setItem(
+    "wishverse-theme",
+    document.documentElement.classList.contains("light") ? "light" : "dark"
+  );
 };
-if (localStorage.getItem("wishverse-theme")==="light") document.documentElement.classList.add("light");
 
-// Photo upload notes: photo 1 = main/favourite photo, photo 2 = a beautiful
-// memory, photo 3 = a fun moment, photo 4 = a special memory. If the person
-// uploads fewer than four, the memory steps fall back to an elegant
-// placeholder instead of a broken image.
+if (localStorage.getItem("wishverse-theme")==="light") {
+  document.documentElement.classList.add("light");
+}
+
 $("#imageInput").onchange = async e => {
-  const files = [...e.target.files].slice(0,4); if (!files.length) return;
+  const files = [...e.target.files].slice(0,4);
+  if (!files.length) return;
+
   $("#uploadStatus").textContent = `Uploading ${files.length} photo${files.length>1?"s":""}...`;
-  try { uploadedImageUrls = []; for (const file of files) { const url = await uploadToCloudinary(file); if (url) uploadedImageUrls.push(url); } $("#uploadStatus").textContent = uploadedImageUrls.length ? `${uploadedImageUrls.length} photo${uploadedImageUrls.length>1?"s":""} uploaded successfully.` : "Photos selected."; }
-  catch { uploadedImageUrls = []; $("#uploadStatus").textContent = "Upload failed. You can continue without photos."; }
+
+  try {
+    uploadedImageUrls = [];
+    for (const file of files) {
+      const url = await uploadToCloudinary(file);
+      if (url) uploadedImageUrls.push(url);
+    }
+
+    $("#uploadStatus").textContent = uploadedImageUrls.length
+      ? `${uploadedImageUrls.length} photo${uploadedImageUrls.length>1?"s":""} uploaded successfully.`
+      : "Photos selected.";
+  } catch {
+    uploadedImageUrls = [];
+    $("#uploadStatus").textContent = "Upload failed. You can continue without photos.";
+  }
+
   renderGfCollagePicker();
 };
 
 function renderGfCollagePicker(){
   if (!selectedCard || !CINEMATIC_CARDS.includes(selectedCard.id)) return;
+
   const wrap = $("#gfCollageThumbs");
-  if (!uploadedImageUrls.length) { $("#gfCollagePicker").classList.add("hidden"); wrap.innerHTML = ""; gfCollageIdx = []; return; }
-  if (!gfCollageIdx.length) gfCollageIdx = uploadedImageUrls.map((_,i)=>i).slice(0,2);
+
+  if (!uploadedImageUrls.length) {
+    $("#gfCollagePicker").classList.add("hidden");
+    wrap.innerHTML = "";
+    gfCollageIdx = [];
+    return;
+  }
+
+  if (!gfCollageIdx.length) {
+    gfCollageIdx = uploadedImageUrls.map((_,i)=>i).slice(0,2);
+  }
+
   $("#gfCollagePicker").classList.remove("hidden");
+
   wrap.innerHTML = uploadedImageUrls.map((url,i) =>
     `<div class="gf-thumb${gfCollageIdx.includes(i)?" selected":""}" data-idx="${i}"><img src="${escapeHTML(url)}"><span class="gf-thumb-badge">✓</span></div>`
   ).join("");
+
   wrap.querySelectorAll(".gf-thumb").forEach(el => el.onclick = () => {
     const idx = Number(el.dataset.idx);
-    if (gfCollageIdx.includes(idx)) { gfCollageIdx = gfCollageIdx.filter(i => i !== idx); }
-    else { if (gfCollageIdx.length >= 2) gfCollageIdx.shift(); gfCollageIdx.push(idx); }
+
+    if (gfCollageIdx.includes(idx)) {
+      gfCollageIdx = gfCollageIdx.filter(i => i !== idx);
+    } else {
+      if (gfCollageIdx.length >= 2) gfCollageIdx.shift();
+      gfCollageIdx.push(idx);
+    }
+
     renderGfCollagePicker();
   });
 }
-
 $("#wishForm").onsubmit = async e => {
   e.preventDefault();
+
   const payload = {
-    templateId: selectedCard.id, templateTitle: selectedCard.title,
-    category: selectedCard.category, from: $("#fromInput").value.trim(),
-    to: $("#toInput").value.trim(), message: $("#messageInput").value.trim(),
-    imageUrl: uploadedImageUrls[0] || "", imageUrls: uploadedImageUrls, createdAt: firestoreApi.serverTimestamp()
+    templateId: selectedCard.id,
+    templateTitle: selectedCard.title,
+    category: selectedCard.category,
+    from: $("#fromInput").value.trim(),
+    to: $("#toInput").value.trim(),
+    message: $("#messageInput").value.trim(),
+    imageUrl: uploadedImageUrls[0] || "",
+    imageUrls: uploadedImageUrls,
+    createdAt: firestoreApi.serverTimestamp()
   };
+
   if (CINEMATIC_CARDS.includes(selectedCard.id)) {
-    payload.gfNotes = [1,2,3,4].map(i => $(`#gfNote${i}`).value.trim() || GF_DEFAULTS.notes[i-1]);
+    payload.gfNotes = [1,2,3,4].map(i =>
+      $(`#gfNote${i}`).value.trim() || GF_DEFAULTS.notes[i-1]
+    );
     payload.gfBoxLetter = $("#gfBoxLetter").value.trim() || GF_DEFAULTS.boxLetter;
-    payload.gfReasons = [1,2,3,4,5].map(i => $(`#gfReason${i}`).value.trim() || GF_DEFAULTS.reasons[i-1]);
-    payload.gfCollage = (gfCollageIdx.length ? gfCollageIdx : [0,1]).map(i => uploadedImageUrls[i]).filter(Boolean);
+    payload.gfReasons = [1,2,3,4,5].map(i =>
+      $(`#gfReason${i}`).value.trim() || GF_DEFAULTS.reasons[i-1]
+    );
+    payload.gfCollage = (gfCollageIdx.length ? gfCollageIdx : [0,1])
+      .map(i => uploadedImageUrls[i])
+      .filter(Boolean);
   }
+
   try {
     if (!firebaseReady || !db) {
       toast("Firebase is not connected. Check Firebase setup.");
       return;
     }
-    const { addDoc, collection } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+
+    const { addDoc, collection } = await import(
+      "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"
+    );
+
     const ref = await addDoc(collection(db, "wishes"), payload);
     const link = `${location.origin}${location.pathname}?wish=${ref.id}`;
+
     $("#shareLink").value = link;
-    $("#wishForm").classList.add("hidden"); $("#createdResult").classList.remove("hidden");
+    $("#wishForm").classList.add("hidden");
+    $("#createdResult").classList.remove("hidden");
     toast("Wish saved successfully");
   } catch (error) {
     console.error(error);
@@ -276,24 +382,35 @@ $("#copyLink").onclick = async () => {
   await navigator.clipboard.writeText($("#shareLink").value);
   toast("Link copied");
 };
+
 $("#closeAfterCreate").onclick = () => closeModal("#customizeModal");
 
-/* =========================================================================
-   SHARED CINEMATIC WISH EXPERIENCE
-   Each card walks through the same overall structure (loading → intro →
-   4 memories → letter → final reveal), but every step, colour and photo
-   caption comes from that card's own config, so no two cards feel alike.
-   Birthday additionally gets a "make a wish" candle-blowing step.
-   ========================================================================= */
 let sharedWish = null;
 let sharedStep = 0;
 let sharedIsDemo = false;
 let sharedSteps = [];
 let statusInterval = null;
 
-function escapeHTML(value=""){return String(value).replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));}
-function getPhotos(w){return (w.imageUrls&&w.imageUrls.length?w.imageUrls:(w.imageUrl?[w.imageUrl]:[])).slice(0,4);}
-function currentCard(){ return cards.find(c=>c.id===(sharedWish||{}).templateId) || cards[0]; }
+function escapeHTML(value=""){
+  return String(value).replace(/[&<>'"]/g,c=>({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    "'":"&#39;",
+    '"':"&quot;"
+  }[c]));
+}
+
+function getPhotos(w){
+  return (w.imageUrls && w.imageUrls.length
+    ? w.imageUrls
+    : (w.imageUrl ? [w.imageUrl] : [])
+  ).slice(0,4);
+}
+
+function currentCard(){
+  return cards.find(c => c.id === (sharedWish || {}).templateId) || cards[0];
+}
 
 function buildSteps(card){
   const steps = ["loading","intro","memory","memory","memory","memory","letter"];
@@ -312,11 +429,17 @@ function startAmbientParticles(card){
   const root = $("#sharedExperience");
   const old = root.querySelector(".ambient-particles");
   if (old) old.remove();
+
   const layer = document.createElement("div");
   layer.className = "ambient-particles";
-  const symbols = card.particles && card.particles.length ? card.particles : ["✦","·","❋","♥"];
+
+  const symbols = card.particles && card.particles.length
+    ? card.particles
+    : ["✦","·","❋","♥"];
+
   const count = card.id === "birthday" ? 22 : 28;
-  for (let i=0;i<count;i++){
+
+  for (let i=0; i<count; i++){
     const p = document.createElement("span");
     p.textContent = symbols[i % symbols.length];
     p.style.setProperty("--x", `${Math.random()*100}%`);
@@ -325,10 +448,16 @@ function startAmbientParticles(card){
     p.style.setProperty("--s", `${.55+Math.random()*1.1}`);
     layer.appendChild(p);
   }
+
   root.prepend(layer);
 }
 
-function stopStatusRotation(){ if (statusInterval){ clearInterval(statusInterval); statusInterval = null; } }
+function stopStatusRotation(){
+  if (statusInterval) {
+    clearInterval(statusInterval);
+    statusInterval = null;
+  }
+}
 
 function renderGirlfriendExperience(w){
   const to = encodeURIComponent(w.to || "You");
@@ -338,28 +467,46 @@ function renderGirlfriendExperience(w){
   const notes = encodeURIComponent((w.gfNotes || []).join("|"));
   const boxletter = encodeURIComponent(w.gfBoxLetter || "");
   const reasons = encodeURIComponent((w.gfReasons || []).join("|"));
-  const collage = encodeURIComponent((w.gfCollage && w.gfCollage.length ? w.gfCollage : getPhotos(w).slice(0,2)).join(","));
+  const collage = encodeURIComponent(
+    (w.gfCollage && w.gfCollage.length
+      ? w.gfCollage
+      : getPhotos(w).slice(0,2)
+    ).join(",")
+  );
+
   const folder = `cards/${w.templateId}-experience/index.html`;
+
   $("#sharedStage").innerHTML = `<iframe class="girlfriend-frame" src="${folder}?to=${to}&from=${from}&msg=${msg}&photos=${photos}&notes=${notes}&boxletter=${boxletter}&reasons=${reasons}&collage=${collage}" title="A little surprise" allow="autoplay"></iframe>`;
 }
 
 function showSharedExperience(wish, isDemo=false){
-  sharedWish = wish; sharedStep = 0; sharedIsDemo = isDemo;
+  sharedWish = wish;
+  sharedStep = 0;
+  sharedIsDemo = isDemo;
+
   const card = currentCard();
+
   document.body.classList.add("shared-mode");
   $("#sharedExperience").classList.remove("hidden");
   $("#sharedActions").classList.add("hidden");
+
   const progressBar = document.querySelector(".shared-progress");
+
   if (CINEMATIC_CARDS.includes(card.id)) {
     if (progressBar) progressBar.classList.add("hidden");
+
     $("#sharedExperience").classList.add("girlfriend-live");
     $("#sharedExperience").classList.toggle("no-topbar", !isDemo);
+
     applyTheme(card);
     renderGirlfriendExperience(wish);
     return;
   }
+
   $("#sharedExperience").classList.remove("girlfriend-live", "no-topbar");
+
   if (progressBar) progressBar.classList.remove("hidden");
+
   sharedSteps = buildSteps(card);
   applyTheme(card);
   startAmbientParticles(card);
@@ -368,9 +515,12 @@ function showSharedExperience(wish, isDemo=false){
 
 function memoryIndexAt(step){
   let idx = 0;
-  for (let i=0;i<step;i++) if (sharedSteps[i]==="memory") idx++;
+  for (let i=0; i<step; i++) {
+    if (sharedSteps[i] === "memory") idx++;
+  }
   return idx;
 }
+
 function isLastMemoryStep(step){
   return sharedSteps.slice(step+1).indexOf("memory") === -1;
 }
@@ -378,31 +528,45 @@ function isLastMemoryStep(step){
 function renderSharedStage(){
   const w = sharedWish || {};
   const card = currentCard();
+
   const name = escapeHTML(w.to || "Someone Special");
   const from = escapeHTML(w.from || "Someone who cares");
   const msg = escapeHTML(w.message || card.example);
   const photos = getPhotos(w);
   const stepType = sharedSteps[sharedStep] || "final";
+
   stopStatusRotation();
 
   let html = "";
+
   if (stepType === "loading") {
     html = `<div class="prelude-icon"><span>${card.icon}</span></div><div class="loading-ring"><i></i></div><div class="shared-kicker" id="statusText">${card.statusMessages[0]}</div><h1 class="prelude-title">A little moment<br>made just for <span>${name}</span></h1><p class="shared-intro">Please wait… your surprise is opening.</p><button class="shared-cta" data-next>Open the surprise <b>→</b></button>`;
+
   } else if (stepType === "intro") {
     html = `<div class="experience-orb"><span>${card.icon}</span></div><div class="shared-kicker">${card.kicker}</div><h1>${card.openIntro}<span>${name}</span></h1><p class="shared-intro">Someone made this little experience just for you.</p><button class="shared-cta" data-next>Tap to continue <b>→</b></button>`;
+
   } else if (stepType === "memory") {
     const memIndex = memoryIndexAt(sharedStep);
+
     const photo = photos[memIndex]
       ? `<img class="memory-photo" src="${escapeHTML(photos[memIndex])}" alt="A memory">`
       : `<div class="memory-placeholder">${card.icon}<small>Add your beautiful memory</small></div>`;
+
     const caption = card.memoryCaptions[memIndex] || "";
     const last = isLastMemoryStep(sharedStep);
+
     html = `<div class="shared-kicker">${card.memoryHeading}</div><h2>One photo. One memory. One feeling.</h2><div class="memory-frame">${photo}</div><p class="memory-caption">${caption}</p><p class="memory-count">Memory ${memIndex+1} of 4</p><button class="shared-cta" data-next>${last?"Read the message":"Next Memory"} <b>→</b></button>`;
+
   } else if (stepType === "letter") {
-    const nextLabel = sharedSteps[sharedStep+1] === "cake" ? "Make a wish" : "Open the final surprise";
+    const nextLabel = sharedSteps[sharedStep+1] === "cake"
+      ? "Make a wish"
+      : "Open the final surprise";
+
     html = `<div class="shared-kicker">${card.letterHeading}</div><h2>A message for ${name}</h2><div class="letter-card"><p>${msg}</p><div class="letter-sign">With love,<br><strong>${from}</strong></div></div><button class="shared-cta" data-next>${nextLabel} <b>→</b></button>`;
+
   } else if (stepType === "cake") {
     html = `<div class="shared-kicker">MAKE A WISH</div><h2>Blow out the candles for ${name}</h2><div class="cake-wrap" id="cakeWrap"><div class="cake">🎂<span class="candle-flame">🕯️</span></div><p class="cake-hint">Tap the cake to make a wish</p></div><button class="shared-cta hidden" id="cakeNext" data-next>See your birthday surprise <b>→</b></button>`;
+
   } else {
     html = `<div class="shared-kicker">THE FINAL MOMENT</div><h2>${card.finalTitle}</h2><div class="final-card"><div class="final-title">${card.finalTitle}</div>${photos.length?`<div class="final-collage">${photos.map((u,i)=>`<img src="${escapeHTML(u)}" alt="Memory ${i+1}">`).join("")}</div>`:""}<p>${msg}</p><div class="letter-sign">With love,<br><strong>${from}</strong></div></div>`;
   }
@@ -416,9 +580,12 @@ function renderSharedStage(){
 
   if (stepType === "cake") {
     const cakeEl = document.getElementById("cakeWrap");
+
     cakeEl.onclick = () => {
       if (cakeEl.classList.contains("blown")) return;
+
       cakeEl.classList.add("blown");
+
       const nextBtn = document.getElementById("cakeNext");
       if (nextBtn) nextBtn.classList.remove("hidden");
     };
@@ -427,6 +594,7 @@ function renderSharedStage(){
   if (stepType === "loading") {
     let idx = 0;
     const statusEl = document.getElementById("statusText");
+
     statusInterval = setInterval(() => {
       idx = (idx+1) % card.statusMessages.length;
       if (statusEl) statusEl.textContent = card.statusMessages[idx];
@@ -434,48 +602,82 @@ function renderSharedStage(){
   }
 
   $("#sharedActions").classList.toggle("hidden", stepType !== "final");
-  const progress = sharedSteps.length > 1 ? (sharedStep/(sharedSteps.length-1))*100 : 100;
+
+  const progress = sharedSteps.length > 1
+    ? (sharedStep/(sharedSteps.length-1))*100
+    : 100;
+
   const fill = document.querySelector(".progress-fill");
   if (fill) fill.style.width = `${progress}%`;
 }
 
 function closeSharedExperience(){
   stopStatusRotation();
-  if (sharedIsDemo) { $("#sharedExperience").classList.add("hidden"); $("#sharedExperience").classList.remove("girlfriend-live"); $("#sharedActions").classList.add("hidden"); document.body.classList.remove("shared-mode"); return; }
+
+  if (sharedIsDemo) {
+    $("#sharedExperience").classList.add("hidden");
+    $("#sharedExperience").classList.remove("girlfriend-live");
+    $("#sharedActions").classList.add("hidden");
+    document.body.classList.remove("shared-mode");
+    return;
+  }
+
   location.href = location.pathname;
 }
+
 $("#sharedBack").onclick = closeSharedExperience;
-$("#watchAgain").onclick = () => { sharedStep = 0; renderSharedStage(); };
+
+$("#watchAgain").onclick = () => {
+  sharedStep = 0;
+  renderSharedStage();
+};
+
 $("#downloadKeepsake").onclick = async () => {
   const target = document.querySelector(".final-card");
   if (!target) return;
-  if (!window.html2canvas) { toast("Download engine is loading…"); return; }
-  const canvas = await window.html2canvas(target, {backgroundColor:null, scale:2, useCORS:true});
+
+  if (!window.html2canvas) {
+    toast("Download engine is loading…");
+    return;
+  }
+
+  const canvas = await window.html2canvas(target, {
+    backgroundColor:null,
+    scale:2,
+    useCORS:true
+  });
+
   const a = document.createElement("a");
   a.download = `wishverse-${(sharedWish?.to||"keepsake").replace(/[^a-z0-9]+/gi,"-").toLowerCase()}.png`;
   a.href = canvas.toDataURL("image/png");
   a.click();
 };
+
 async function loadSharedWish(){
   const id = new URLSearchParams(location.search).get("wish");
   if (!id) return;
+
   try {
     if (!firebaseReady || !db) await initFirebase();
+
     const { getDoc, doc } = firestoreApi;
     const snap = await getDoc(doc(db, "wishes", id));
+
     if (!snap.exists()) throw new Error("This wish link is not available.");
+
     showSharedExperience(snap.data());
   } catch (e) {
     console.error(e);
     toast(e.message || "This wish could not be loaded.");
   }
 }
+
 renderFeatured();
 renderChips();
 renderCards();
 
-// Mobile menu and theme controls
 const menuToggle = $("#menuToggle");
+
 if (menuToggle) {
   menuToggle.onclick = () => {
     document.querySelector(".desktop-nav")?.classList.toggle("mobile-open");
@@ -484,8 +686,11 @@ if (menuToggle) {
 
 (async () => {
   const sharedId = new URLSearchParams(window.location.search).get("wish");
+
   if (sharedId) document.body.classList.add("loading-shared-wish");
+
   await initFirebase();
   await loadSharedWish();
+
   document.body.classList.remove("loading-shared-wish");
 })();
