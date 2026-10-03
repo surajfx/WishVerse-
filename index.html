@@ -107,34 +107,55 @@
       <div class="eyebrow">MAKE IT YOURS</div>
       <h2 id="customizeTitle">Customize your wish</h2>
       <form id="wishForm">
-        <label>From<input id="fromInput" required maxlength="40" placeholder="Your name"></label>
-        <label>To<input id="toInput" required maxlength="40" placeholder="Their name"></label>
-
-        <div id="girlfriendExtra" class="girlfriend-extra hidden">
-          <p class="gf-section-title">Chapter One · 4 little memories <span class="optional">(shown behind each photo)</span></p>
-          <label>Memory note 1<textarea id="gfNote1" maxlength="140" rows="2"></textarea></label>
-          <label>Memory note 2<textarea id="gfNote2" maxlength="140" rows="2"></textarea></label>
-          <label>Memory note 3<textarea id="gfNote3" maxlength="140" rows="2"></textarea></label>
-          <label>Memory note 4<textarea id="gfNote4" maxlength="140" rows="2"></textarea></label>
-
-          <p class="gf-section-title">Chapter Two · the memory box letter</p>
-          <label>Letter<textarea id="gfBoxLetter" maxlength="300" rows="3"></textarea></label>
-
-          <p class="gf-section-title">Chapter Three · 5 reasons (sealed envelopes)</p>
-          <label>Reason 1<input id="gfReason1" maxlength="100"></label>
-          <label>Reason 2<input id="gfReason2" maxlength="100"></label>
-          <label>Reason 3<input id="gfReason3" maxlength="100"></label>
-          <label>Reason 4<input id="gfReason4" maxlength="100"></label>
-          <label>Reason 5<input id="gfReason5" maxlength="100"></label>
+        <div id="missWizard" class="miss-wizard hidden">
+          <div class="miss-stepper" aria-label="Creation progress">
+            <span data-miss-dot="1" class="active">✓<small>NAMES</small></span><i></i><span data-miss-dot="2">2<small>PHOTOS</small></span><i></i><span data-miss-dot="3">3<small>MESSAGE</small></span><i></i><span data-miss-dot="4">4<small>DETAILS</small></span><i></i><span data-miss-dot="5">5<small>CREATE</small></span>
+          </div>
+          <section class="miss-wizard-step" data-miss-step="1">
+            <span class="miss-step-badge">☁️ STEP 1 OF 5</span><h3>Whose Story Is This?</h3><p>Every great keepsake starts with names.</p>
+            <label>RECIPIENT'S NAME *<input id="missToInput" maxlength="40" placeholder="Their name"></label>
+            <label>RELATIONSHIP *</label><div class="miss-relationship"><button type="button" data-relationship="Friend">Friend</button><button type="button" data-relationship="Family Member">Family Member</button><button type="button" data-relationship="Significant other">Significant other</button><button type="button" data-relationship="Other">Other</button></div>
+            <label>YOUR NAME *<input id="missFromInput" maxlength="40" placeholder="Your name"></label>
+          </section>
+          <section class="miss-wizard-step hidden" data-miss-step="2">
+            <span class="miss-step-badge">📸 STEP 2 OF 5</span><h3>Upload Memories</h3><p>Add 1–4 photos that make you think of them. JPG, PNG or WebP.</p>
+            <label class="miss-upload-zone">📷<strong>Select Memories to Upload</strong><span>Photos help make the surprise personal.</span><input id="missImageInput" type="file" accept="image/jpeg,image/png,image/webp" multiple></label>
+            <div id="missPhotoPreview" class="miss-photo-preview"></div><p id="missUploadStatus" class="upload-status"></p>
+          </section>
+          <section class="miss-wizard-step hidden" data-miss-step="3">
+            <span class="miss-step-badge">✍️ STEP 3 OF 5</span><h3>Add Personal Message</h3><p>Let your feelings take shape. Write your own words or tap a suggestion.</p>
+            <label>YOUR MESSAGE NOTE *<textarea id="missMessageInput" maxlength="1500" rows="6" placeholder="Write something heartfelt for them..."></textarea><small class="field-hint"><span id="missMessageCount">0</span>/1500 characters</small></label>
+            <div class="miss-suggestions"><strong>✨ SUGGESTED FOR YOU</strong><button type="button" data-miss-suggestion="I miss your voice, your smile, and all the little moments we share. I wish you were here beside me. ☁️">I miss your voice, your smile, and all the little moments we share. ☁️</button><button type="button" data-miss-suggestion="Even when we are apart, you are always close to my heart. Counting the days until I see you again. 💙">Even when we are apart, you are always close to my heart. 💙</button><button type="button" data-miss-suggestion="Some moments feel incomplete without you. I hope we get to make new memories together very soon. ✨">Some moments feel incomplete without you. ✨</button></div>
+          </section>
+          <section class="miss-wizard-step hidden" data-miss-step="4">
+            <span class="miss-step-badge">⚙️ STEP 4 OF 5</span><h3>Personalization Options</h3><p>Add the little details that make this memory yours.</p>
+            <label>HOW LONG APART?<input id="missDuration" maxlength="80" placeholder="e.g. 3 months, 2 years…"></label>
+            <label>A MEMORY YOU MISS MOST<textarea id="missMemory" maxlength="500" rows="4" placeholder="The time we…"></textarea></label>
+            <div class="miss-unlock-head"><div><strong>UNLOCK LATER</strong><p>Schedule this keepsake to unlock at a future date and time.</p></div><div class="miss-toggle"><button type="button" class="active" data-unlock="disabled">Disabled</button><button type="button" data-unlock="enabled">Enabled</button></div></div>
+            <div id="missUnlockFields" class="miss-unlock-fields hidden"><label>SELECT DATE (IST)<input id="missUnlockDate" type="date"></label><label>SELECT TIME (IST)<input id="missUnlockTime" type="time" value="00:00"></label><p id="missUnlockPreview"></p></div>
+          </section>
+          <section class="miss-wizard-step hidden" data-miss-step="5">
+            <span class="miss-step-badge">✨ STEP 5 OF 5</span><h3>Compile Keepsake Card</h3><p>Review your choices and create the keepsake link.</p>
+            <div id="missReview" class="miss-review"></div>
+            <label class="miss-terms"><input id="missTerms" type="checkbox"><span>I agree to the <a href="terms.html" target="_blank" rel="noopener">Terms of Service</a> and <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.</span></label><p id="missTermsError" class="miss-error hidden">You must agree to the Terms of Service and Privacy Policy before continuing.</p>
+            <button class="btn btn-primary full-width" type="submit">✦ Create Keepsake Experience</button>
+          </section>
+          <div class="miss-wizard-nav"><button id="missBack" type="button" class="btn btn-secondary">← Back</button><button id="missNext" type="button" class="btn btn-primary">Continue →</button></div>
         </div>
-        <label>Your message<textarea id="messageInput" required maxlength="500" rows="5" placeholder="Write something heartfelt..."></textarea><small id="messageExample" class="field-hint">Example: You make every ordinary day feel special. I am so lucky to have you in my life. ❤️</small></label>
-        <label>Photos <span class="optional">(up to 4)</span><input id="imageInput" type="file" accept="image/*" multiple></label>
-        <div id="uploadStatus" class="upload-status"></div>
-        <div id="gfCollagePicker" class="gf-collage-picker hidden">
-          <p class="gf-section-title">Final card · pick 2 photos for the ending collage</p>
-          <div id="gfCollageThumbs" class="gf-collage-thumbs"></div>
+        <div id="standardFormFields">
+          <label>From<input id="fromInput" required maxlength="40" placeholder="Your name"></label>
+          <label>To<input id="toInput" required maxlength="40" placeholder="Their name"></label>
+          <div id="girlfriendExtra" class="girlfriend-extra hidden">
+            <p class="gf-section-title">Chapter One · 4 little memories <span class="optional">(shown behind each photo)</span></p>
+            <label>Memory note 1<textarea id="gfNote1" maxlength="140" rows="2"></textarea></label><label>Memory note 2<textarea id="gfNote2" maxlength="140" rows="2"></textarea></label><label>Memory note 3<textarea id="gfNote3" maxlength="140" rows="2"></textarea></label><label>Memory note 4<textarea id="gfNote4" maxlength="140" rows="2"></textarea></label>
+            <p class="gf-section-title">Chapter Two · the memory box letter</p><label>Letter<textarea id="gfBoxLetter" maxlength="300" rows="3"></textarea></label>
+            <p class="gf-section-title">Chapter Three · 5 reasons (sealed envelopes)</p><label>Reason 1<input id="gfReason1" maxlength="100"></label><label>Reason 2<input id="gfReason2" maxlength="100"></label><label>Reason 3<input id="gfReason3" maxlength="100"></label><label>Reason 4<input id="gfReason4" maxlength="100"></label><label>Reason 5<input id="gfReason5" maxlength="100"></label>
+          </div>
+          <label>Your message<textarea id="messageInput" required maxlength="500" rows="5" placeholder="Write something heartfelt..."></textarea><small id="messageExample" class="field-hint">Example: You make every ordinary day feel special. I am so lucky to have you in my life. ❤️</small></label>
+          <label>Photos <span class="optional">(up to 4)</span><input id="imageInput" type="file" accept="image/*" multiple></label><div id="uploadStatus" class="upload-status"></div>
+          <div id="gfCollagePicker" class="gf-collage-picker hidden"><p class="gf-section-title">Final card · pick 2 photos for the ending collage</p><div id="gfCollageThumbs" class="gf-collage-thumbs"></div></div>
+          <button class="btn btn-primary full-width" type="submit">Create & Save Wish ✦</button>
         </div>
-        <button class="btn btn-primary full-width" type="submit">Create & Save Wish ✦</button>
       </form>
       <div id="createdResult" class="created-result hidden">
         <div class="success-icon">✓</div>
