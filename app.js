@@ -44,7 +44,7 @@ const wishGrid = $("#wishGrid");
 const favoriteGrid = $("#favoriteGrid");
 const featuredGrid = $("#featuredGrid");
 const featuredIds = ["proposal","girlfriend","boyfriend","miss","sorry","birthday"];
-const CINEMATIC_CARDS = ["girlfriend","boyfriend"];
+const CINEMATIC_CARDS = ["girlfriend","boyfriend","proposal"];
 
 function categories() {
   return ["All", ...new Set(cards.map(c => c.category))];
@@ -138,6 +138,22 @@ const GF_DEFAULTS = {
     "Because being loved by you feels like home."
   ]
 };
+const PROPOSAL_DEFAULTS = {
+  notes: [
+    "I knew even back then I wanted forever with you.",
+    "This is one of my favourite memories of us.",
+    "Small moment, but I think about it often.",
+    "This is when I started imagining our future."
+  ],
+  boxLetter: "I've been carrying something for a while now, something I've been meaning to ask you.",
+  reasons: [
+    "Because I want forever, not just today.",
+    "Because you feel like home, wherever we are.",
+    "Because I want to build a life with you, not just share one.",
+    "Because every version of my future has you in it.",
+    "Because loving you is the easiest decision I have ever made."
+  ]
+};
 let gfCollageIdx = [];
 
 function openCustomize() {
@@ -156,9 +172,10 @@ function openCustomize() {
   $("#gfCollagePicker").classList.add("hidden");
   $("#gfCollageThumbs").innerHTML = "";
   if (isGirlfriend) {
-    GF_DEFAULTS.notes.forEach((v,i)=>{ $(`#gfNote${i+1}`).value = v; });
-    $("#gfBoxLetter").value = GF_DEFAULTS.boxLetter;
-    GF_DEFAULTS.reasons.forEach((v,i)=>{ $(`#gfReason${i+1}`).value = v; });
+    const d = selectedCard.id === "proposal" ? PROPOSAL_DEFAULTS : GF_DEFAULTS;
+    d.notes.forEach((v,i)=>{ $(`#gfNote${i+1}`).value = v; });
+    $("#gfBoxLetter").value = d.boxLetter;
+    d.reasons.forEach((v,i)=>{ $(`#gfReason${i+1}`).value = v; });
   }
   $("#customizeModal").classList.remove("hidden");
 }
