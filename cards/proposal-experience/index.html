@@ -3,134 +3,121 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>A Question For You</title>
+<title>A Rose Garden Proposal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=Cormorant+Garamond:ital@0;1&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Cormorant+Garamond:ital@0;1&family=Great+Vibes&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
 <div class="bg-glow"><div class="blob blob1"></div><div class="blob blob2"></div><div class="blob blob3"></div></div>
-<div class="particles" id="particles"></div>
+<div class="petals" id="petals"></div>
 
+<!-- Screen 1: Welcome -->
 <div class="screen" id="screen1">
-  <div class="topbar">
-    <div class="progress-badge" data-pct="10"><span class="heart-progress-wrap"><svg class="heart-outline-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg><svg class="heart-fill-svg" viewBox="0 0 24 24" fill="var(--glow)"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg></span><span class="progress-text">10%</span></div>
-    <div class="sound-toggle">♪</div>
-  </div>
+  <div class="topbar"><div class="progress-badge" data-pct="5"><span class="heart-progress-wrap"><svg class="heart-outline-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg><svg class="heart-fill-svg" viewBox="0 0 24 24" fill="var(--gold)"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg></span><span class="progress-text">5%</span></div><div class="sound-toggle">♪</div></div>
   <div>
-    <div class="label">Surprise Proposal</div>
+    <div class="eyebrow">A Rose Garden Proposal</div>
     <h1 class="name">For <em id="toNameEm">My Love</em></h1>
-    <p class="desc">Something is waiting for you today. A little journey, made just for you.</p>
+    <p class="desc">A journey through petals and promises…</p>
   </div>
-  <div class="hold-wrap">
-    <div class="hold-btn" id="holdBtn">
-      <svg class="ring" viewBox="0 0 100 100"><circle class="track" cx="50" cy="50" r="40"/><circle class="fill" id="ringCircle" cx="50" cy="50" r="40"/></svg>
-      <svg class="icon" id="heartIcon" viewBox="0 0 24 24" fill="var(--glow)" stroke="none"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg>
-    </div>
-    <div class="hint" id="holdHint">keep holding…</div>
-  </div>
+  <button class="cta-btn" id="enterBtn">Enter the Garden</button>
 </div>
 
+<!-- Screen 2: Memory gallery -->
 <div class="screen hidden" id="screen2">
-  <div class="topbar"><div class="progress-badge" data-pct="25"><span class="heart-progress-wrap"><svg class="heart-outline-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg><svg class="heart-fill-svg" viewBox="0 0 24 24" fill="var(--glow)"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg></span><span class="progress-text">25%</span></div><div class="sound-toggle">♪</div></div>
-  <div><div class="chapter-label">Chapter One · Memories</div><div class="chapter-heading" data-text="A few moments I keep replaying…"></div></div>
-  <div class="stack-wrap" id="stack"></div>
-  <div style="display:flex; flex-direction:column; align-items:center;">
-    <div class="tap-hint" id="tapHint">tap the card to read a little note · drag it away for the next one</div>
-    <button class="continue-btn" id="continueBtn1">Continue</button>
+  <div class="topbar"><div class="progress-badge" data-pct="20"><span class="heart-progress-wrap"><svg class="heart-outline-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg><svg class="heart-fill-svg" viewBox="0 0 24 24" fill="var(--gold)"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg></span><span class="progress-text">20%</span></div><div class="sound-toggle">♪</div></div>
+  <div>
+    <div class="gallery-heading">Our Beautiful Memories</div>
+    <div class="gallery-counter" id="galleryCounter">Photo 1 of 4</div>
   </div>
+  <div>
+    <div class="photo-frame"><div class="inner" id="galleryPhoto"></div></div>
+    <p class="photo-caption" id="galleryCaption"></p>
+  </div>
+  <button class="cta-btn gold-btn" id="nextMemoryBtn">Next Memory</button>
 </div>
 
+<!-- Screen 3: Heart introduction -->
 <div class="screen hidden" id="screen3">
-  <div class="topbar"><div class="progress-badge" data-pct="40"><span class="heart-progress-wrap"><svg class="heart-outline-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg><svg class="heart-fill-svg" viewBox="0 0 24 24" fill="var(--glow)"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg></span><span class="progress-text">40%</span></div><div class="sound-toggle">♪</div></div>
-  <div><div class="chapter-label">Chapter Two · Memories</div><div class="chapter-heading" data-text="I opened our memory box…"></div><div class="chapter-sub">there was one letter I kept coming back to</div></div>
-  <div class="envelope" id="envelope">
-    <div class="env-inner" id="envInner">
-      <div class="env-face env-front"><div class="seal">♥</div></div>
-      <div class="env-face env-back"><p id="envBackText"></p></div>
-    </div>
-  </div>
+  <div class="topbar"><div class="progress-badge" data-pct="35"><span class="heart-progress-wrap"><svg class="heart-outline-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg><svg class="heart-fill-svg" viewBox="0 0 24 24" fill="var(--gold)"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg></span><span class="progress-text">35%</span></div><div class="sound-toggle">♪</div></div>
+  <div></div>
   <div style="display:flex; flex-direction:column; align-items:center;">
-    <div class="tap-hint" id="tapHint2">tap to read the letter</div>
-    <button class="continue-btn" id="continueBtn2">Continue</button>
+    <div class="heart-wrap"><div class="heart-ring-outline"></div><span class="pulse-heart">♥</span></div>
+    <h1 class="name" id="heartIntroName" style="font-size:30px; margin-top:10px;">My Love…</h1>
+    <p class="desc">there's something I need to ask you.</p>
   </div>
+  <button class="cta-btn" id="yesIntroBtn">Yes? 💕</button>
 </div>
 
+<!-- Screen 4: Ring box -->
 <div class="screen hidden" id="screen4">
-  <div class="topbar"><div class="progress-badge" data-pct="55"><span class="heart-progress-wrap"><svg class="heart-outline-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg><svg class="heart-fill-svg" viewBox="0 0 24 24" fill="var(--glow)"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg></span><span class="progress-text">55%</span></div><div class="sound-toggle">♪</div></div>
-  <div><div class="chapter-label">Chapter Three · Words</div><div class="chapter-heading" data-text="Five sealed envelopes"></div><div class="chapter-sub">break each seal to read what's inside</div></div>
-  <div class="env-list" id="envList"></div>
-  <div style="display:flex; flex-direction:column; align-items:center;"><button class="continue-btn" id="continueBtn3">Continue</button></div>
+  <div class="topbar"><div class="progress-badge" data-pct="50"><span class="heart-progress-wrap"><svg class="heart-outline-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg><svg class="heart-fill-svg" viewBox="0 0 24 24" fill="var(--gold)"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg></span><span class="progress-text">50%</span></div><div class="sound-toggle">♪</div></div>
+  <div class="gallery-heading">The Moment Of Truth</div>
+  <div>
+    <div class="ring-box-scene"><div class="box-shape"></div><span class="ring-emoji">💍</span></div>
+    <p class="ring-box-caption" id="ringBoxCaption">A promise in gold…</p>
+  </div>
+  <button class="cta-btn gold-btn" id="askBtn">Ask the Question</button>
 </div>
 
+<!-- Screen 5: Personal message -->
 <div class="screen hidden" id="screen5">
-  <div class="topbar"><div class="progress-badge" data-pct="70"><span class="heart-progress-wrap"><svg class="heart-outline-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg><svg class="heart-fill-svg" viewBox="0 0 24 24" fill="var(--glow)"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg></span><span class="progress-text">70%</span></div><div class="sound-toggle">♪</div></div>
-  <div><div class="chapter-label">Chapter Four · Words</div><div class="chapter-heading" data-text="Dearest My Love,"></div></div>
-  <div class="letter-paper" id="letterPaper"></div>
-  <button class="continue-btn" id="continueBtn4">Continue</button>
+  <div class="topbar"><div class="progress-badge" data-pct="65"><span class="heart-progress-wrap"><svg class="heart-outline-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg><svg class="heart-fill-svg" viewBox="0 0 24 24" fill="var(--gold)"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg></span><span class="progress-text">65%</span></div><div class="sound-toggle">♪</div></div>
+  <div class="gallery-heading">From The Heart</div>
+  <div class="letter-card" id="letterCard">
+    <div class="letter-greeting" id="letterGreeting">Dear My Love,</div>
+    <div id="letterBody"></div>
+    <div class="letter-sig" id="letterSig">— Someone</div>
+  </div>
+  <button class="cta-btn" id="continueBtn5">Continue</button>
 </div>
 
+<!-- Screen 6: Question reveal -->
 <div class="screen hidden" id="screen6">
-  <div class="topbar"><div class="progress-badge" data-pct="85"><span class="heart-progress-wrap"><svg class="heart-outline-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg><svg class="heart-fill-svg" viewBox="0 0 24 24" fill="var(--glow)"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg></span><span class="progress-text">85%</span></div><div class="sound-toggle">♪</div></div>
-  <div><div class="chapter-label">Chapter Five · Someday</div><div class="chapter-heading" data-text="The life I'm dreaming us into"></div><div class="chapter-sub">drift through our future →</div></div>
-  <div class="carousel-wrap">
-    <div class="carousel-track" id="carouselTrack">
-      <div class="carousel-card card-sunset"><h3>Sand sunsets</h3><p>Chasing the last light on a beach somewhere far from home.</p></div>
-      <div class="carousel-card card-navy"><h3>Every city, together</h3><p>New streets, new maps, always finding our way with each other.</p></div>
-    </div>
-  </div>
-  <div class="dots" id="carouselDots"></div>
-  <div style="display:flex; flex-direction:column; align-items:center;"><button class="continue-btn show" id="continueBtn6">There's one more thing…</button></div>
+  <div class="topbar"><div class="progress-badge" data-pct="78"><span class="heart-progress-wrap"><svg class="heart-outline-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg><svg class="heart-fill-svg" viewBox="0 0 24 24" fill="var(--gold)"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg></span><span class="progress-text">78%</span></div><div class="sound-toggle">♪</div></div>
+  <div></div>
+  <div class="question-heading" id="questionHeading" data-text="Will You Be My Girlfriend?"></div>
+  <button class="cta-btn gold-btn" id="answerBtn">Her Answer… 💕</button>
 </div>
 
+<!-- Screen 7: Final proposal -->
 <div class="screen hidden" id="screen7">
-  <div class="topbar"><div class="progress-badge" data-pct="92"><span class="heart-progress-wrap"><svg class="heart-outline-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg><svg class="heart-fill-svg" viewBox="0 0 24 24" fill="var(--glow)"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg></span><span class="progress-text">92%</span></div><div class="sound-toggle">♪</div></div>
-  <div><div class="chapter-label">Chapter Six · The Question</div><div class="chapter-heading" data-text="One question I've been carrying"></div></div>
-  <div>
-    <div class="promise-ring"><span class="glyph" id="promiseGlyph">♥</span></div>
-    <p class="promise-text" id="promiseText">I've been holding on to this for a while now.</p>
+  <div class="topbar"><div class="progress-badge" data-pct="90"><span class="heart-progress-wrap"><svg class="heart-outline-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg><svg class="heart-fill-svg" viewBox="0 0 24 24" fill="var(--gold)"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg></span><span class="progress-text">90%</span></div><div class="sound-toggle">♪</div></div>
+  <div></div>
+  <div class="final-ring-wrap">
+    <span class="final-ring">💍</span>
+    <h1 class="final-heading">Will You Be Mine?</h1>
+    <p class="final-sub">Please… 🥺 my heart is in your hands.</p>
   </div>
-  <div class="hold-wrap">
-    <div class="hold-btn" id="promiseBtn">
-      <svg class="ring" viewBox="0 0 100 100"><circle class="track" cx="50" cy="50" r="40"/><circle class="fill" id="promiseRingCircle" cx="50" cy="50" r="40"/></svg>
-      <svg class="icon" viewBox="0 0 24 24" fill="var(--glow)" stroke="none"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg>
+  <div style="display:flex; flex-direction:column; align-items:center; width:100%;">
+    <div class="final-btns" id="finalBtns">
+      <button class="cta-btn" id="yesBtn" style="position:relative; z-index:2;">YES ❤️</button>
+      <button class="no-btn" id="noBtn">No</button>
     </div>
-    <div class="hint" id="promiseHint">press &amp; hold</div>
-  </div>
-  <div id="heartRevealWrap" style="display:flex; flex-direction:column; align-items:center;">
-    <div class="gift-box" id="giftBox">
-      <div class="box-lid"></div>
-      <div class="box-ribbon"></div>
-      <div class="box-base"></div>
-      <div class="box-ring pop" id="boxRing">💍</div>
-    </div>
-    <div class="gift-note" id="giftNote" style="opacity:0; transition:opacity .5s ease;">turn it in your hand, then…</div>
-    <div class="proposal-ask" id="proposalAsk">
-      <h2 class="proposal-question">Will you marry me?</h2>
-      <div class="proposal-btns" id="proposalBtns">
-        <button class="continue-btn show proposal-yes" id="yesBtn">Yes ♥</button>
-        <button class="continue-btn show proposal-no" id="noBtn">No</button>
-      </div>
-    </div>
+    <div class="dodge-indicator" id="dodgeIndicator">Running from love (0×)</div>
   </div>
 </div>
 
+<!-- Screen 8: Keepsake -->
 <div class="screen hidden" id="screen8">
-  <div class="topbar"><div class="progress-badge" data-pct="100"><span class="heart-progress-wrap"><svg class="heart-outline-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg><svg class="heart-fill-svg" viewBox="0 0 24 24" fill="var(--glow)"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg></span><span class="progress-text">100%</span></div><div class="sound-toggle">♪</div></div>
-  <div>
-    <h1 class="name" style="font-size:28px;">SHE SAID YES</h1>
-    <div class="chapter-sub" id="toSubLine">To My Love</div>
+  <div class="topbar"><div class="progress-badge" data-pct="100"><span class="heart-progress-wrap"><svg class="heart-outline-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg><svg class="heart-fill-svg" viewBox="0 0 24 24" fill="var(--gold)"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg></span><span class="progress-text">100%</span></div><div class="sound-toggle">♪</div></div>
+  <div class="keepsake-card">
+    <div class="keepsake-to" id="keepsakeTo">To My Love</div>
+    <div class="keepsake-heading">Our Forever Promise Starts Today</div>
+    <div class="collage">
+      <div class="piece piece1"><div class="ph"></div></div>
+      <div class="piece piece2"><div class="ph"></div></div>
+    </div>
+    <p class="final-msg" id="finalMsg">Here's to forever, starting now. ♥</p>
+    <div class="final-sig-script" id="finalSigScript">with love, Someone</div>
   </div>
-  <div class="collage">
-    <div class="piece piece1"><div class="ph"></div></div>
-    <div class="piece piece2"><div class="ph"></div></div>
-  </div>
-  <p class="final-msg" id="finalMsg">Here's to forever, starting now. ♥ — <span id="finalMsgSig">Suraj</span></p>
   <div class="final-buttons">
-    <button class="continue-btn" id="downloadBtn">Download Keepsake</button>
-    <button class="continue-btn" id="replayBtn">Replay this surprise</button>
+    <button class="keepsake-btn primary" id="downloadBtn">Download Keepsake</button>
+    <button class="keepsake-btn ghost" id="replayBtn">Watch Again</button>
   </div>
 </div>
+
 <script src="script.js"></script>
 </body>
 </html>
