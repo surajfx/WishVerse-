@@ -10,54 +10,63 @@ const COLLAGE = (_params.get('collage') || '').split(',').map(s=>s.trim()).filte
 
 document.title = `For ${TO} — A Rose Garden Proposal`;
 const _set = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
-_set('toNameEm', TO);
-_set('heartIntroName', `${TO}…`);
-_set('letterGreeting', `Dear ${TO},`);
-_set('letterSig', `— ${FROM}`);
-_set('keepsakeTo', `To ${TO}`);
-_set('finalSigScript', `with love, ${FROM}`);
-if (BOXLETTER) _set('ringBoxCaption', BOXLETTER);
-if (MSG) _set('finalMsg', MSG);
-const _collagePhotos = document.querySelectorAll('.collage .ph');
-const _collageSrc = COLLAGE.length ? COLLAGE : PHOTOS;
-_collagePhotos.forEach((el,i)=>{ if(_collageSrc[i]) el.style.background = `center/cover url('${_collageSrc[i]}')`; });
+try{
+  _set('toNameEm', TO);
+  _set('heartIntroName', `${TO}…`);
+  _set('letterGreeting', `Dear ${TO},`);
+  _set('letterSig', `— ${FROM}`);
+  _set('keepsakeTo', `To ${TO}`);
+  _set('finalSigScript', `with love, ${FROM}`);
+  if (BOXLETTER) _set('ringBoxCaption', BOXLETTER);
+  if (MSG) _set('finalMsg', MSG);
+  const _collagePhotos = document.querySelectorAll('.collage .ph');
+  const _collageSrc = COLLAGE.length ? COLLAGE : PHOTOS;
+  _collagePhotos.forEach((el,i)=>{ if(_collageSrc[i]) el.style.background = `center/cover url('${_collageSrc[i]}')`; });
+}catch(e){ console.error('dynamic text setup failed', e); }
 
 // ---- Falling rose petals ----
-const petalsEl = document.getElementById('petals');
-for(let i=0;i<16;i++){
-  const p = document.createElement('div');
-  p.className='rose-petal';
-  p.style.left = (Math.random()*100)+'%';
-  p.style.animationDuration = (6+Math.random()*6)+'s';
-  p.style.animationDelay = (Math.random()*6)+'s';
-  const scale = 0.7 + Math.random()*0.8;
-  p.style.transform = `scale(${scale})`;
-  petalsEl.appendChild(p);
-}
+try{
+  const petalsEl = document.getElementById('petals');
+  for(let i=0;i<16;i++){
+    const p = document.createElement('div');
+    p.className='rose-petal';
+    p.style.left = (Math.random()*100)+'%';
+    p.style.animationDuration = (6+Math.random()*6)+'s';
+    p.style.animationDelay = (Math.random()*6)+'s';
+    const scale = 0.7 + Math.random()*0.8;
+    p.style.transform = `scale(${scale})`;
+    petalsEl.appendChild(p);
+  }
+}catch(e){ console.error('petals failed', e); }
 
 // ---- Screen navigation ----
 const screens = {};
 for(let i=1;i<=8;i++) screens[i] = document.getElementById('screen'+i);
 function fillProgress(screenEl){
-  const badge = screenEl.querySelector('.progress-badge');
-  if(!badge) return;
-  const pct = Number(badge.dataset.pct);
-  const fillSvg = badge.querySelector('.heart-fill-svg');
-  fillSvg.style.transition = 'none';
-  fillSvg.style.clipPath = 'inset(100% 0 0 0)';
-  void fillSvg.offsetWidth;
-  fillSvg.style.transition = '';
-  requestAnimationFrame(()=>{ fillSvg.style.clipPath = `inset(${100-pct}% 0 0 0)`; });
+  try{
+    const badge = screenEl && screenEl.querySelector('.progress-badge');
+    if(!badge) return;
+    const pct = Number(badge.dataset.pct);
+    const fillSvg = badge.querySelector('.heart-fill-svg');
+    if(!fillSvg) return;
+    fillSvg.style.transition = 'none';
+    fillSvg.style.clipPath = 'inset(100% 0 0 0)';
+    void fillSvg.offsetWidth;
+    fillSvg.style.transition = '';
+    requestAnimationFrame(()=>{ fillSvg.style.clipPath = `inset(${100-pct}% 0 0 0)`; });
+  }catch(e){ console.error('fillProgress failed', e); }
 }
 function showScreen(n){
-  Object.values(screens).forEach(s=>s.classList.add('hidden'));
-  screens[n].classList.remove('hidden');
-  fillProgress(screens[n]);
-  if(n===6) playQuestionHeading();
+  try{
+    Object.values(screens).forEach(s=>{ if(s) s.classList.add('hidden'); });
+    if(screens[n]){ screens[n].classList.remove('hidden'); fillProgress(screens[n]); }
+    if(n===6) playQuestionHeading();
+  }catch(e){ console.error('showScreen failed', e); }
 }
-fillProgress(screens[1]);
+try{ fillProgress(screens[1]); }catch(e){ console.error(e); }
 
-document.getElementById('enterBtn').addEventListener('click', ()=>showScreen(2));
+const enterBtn = document.getElementById('enterBtn');
+if(enterBtn) enterBtn.addEventListener('click', ()=>showScreen(2));
 
 // ---- Screen 2: Photo gallery ----
 const galleryPhoto = document.getElementById('galleryPhoto');
@@ -190,3 +199,4 @@ document.getElementById('replayBtn').addEventListener('click', ()=>{
   showScreen(1);
 });
 document.getElementById('downloadBtn').addEventListener('click', function(){ this.textContent = 'Saved ✓'; });
+    
