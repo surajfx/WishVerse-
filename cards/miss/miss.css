@@ -1,2 +1,7 @@
-.card-fragment-miss { --card-accent: var(--accent, #d89b54); }
-.card-fragment-miss .fragment-icon { font-size: 2rem; }
+.card-fragment-miss{--card-accent:#9bdcfb;position:relative;isolation:isolate;overflow:hidden;min-height:230px;padding:24px;border-radius:22px;background:radial-gradient(circle at 80% 15%,rgba(127,194,255,.3),transparent 34%),linear-gradient(145deg,#17294b,#071126);color:#edf7ff;border:1px solid rgba(157,214,255,.25);box-shadow:0 18px 42px rgba(9,22,48,.18)}
+.card-fragment-miss .miss-fragment-stars{position:absolute;right:16px;top:12px;color:#a8dcff;opacity:.65;font-size:17px;letter-spacing:.2em}
+.card-fragment-miss .fragment-icon{display:block;font-size:2.3rem;filter:drop-shadow(0 0 15px rgba(141,207,255,.35));margin-bottom:14px}
+.card-fragment-miss .miss-fragment-kicker{font-size:9px;letter-spacing:.25em;font-weight:800;color:#a9d9ff;margin:0 0 8px}
+.card-fragment-miss h3{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:2rem;margin:0 0 8px;color:#f7fbff}
+.card-fragment-miss p:not(.miss-fragment-kicker){max-width:270px;color:#c4d3e8;font-size:.88rem;line-height:1.6;margin:0 0 18px}
+.card-fragment-miss .miss-fragment-cta{display:inline-flex;border-radius:999px;padding:9px 13px;background:linear-gradient(100deg,#2f83d8,#6dd9d4);color:#07172d;font-size:.75rem;font-weight:800}
