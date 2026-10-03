@@ -1,1 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#080d20"><title>A little reminder — I miss you</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="stars" aria-hidden="true"></div>
+  <main id="app" class="experience">
+    <button id="soundToggle" class="sound-toggle" type="button" aria-pressed="false">♫ <span>Sound off</span></button>
+    <section id="fogScene" class="scene active">
+      <p class="eyebrow">MEMORIES BEHIND THE FOG ☁️</p>
+      <h1>Some memories<br><em>never fade.</em></h1>
+      <p class="instruction">Drag your finger to wipe the fog away…</p>
+      <div class="photo-reveal" id="photoReveal">
+        <img id="heroPhoto" alt="A special memory">
+        <div class="photo-placeholder" id="photoPlaceholder">☁️<span>Your favourite memory</span></div>
+        <canvas id="fogCanvas" aria-label="Swipe to reveal the photo"></canvas>
+        <span class="wipe-hint">✦ keep going ✦</span>
+      </div>
+      <p class="tiny-note">A little piece of you is always with me.</p>
+      <button id="revealContinue" class="primary-btn" type="button">Explore our memories <b>→</b></button>
+    </section>
 
+    <section id="memoriesScene" class="scene">
+      <p class="eyebrow">LITTLE THINGS I MISS 💌</p>
+      <h2>It's the little things<br><em>that stay with me.</em></h2>
+      <p class="instruction">Tap each card to turn it over.</p>
+      <div class="memory-cards">
+        <button class="memory-card" type="button" data-memory="0"><span class="memory-front">✈️<small>Every time it rains…</small></span><span class="memory-back">I remember the sound of your laughter, and wish you were here.</span></button>
+        <button class="memory-card" type="button" data-memory="1"><span class="memory-front">🌟<small>The moon looks different…</small></span><span class="memory-back">I catch myself looking at the sky and hoping you're looking too.</span></button>
+        <button class="memory-card" type="button" data-memory="2"><span class="memory-front">☕<small>Our little routines…</small></span><span class="memory-back">Even ordinary moments feel special when I imagine sharing them with you.</span></button>
+      </div>
+      <button id="readMessage" class="primary-btn" type="button">📝 Read my message</button>
+    </section>
+
+    <section id="messageScene" class="scene">
+      <p class="eyebrow">A LETTER FROM ME 💙</p>
+      <h2>For you, <em id="messageTo">my favourite person</em></h2>
+      <article class="letter-paper"><div class="paper-flower">☾</div><p id="personalMessage"></p><div class="signature">Always missing you,<br><strong id="signatureName"></strong></div></article>
+      <div class="distance-note" id="distanceNote"></div>
+      <button id="finalReveal" class="primary-btn" type="button">Keep this little memory ✦</button>
+    </section>
+
+    <section id="finalScene" class="scene final-scene">
+      <p class="eyebrow">A LITTLE KEEPSAKE TO KEEP ☁️</p>
+      <h2><em>I miss you.</em></h2>
+      <div class="keepsake" id="keepsake">
+        <div class="keepsake-top">HOLDING YOU IN MY HEART</div>
+        <div class="keepsake-photo-wrap"><img id="finalPhoto" alt="A memory to keep"><div id="finalPhotoPlaceholder">☁️</div></div>
+        <div class="keepsake-quote" id="finalQuote">No matter how far away you are, you are never far from my heart.</div>
+        <div class="keepsake-memory" id="finalMemory"></div>
+        <div class="keepsake-footer"><span>with love</span><strong id="finalFrom"></strong></div>
+        <div class="moon-mark">☾</div>
+      </div>
+      <div class="final-actions"><button id="downloadKeepsake" class="download-btn" type="button">⇩ Download Keepsake</button><button id="watchAgain" class="again-btn" type="button">↻ Watch Again</button></div>
+      <p class="made-with">✦ Made with WishVerse</p>
+    </section>
+
+    <section id="lockedScene" class="scene locked-scene">
+      <div class="lock-orb">🔒</div><p class="eyebrow">A MEMORY WAITING FOR YOU</p><h1>Not just yet,<br><em id="lockedName">my dear.</em></h1><p class="instruction">Someone has left a little surprise for you. It will open when the time is right.</p><div id="countdown" class="countdown"></div><p class="tiny-note">Come back soon. This was made just for you. 💙</p>
+    </section>
+  </main>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
