@@ -172,10 +172,16 @@ function openCustomize() {
   $("#gfCollagePicker").classList.add("hidden");
   $("#gfCollageThumbs").innerHTML = "";
   if (isGirlfriend) {
-    const d = selectedCard.id === "proposal" ? PROPOSAL_DEFAULTS : GF_DEFAULTS;
+    const isProposal = selectedCard.id === "proposal";
+    const d = isProposal ? PROPOSAL_DEFAULTS : GF_DEFAULTS;
     d.notes.forEach((v,i)=>{ $(`#gfNote${i+1}`).value = v; });
     $("#gfBoxLetter").value = d.boxLetter;
-    d.reasons.forEach((v,i)=>{ $(`#gfReason${i+1}`).value = v; });
+    $("#gfReasonsWrap").classList.toggle("hidden", isProposal);
+    if (!isProposal) d.reasons.forEach((v,i)=>{ $(`#gfReason${i+1}`).value = v; });
+    $("#gfNotesTitle").innerHTML = isProposal
+      ? `Gallery captions <span class="optional">(shown under each of your 4 photos)</span>`
+      : `4 little memories <span class="optional">(shown behind each photo)</span>`;
+    $("#gfLetterTitle").textContent = isProposal ? "the ring box message" : "the memory box letter";
   }
   $("#customizeModal").classList.remove("hidden");
 }

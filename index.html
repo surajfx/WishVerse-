@@ -111,21 +111,23 @@
         <label>To<input id="toInput" required maxlength="40" placeholder="Their name"></label>
 
         <div id="girlfriendExtra" class="girlfriend-extra hidden">
-          <p class="gf-section-title">Chapter One · 4 little memories <span class="optional">(shown behind each photo)</span></p>
+          <p class="gf-section-title" id="gfNotesTitle">4 little memories <span class="optional">(shown behind each photo)</span></p>
           <label>Memory note 1<textarea id="gfNote1" maxlength="140" rows="2"></textarea></label>
           <label>Memory note 2<textarea id="gfNote2" maxlength="140" rows="2"></textarea></label>
           <label>Memory note 3<textarea id="gfNote3" maxlength="140" rows="2"></textarea></label>
           <label>Memory note 4<textarea id="gfNote4" maxlength="140" rows="2"></textarea></label>
 
-          <p class="gf-section-title">Chapter Two · the memory box letter</p>
+          <p class="gf-section-title" id="gfLetterTitle">the memory box letter</p>
           <label>Letter<textarea id="gfBoxLetter" maxlength="300" rows="3"></textarea></label>
 
-          <p class="gf-section-title">Chapter Three · 5 reasons (sealed envelopes)</p>
-          <label>Reason 1<input id="gfReason1" maxlength="100"></label>
-          <label>Reason 2<input id="gfReason2" maxlength="100"></label>
-          <label>Reason 3<input id="gfReason3" maxlength="100"></label>
-          <label>Reason 4<input id="gfReason4" maxlength="100"></label>
-          <label>Reason 5<input id="gfReason5" maxlength="100"></label>
+          <div id="gfReasonsWrap">
+            <p class="gf-section-title">5 reasons (sealed envelopes)</p>
+            <label>Reason 1<input id="gfReason1" maxlength="100"></label>
+            <label>Reason 2<input id="gfReason2" maxlength="100"></label>
+            <label>Reason 3<input id="gfReason3" maxlength="100"></label>
+            <label>Reason 4<input id="gfReason4" maxlength="100"></label>
+            <label>Reason 5<input id="gfReason5" maxlength="100"></label>
+          </div>
         </div>
         <label>Your message<textarea id="messageInput" required maxlength="500" rows="5" placeholder="Write something heartfelt..."></textarea><small id="messageExample" class="field-hint">Example: You make every ordinary day feel special. I am so lucky to have you in my life. ❤️</small></label>
         <label>Photos <span class="optional">(up to 4)</span><input id="imageInput" type="file" accept="image/*" multiple></label>
