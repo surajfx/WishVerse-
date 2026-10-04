@@ -1,69 +1,104 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#080d20"><title>A little reminder — I miss you</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>I Miss You</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Cormorant+Garamond:ital@0;1&family=Great+Vibes&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="stars" aria-hidden="true"></div>
-  <main id="app" class="experience">
-    <button id="soundToggle" class="sound-toggle" type="button" aria-pressed="false">♫ <span>Sound off</span></button>
-    <section id="fogScene" class="scene active">
-      <p class="eyebrow">MEMORIES BEHIND THE FOG ☁️</p>
-      <h1>Some memories<br><em>never fade.</em></h1>
-      <p class="instruction">Drag your finger to wipe the fog away…</p>
-      <div class="photo-reveal" id="photoReveal">
-        <img id="heroPhoto" alt="A special memory">
-        <div class="photo-placeholder" id="photoPlaceholder">☁️<span>Your favourite memory</span></div>
-        <canvas id="fogCanvas" aria-label="Swipe to reveal the photo"></canvas>
-        <span class="wipe-hint">✦ keep going ✦</span>
-      </div>
-      <p class="tiny-note">A little piece of you is always with me.</p>
-      <button id="revealContinue" class="primary-btn" type="button">Explore our memories <b>→</b></button>
-    </section>
 
-    <section id="memoriesScene" class="scene">
-      <p class="eyebrow">LITTLE THINGS I MISS 💌</p>
-      <h2>It's the little things<br><em>that stay with me.</em></h2>
-      <p class="instruction">Tap each card to turn it over.</p>
-      <div class="memory-cards">
-        <button class="memory-card" type="button" data-memory="0"><span class="memory-front">✈️<small>Every time it rains…</small></span><span class="memory-back">I remember the sound of your laughter, and wish you were here.</span></button>
-        <button class="memory-card" type="button" data-memory="1"><span class="memory-front">🌟<small>The moon looks different…</small></span><span class="memory-back">I catch myself looking at the sky and hoping you're looking too.</span></button>
-        <button class="memory-card" type="button" data-memory="2"><span class="memory-front">☕<small>Our little routines…</small></span><span class="memory-back">Even ordinary moments feel special when I imagine sharing them with you.</span></button>
-      </div>
-      <button id="readMessage" class="primary-btn" type="button">📝 Read my message</button>
-    </section>
+<div class="bg-glow"><div class="blob blob1"></div><div class="blob blob2"></div></div>
+<div class="stars" id="stars"></div>
 
-    <section id="messageScene" class="scene">
-      <p class="eyebrow">A LETTER FROM ME 💙</p>
-      <h2>For you, <em id="messageTo">my favourite person</em></h2>
-      <article class="letter-paper"><div class="paper-flower">☾</div><p id="personalMessage"></p><div class="signature">Always missing you,<br><strong id="signatureName"></strong></div></article>
-      <div class="distance-note" id="distanceNote"></div>
-      <button id="finalReveal" class="primary-btn" type="button">Keep this little memory ✦</button>
-    </section>
+<!-- Screen 1: Intro -->
+<div class="screen" id="screen1">
+  <div class="topbar"><div class="progress-badge" data-pct="10"><span class="heart-progress-wrap"><svg class="heart-outline-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg><svg class="heart-fill-svg" viewBox="0 0 24 24" fill="var(--cyan)"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg></span><span class="progress-text">10%</span></div><div class="sound-toggle">♪</div></div>
+  <div>
+    <div class="heading-italic">I miss you so much...</div>
+  </div>
+  <div class="msg-panel show">
+    <p id="introMsg">Hey ___, someone is missing you deeply right now.</p>
+  </div>
+  <button class="cta-btn" id="openLetterBtn">Open the Letter</button>
+</div>
 
-    <section id="finalScene" class="scene final-scene">
-      <p class="eyebrow">A LITTLE KEEPSAKE TO KEEP ☁️</p>
-      <h2><em>I miss you.</em></h2>
-      <div class="keepsake" id="keepsake">
-        <div class="keepsake-top">HOLDING YOU IN MY HEART</div>
-        <div class="keepsake-photo-wrap"><img id="finalPhoto" alt="A memory to keep"><div id="finalPhotoPlaceholder">☁️</div></div>
-        <div class="keepsake-quote" id="finalQuote">No matter how far away you are, you are never far from my heart.</div>
-        <div class="keepsake-memory" id="finalMemory"></div>
-        <div class="keepsake-footer"><span>with love</span><strong id="finalFrom"></strong></div>
-        <div class="moon-mark">☾</div>
-      </div>
-      <div class="final-actions"><button id="downloadKeepsake" class="download-btn" type="button">⇩ Download Keepsake</button><button id="watchAgain" class="again-btn" type="button">↻ Watch Again</button></div>
-      <p class="made-with">✦ Made with WishVerse</p>
-    </section>
+<!-- Screen 2: Memories behind the fog -->
+<div class="screen hidden" id="screen2">
+  <div class="topbar"><div class="progress-badge" data-pct="30"><span class="heart-progress-wrap"><svg class="heart-outline-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg><svg class="heart-fill-svg" viewBox="0 0 24 24" fill="var(--cyan)"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg></span><span class="progress-text">30%</span></div><div class="sound-toggle">♪</div></div>
+  <div>
+    <div class="heading-upper">Memories Behind The Fog</div>
+    <div class="fog-instruction" id="fogInstruction">Drag your finger to wipe the fog away...</div>
+  </div>
+  <div>
+    <div class="fog-frame" id="fogFrame"><div class="photo" id="fogPhoto"></div><canvas id="fogCanvas"></canvas></div>
+    <div class="beautiful-label" id="beautifulLabel">Beautiful! ✦</div>
+    <div class="dots" id="fogDots"></div>
+  </div>
+  <button class="cta-btn hidden-btn" id="nextMemoryBtn">Next Memory</button>
+</div>
 
-    <section id="lockedScene" class="scene locked-scene">
-      <div class="lock-orb">🔒</div><p class="eyebrow">A MEMORY WAITING FOR YOU</p><h1>Not just yet,<br><em id="lockedName">my dear.</em></h1><p class="instruction">Someone has left a little surprise for you. It will open when the time is right.</p><div id="countdown" class="countdown"></div><p class="tiny-note">Come back soon. This was made just for you. 💙</p>
-    </section>
-  </main>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="script.js"></script>
+<!-- Screen 3: The Space Between Us -->
+<div class="screen hidden" id="screen3">
+  <div class="topbar"><div class="progress-badge" data-pct="50"><span class="heart-progress-wrap"><svg class="heart-outline-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg><svg class="heart-fill-svg" viewBox="0 0 24 24" fill="var(--cyan)"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg></span><span class="progress-text">50%</span></div><div class="sound-toggle">♪</div></div>
+  <div class="heading-upper">The Space Between Us</div>
+  <div style="width:100%;">
+    <div class="distance-row">
+      <div class="distance-name" id="distFrom">Someone</div>
+      <div class="distance-line"><span class="distance-dot"></span></div>
+      <div class="distance-name" id="distTo">___</div>
+    </div>
+    <p class="distance-msg">No matter the distance, you're always in my thoughts. 💙</p>
+  </div>
+  <button class="cta-btn" id="readLettersBtn">Read Longing Letters</button>
+</div>
+
+<!-- Screen 4: Longing Letters -->
+<div class="screen hidden" id="screen4">
+  <div class="topbar"><div class="progress-badge" data-pct="65"><span class="heart-progress-wrap"><svg class="heart-outline-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg><svg class="heart-fill-svg" viewBox="0 0 24 24" fill="var(--cyan)"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg></span><span class="progress-text">65%</span></div><div class="sound-toggle">♪</div></div>
+  <div>
+    <div class="heading-upper">Longing Letters</div>
+    <div class="fog-instruction">tap each card to read it</div>
+  </div>
+  <div class="letters-wrap" id="lettersWrap"></div>
+  <button class="cta-btn hidden-btn" id="readMsgBtn">Read My Message</button>
+</div>
+
+<!-- Screen 5: Handwritten letter -->
+<div class="screen hidden" id="screen5">
+  <div class="topbar"><div class="progress-badge" data-pct="82"><span class="heart-progress-wrap"><svg class="heart-outline-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg><svg class="heart-fill-svg" viewBox="0 0 24 24" fill="var(--cyan)"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg></span><span class="progress-text">82%</span></div><div class="sound-toggle">♪</div></div>
+  <div>
+    <div class="moon">🌙</div>
+    <div class="heading-upper">Words From The Heart</div>
+  </div>
+  <div class="notebook" id="notebook">
+    <div class="nb-body" id="nbBody"></div>
+    <div class="nb-sig" id="nbSig">— Someone</div>
+  </div>
+  <button class="cta-btn hidden-btn" id="continueBtn5">Continue</button>
+</div>
+
+<!-- Screen 6: Keepsake -->
+<div class="screen hidden" id="screen6">
+  <div class="topbar"><div class="progress-badge" data-pct="100"><span class="heart-progress-wrap"><svg class="heart-outline-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg><svg class="heart-fill-svg" viewBox="0 0 24 24" fill="var(--cyan)"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg></span><span class="progress-text">100%</span></div><div class="sound-toggle">♪</div></div>
+  <div class="keepsake-card">
+    <div class="keepsake-to" id="keepsakeTo">To ___</div>
+    <div class="keepsake-heading">Holding You In My Heart</div>
+    <div class="collage">
+      <div class="piece piece1"><div class="ph"></div></div>
+      <div class="piece piece2"><div class="ph"></div></div>
+    </div>
+    <p class="final-msg" id="finalMsg">No matter the distance, you're always with me. 💙</p>
+    <div class="final-sig-script" id="finalSigScript">with love, Someone</div>
+  </div>
+  <div class="final-buttons">
+    <button class="keepsake-btn primary" id="downloadBtn">Download Keepsake</button>
+    <button class="keepsake-btn ghost" id="replayBtn">Watch Again</button>
+  </div>
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>
