@@ -44,7 +44,7 @@ const wishGrid = $("#wishGrid");
 const favoriteGrid = $("#favoriteGrid");
 const featuredGrid = $("#featuredGrid");
 const featuredIds = ["proposal","girlfriend","boyfriend","miss","sorry","birthday"];
-const CINEMATIC_CARDS = ["girlfriend","boyfriend","proposal"];
+const CINEMATIC_CARDS = ["girlfriend","boyfriend","proposal","miss"];
 
 function categories() {
   return ["All", ...new Set(cards.map(c => c.category))];
@@ -138,6 +138,16 @@ const GF_DEFAULTS = {
     "Because being loved by you feels like home."
   ]
 };
+const MISS_DEFAULTS = {
+  notes: [
+    'Every quiet moment, you cross my mind.',
+    'I wonder if you see the same moon tonight.',
+    'I still make two cups out of habit.',
+    ''
+  ],
+  boxLetter: "someone is missing you deeply right now.",
+  reasons: []
+};
 const PROPOSAL_DEFAULTS = {
   notes: [
     "I knew even back then I wanted forever with you.",
@@ -173,15 +183,19 @@ function openCustomize() {
   $("#gfCollageThumbs").innerHTML = "";
   if (isGirlfriend) {
     const isProposal = selectedCard.id === "proposal";
-    const d = isProposal ? PROPOSAL_DEFAULTS : GF_DEFAULTS;
+    const isMiss = selectedCard.id === "miss";
+    const d = isProposal ? PROPOSAL_DEFAULTS : isMiss ? MISS_DEFAULTS : GF_DEFAULTS;
     d.notes.forEach((v,i)=>{ $(`#gfNote${i+1}`).value = v; });
     $("#gfBoxLetter").value = d.boxLetter;
-    $("#gfReasonsWrap").classList.toggle("hidden", isProposal);
-    if (!isProposal) d.reasons.forEach((v,i)=>{ $(`#gfReason${i+1}`).value = v; });
+    const noReasons = isProposal || isMiss;
+    $("#gfReasonsWrap").classList.toggle("hidden", noReasons);
+    if (!noReasons) d.reasons.forEach((v,i)=>{ $(`#gfReason${i+1}`).value = v; });
     $("#gfNotesTitle").innerHTML = isProposal
       ? `Gallery captions <span class="optional">(shown under each of your 4 photos)</span>`
+      : isMiss
+      ? `3 longing-letter messages <span class="optional">(4th field unused for this card)</span>`
       : `4 little memories <span class="optional">(shown behind each photo)</span>`;
-    $("#gfLetterTitle").textContent = isProposal ? "the ring box message" : "the memory box letter";
+    $("#gfLetterTitle").textContent = isProposal ? "the ring box message" : isMiss ? "the opening message" : "the memory box letter";
   }
   $("#customizeModal").classList.remove("hidden");
 }
