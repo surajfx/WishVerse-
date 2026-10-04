@@ -56,6 +56,22 @@ h1.name em{ font-style:normal; color:var(--gold); }
 .photo-caption{ font-family:var(--serif2); font-style:italic; font-size:13px; color:var(--rose); text-align:center; margin-top:8px; max-width:260px; }
 .tap-hint{ font-size:12px; color:var(--pink-pale); font-style:italic; text-align:center; margin-top:10px; }
 
+.cta-btn.stack-continue{ opacity:0; transform:translateY(8px); pointer-events:none; transition:opacity .5s ease, transform .5s ease; }
+.cta-btn.stack-continue.show{ opacity:1; transform:translateY(0); pointer-events:auto; }
+
+.stack-wrap{ perspective:1200px; width:230px; height:290px; margin:14px auto; position:relative; }
+.polaroid{ position:absolute; inset:0; touch-action:none; cursor:grab; }
+.polaroid.flying{ transition: transform .45s ease, opacity .45s ease; }
+.polaroid:not(.dragging):not(.flying){ transition: transform .35s ease; }
+.card-inner{ width:100%; height:100%; position:relative; transform-style:preserve-3d; transition: transform .6s cubic-bezier(.3,.7,.2,1); }
+.card-inner.flipped{ transform: rotateY(180deg); }
+.card-face{ position:absolute; inset:0; backface-visibility:hidden; border-radius:6px; background:var(--gold);
+  box-shadow:0 18px 30px rgba(0,0,0,.5); display:flex; flex-direction:column; padding:10px; }
+.card-front .photo{ flex:1; border-radius:3px; background:linear-gradient(135deg,#7a2347,#1a0a14); }
+.card-front .caption{ font-family:var(--serif2); font-style:italic; font-size:14px; color:#3a1a08; text-align:center; margin-top:8px; }
+.card-back{ transform: rotateY(180deg); align-items:center; justify-content:center; text-align:center; background:var(--paper); border:1px solid var(--gold); }
+.card-back p{ font-family:var(--serif2); font-style:italic; font-size:17px; color:var(--rose); line-height:1.5; }
+
 .heart-wrap{ position:relative; width:160px; height:160px; margin:10px auto; display:flex; align-items:center; justify-content:center; }
 .heart-ring-outline{ position:absolute; inset:0; border-radius:50%; border:1px solid rgba(233,11,99,.35); }
 .pulse-heart{ font-size:56px; color:var(--pink); filter:drop-shadow(0 0 16px rgba(233,11,99,.5)); animation:heartPulse 1.8s ease-in-out infinite; }
