@@ -72,6 +72,7 @@ if(enterBtn) enterBtn.addEventListener('click', ()=>showScreen(2));
 const galleryPhoto = document.getElementById('galleryPhoto');
 const galleryCounter = document.getElementById('galleryCounter');
 const galleryCaption = document.getElementById('galleryCaption');
+const photoFlip = document.getElementById('photoFlip');
 const nextMemoryBtn = document.getElementById('nextMemoryBtn');
 const galleryPhotos = PHOTOS.length ? PHOTOS : [null,null,null,null];
 const galleryNotes = NOTES.length ? NOTES : ['A memory worth keeping.','A moment I never want to forget.','A little piece of us.','A beautiful moment.'];
@@ -82,8 +83,10 @@ function renderGallery(){
   galleryCounter.textContent = `Photo ${galleryIdx+1} of ${galleryPhotos.length}`;
   galleryCaption.textContent = galleryNotes[galleryIdx] || '';
   nextMemoryBtn.textContent = (galleryIdx === galleryPhotos.length-1) ? 'Continue' : 'Next Memory';
+  photoFlip.classList.remove('flipped');
 }
 renderGallery();
+photoFlip.addEventListener('click', ()=> photoFlip.classList.toggle('flipped'));
 nextMemoryBtn.addEventListener('click', ()=>{
   if(galleryIdx < galleryPhotos.length-1){ galleryIdx++; renderGallery(); }
   else { showScreen(3); }
@@ -92,8 +95,24 @@ nextMemoryBtn.addEventListener('click', ()=>{
 // ---- Screen 3: Heart introduction ----
 document.getElementById('yesIntroBtn').addEventListener('click', ()=>showScreen(4));
 
-// ---- Screen 4: Ring box ----
-document.getElementById('askBtn').addEventListener('click', ()=>showScreen(5));
+// ---- Screen 4: Ring box (tap to open) ----
+const ringBoxScene = document.getElementById('ringBoxScene');
+const ringBoxHint = document.getElementById('ringBoxHint');
+const ringBoxCaption = document.getElementById('ringBoxCaption');
+const askBtn = document.getElementById('askBtn');
+let boxOpened = false;
+ringBoxScene.addEventListener('click', ()=>{
+  if(boxOpened) return;
+  boxOpened = true;
+  ringBoxScene.classList.add('open');
+  ringBoxHint.style.display = 'none';
+  setTimeout(()=>{
+    ringBoxCaption.style.display = 'block';
+    askBtn.style.opacity = '1';
+    askBtn.style.pointerEvents = 'auto';
+  }, 1400);
+});
+askBtn.addEventListener('click', ()=>showScreen(5));
 
 // ---- Screen 5: Personal message (typewriter with pen) ----
 function typeInto(el, text, speed, cb){
@@ -193,10 +212,12 @@ yesBtn.addEventListener('click', ()=>showScreen(8));
 // ---- Screen 8: Keepsake ----
 document.getElementById('replayBtn').addEventListener('click', ()=>{
   galleryIdx = 0; renderGallery();
+  boxOpened = false; ringBoxScene.classList.remove('open'); ringBoxHint.style.display=''; ringBoxCaption.style.display='none';
+  askBtn.style.opacity='0'; askBtn.style.pointerEvents='none';
   letterStarted = false; letterCard.classList.remove('show'); continueBtn5.classList.remove('show'); letterBody.innerHTML='';
   questionTyped = false;
   noMoves = 0; noBtn.style.left=''; noBtn.style.top=''; noBtn.style.opacity='1'; noBtn.textContent='No'; dodgeIndicator.classList.remove('show');
   showScreen(1);
 });
 document.getElementById('downloadBtn').addEventListener('click', function(){ this.textContent = 'Saved ✓'; });
-    
+                        
