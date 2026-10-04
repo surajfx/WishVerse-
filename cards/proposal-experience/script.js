@@ -68,29 +68,65 @@ try{ fillProgress(screens[1]); }catch(e){ console.error(e); }
 const enterBtn = document.getElementById('enterBtn');
 if(enterBtn) enterBtn.addEventListener('click', ()=>showScreen(2));
 
-// ---- Screen 2: Photo gallery ----
-const galleryPhoto = document.getElementById('galleryPhoto');
-const galleryCounter = document.getElementById('galleryCounter');
-const galleryCaption = document.getElementById('galleryCaption');
-const photoFlip = document.getElementById('photoFlip');
+// ---- Screen 2: Memory polaroid stack (tap to flip, drag to advance) ----
+const stack = document.getElementById('stack');
+const tapHint = document.getElementById('tapHint');
 const nextMemoryBtn = document.getElementById('nextMemoryBtn');
-const galleryPhotos = PHOTOS.length ? PHOTOS : [null,null,null,null];
 const galleryNotes = NOTES.length ? NOTES : ['A memory worth keeping.','A moment I never want to forget.','A little piece of us.','A beautiful moment.'];
-let galleryIdx = 0;
-function renderGallery(){
-  const url = galleryPhotos[galleryIdx];
-  galleryPhoto.style.background = url ? `center/cover url('${url}')` : 'linear-gradient(135deg,#7a2347,#1a0a14)';
-  galleryCounter.textContent = `Photo ${galleryIdx+1} of ${galleryPhotos.length}`;
-  galleryCaption.textContent = galleryNotes[galleryIdx] || '';
-  nextMemoryBtn.textContent = (galleryIdx === galleryPhotos.length-1) ? 'Continue' : 'Next Memory';
-  photoFlip.classList.remove('flipped');
+const galleryPhotos = PHOTOS.length ? PHOTOS : [null,null,null,null];
+let memCards = [];
+function buildStack(){
+  stack.innerHTML=''; memCards = [];
+  galleryNotes.forEach((note,i)=>{
+    const card = document.createElement('div');
+    card.className='polaroid';
+    card.style.zIndex = galleryNotes.length-i;
+    const baseTransform = `translateY(${i*6}px) rotate(${(i%2?1:-1)*(i*1.5)}deg) scale(${1-i*0.03})`;
+    card.dataset.base = baseTransform; card.style.transform = baseTransform;
+    const url = galleryPhotos[i];
+    const photoStyle = url ? ` style="background-image:url('${url}');background-size:cover;background-position:center;"` : '';
+    card.innerHTML = `<div class="card-inner"><div class="card-face card-front"><div class="photo"${photoStyle}></div><div class="caption">Memory ${i+1}</div></div><div class="card-face card-back"><p>${note}</p></div></div>`;
+    stack.appendChild(card); memCards.push(card);
+  });
+  attachFrontHandlers();
 }
-renderGallery();
-photoFlip.addEventListener('click', ()=> photoFlip.classList.toggle('flipped'));
-nextMemoryBtn.addEventListener('click', ()=>{
-  if(galleryIdx < galleryPhotos.length-1){ galleryIdx++; renderGallery(); }
-  else { showScreen(3); }
-});
+function attachFrontHandlers(){
+  const front = memCards[0];
+  if(!front){ tapHint.textContent = "that's all the memories for now"; nextMemoryBtn.classList.add('show'); return; }
+  const inner = front.querySelector('.card-inner');
+  let startX=0, startY=0, dx=0, dy=0, dragging=false, moved=false;
+  function onDown(e){
+    startX = e.clientX; startY = e.clientY; dx=0; dy=0; moved=false; dragging=false;
+    front.style.transition='none'; front.setPointerCapture(e.pointerId);
+    front.addEventListener('pointermove', onMove); front.addEventListener('pointerup', onUp); front.addEventListener('pointercancel', onUp);
+  }
+  function onMove(e){
+    dx = e.clientX - startX; dy = e.clientY - startY;
+    if(Math.abs(dx)>8 || Math.abs(dy)>8){ moved=true; dragging=true; front.classList.add('dragging'); }
+    if(dragging){ front.style.transform = `${front.dataset.base} translate(${dx}px, ${dy}px) rotate(${dx/18}deg)`; }
+  }
+  function onUp(){
+    front.removeEventListener('pointermove', onMove); front.removeEventListener('pointerup', onUp); front.removeEventListener('pointercancel', onUp);
+    front.classList.remove('dragging');
+    const dist = Math.hypot(dx,dy);
+    if(dragging && dist > 90){
+      const angle = Math.atan2(dy,dx);
+      front.classList.add('flying');
+      front.style.transform = `${front.dataset.base} translate(${Math.cos(angle)*700}px, ${Math.sin(angle)*700}px) rotate(${dx/10}deg)`;
+      front.style.opacity='0';
+      setTimeout(()=>{
+        front.remove(); memCards.shift();
+        memCards.forEach((c,i)=>{ c.style.zIndex = memCards.length-i; const b = `translateY(${i*6}px) rotate(${(i%2?1:-1)*(i*1.5)}deg) scale(${1-i*0.03})`; c.dataset.base = b; c.style.transform = b; });
+        attachFrontHandlers();
+      },450);
+    } else if(!moved){ inner.classList.toggle('flipped'); front.style.transition=''; front.style.transform = front.dataset.base; }
+    else { front.style.transition=''; front.style.transform = front.dataset.base; }
+    dragging=false;
+  }
+  front.addEventListener('pointerdown', onDown);
+}
+buildStack();
+nextMemoryBtn.addEventListener('click', ()=>showScreen(3));
 
 // ---- Screen 3: Heart introduction ----
 document.getElementById('yesIntroBtn').addEventListener('click', ()=>showScreen(4));
@@ -211,7 +247,7 @@ yesBtn.addEventListener('click', ()=>showScreen(8));
 
 // ---- Screen 8: Keepsake ----
 document.getElementById('replayBtn').addEventListener('click', ()=>{
-  galleryIdx = 0; renderGallery();
+  nextMemoryBtn.classList.remove('show'); tapHint.textContent = "tap the card to read a little note · drag it away for the next one"; buildStack();
   boxOpened = false; ringBoxScene.classList.remove('open'); ringBoxHint.style.display=''; ringBoxCaption.style.display='none';
   askBtn.style.opacity='0'; askBtn.style.pointerEvents='none';
   letterStarted = false; letterCard.classList.remove('show'); continueBtn5.classList.remove('show'); letterBody.innerHTML='';
@@ -220,4 +256,4 @@ document.getElementById('replayBtn').addEventListener('click', ()=>{
   showScreen(1);
 });
 document.getElementById('downloadBtn').addEventListener('click', function(){ this.textContent = 'Saved ✓'; });
-                        
+      
