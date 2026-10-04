@@ -32,8 +32,13 @@
     <div class="gallery-counter" id="galleryCounter">Photo 1 of 4</div>
   </div>
   <div>
-    <div class="photo-frame"><div class="inner" id="galleryPhoto"></div></div>
-    <p class="photo-caption" id="galleryCaption"></p>
+    <div class="photo-frame" id="photoFrameWrap">
+      <div class="photo-flip" id="photoFlip">
+        <div class="photo-face photo-front"><div class="inner" id="galleryPhoto"></div></div>
+        <div class="photo-face photo-back"><p id="galleryCaption"></p></div>
+      </div>
+    </div>
+    <p class="tap-hint">tap the photo for a little note</p>
   </div>
   <button class="cta-btn gold-btn" id="nextMemoryBtn">Next Memory</button>
 </div>
@@ -55,10 +60,15 @@
   <div class="topbar"><div class="progress-badge" data-pct="50"><span class="heart-progress-wrap"><svg class="heart-outline-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg><svg class="heart-fill-svg" viewBox="0 0 24 24" fill="var(--gold)"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg></span><span class="progress-text">50%</span></div><div class="sound-toggle">♪</div></div>
   <div class="gallery-heading">The Moment Of Truth</div>
   <div>
-    <div class="ring-box-scene"><div class="box-shape"></div><span class="ring-emoji">💍</span></div>
-    <p class="ring-box-caption" id="ringBoxCaption">A promise in gold…</p>
+    <div class="ring-box-scene" id="ringBoxScene">
+      <div class="box-lid" id="boxLid"></div>
+      <div class="box-shape"></div>
+      <span class="ring-emoji" id="ringEmoji">💍</span>
+    </div>
+    <p class="ring-box-caption" id="ringBoxHint">tap the box to open it</p>
+    <p class="ring-box-caption" id="ringBoxCaption" style="display:none;">A promise in gold…</p>
   </div>
-  <button class="cta-btn gold-btn" id="askBtn">Ask the Question</button>
+  <button class="cta-btn gold-btn" id="askBtn" style="opacity:0; pointer-events:none; transition:opacity .5s ease;">Ask the Question</button>
 </div>
 
 <!-- Screen 5: Personal message -->
