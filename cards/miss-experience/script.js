@@ -143,7 +143,10 @@ let lettersOpened = 0;
 letterDefs.forEach((def,i)=>{
   const card = document.createElement('div');
   card.className = 'letter-card';
-  card.innerHTML = `<span class="lc-icon">${def.icon}</span><span class="lc-title">${def.title}</span><span class="lc-msg">${def.msg}</span>`;
+  card.innerHTML = `<div class="letter-card-inner">
+    <div class="lc-face lc-front"><span class="lc-icon">${def.icon}</span><span class="lc-title">${def.title}</span></div>
+    <div class="lc-face lc-back"><span class="lc-msg">${def.msg}</span></div>
+  </div>`;
   card.addEventListener('click', ()=>{
     if(card.classList.contains('open')) return;
     card.classList.add('open');
@@ -198,4 +201,3 @@ document.getElementById('replayBtn').addEventListener('click', ()=>{
   showScreen(1);
 });
 document.getElementById('downloadBtn').addEventListener('click', function(){ this.textContent = 'Saved ✓'; });
-                                   
