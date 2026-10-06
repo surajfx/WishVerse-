@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Happy Birthday</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Cormorant+Garamond:ital@0;1&family=Great+Vibes&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="bg-glow"><div class="blob blob1"></div><div class="blob blob2"></div><div class="blob blob3"></div></div>
+<div class="stars" id="stars"></div>
+<div class="fx-layer" id="fxLayer"></div>
+
+<!-- Screen 1: Loading -->
+<div class="screen" id="screen1">
+  <div></div>
+  <div><div class="loader-ring">🎂</div><div class="loading-text">Preparing your surprise…</div></div>
+  <div></div>
+</div>
+
+<!-- Screen 2: Envelope -->
+<div class="screen hidden" id="screen2">
+  <div class="topbar"><div class="progress-badge" data-pct="10"><span class="heart-progress-wrap"><svg class="heart-outline-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg><svg class="heart-fill-svg" viewBox="0 0 24 24" fill="var(--pink)"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg></span><span class="progress-text">10%</span></div><div class="sound-toggle">♪</div></div>
+  <div></div>
+  <div>
+    <div class="envelope-wrap" id="envelopeWrap"><div class="envelope-body"></div><div class="envelope-seal">💌</div></div>
+    <div class="env-heading">You have a special surprise!</div>
+    <div class="env-instruction">Tap the envelope to open</div>
+  </div>
+  <button class="cta-btn" id="openSurpriseBtn">✨ Open Surprise</button>
+</div>
+
+<!-- Screen 3: Welcome -->
+<div class="screen hidden" id="screen3">
+  <div class="topbar"><div class="progress-badge" data-pct="20"><span class="heart-progress-wrap"><svg class="heart-outline-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg><svg class="heart-fill-svg" viewBox="0 0 24 24" fill="var(--pink)"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg></span><span class="progress-text">20%</span></div><div class="sound-toggle">♪</div></div>
+  <div></div>
+  <div>
+    <div class="welcome-happy">Happy</div>
+    <div class="welcome-birthday">Birthday</div>
+    <div class="welcome-name" id="welcomeName">___</div>
+  </div>
+  <button class="cta-btn welcome-btn" id="viewMemoriesBtn">📸 View Memories</button>
+</div>
+
+<!-- Screen 4: Memory journey -->
+<div class="screen hidden" id="screen4">
+  <div class="topbar"><div class="progress-badge" data-pct="35"><span class="heart-progress-wrap"><svg class="heart-outline-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg><svg class="heart-fill-svg" viewBox="0 0 24 24" fill="var(--pink)"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg></span><span class="progress-text">35%</span></div><div class="sound-toggle">♪</div></div>
+  <div>
+    <div class="mem-heading">✦ Memory Journey ✦</div>
+    <div class="mem-counter" id="memCounter">Memory 1 of 5</div>
+  </div>
+  <div class="stack-wrap" id="stack"></div>
+  <button class="cta-btn" id="nextMemoryBtn">Next Memory ❤️</button>
+</div>
+
+<!-- Screen 5: Make a wish (candles) -->
+<div class="screen hidden" id="screen5">
+  <div class="topbar"><div class="progress-badge" data-pct="50"><span class="heart-progress-wrap"><svg class="heart-outline-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg><svg class="heart-fill-svg" viewBox="0 0 24 24" fill="var(--pink)"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg></span><span class="progress-text">50%</span></div><div class="sound-toggle">♪</div></div>
+  <div>
+    <div class="mem-heading" style="color:var(--gold2); font-family:var(--serif); font-size:20px; text-transform:none; letter-spacing:0;">Make a Wish! 🎂</div>
+    <div class="wish-instruction">🕯️ Make a wish &amp; tap the candles to blow them out!</div>
+  </div>
+  <div class="cake-scene" id="cakeSceneCandles">
+    <div class="candles" id="candlesWrap"></div>
+    <div class="cake-tier tier-top"><div class="frosting"></div></div>
+    <div class="cake-tier tier-mid"><div class="frosting"></div></div>
+    <div class="cake-tier tier-bottom"><div class="frosting"></div></div>
+    <div class="cake-plate"></div>
+  </div>
+  <button class="cta-btn" id="blowAllBtn">💨 Blow out all candles</button>
+</div>
+
+<!-- Screen 6: Cut the cake -->
+<div class="screen hidden" id="screen6">
+  <div class="topbar"><div class="progress-badge" data-pct="62"><span class="heart-progress-wrap"><svg class="heart-outline-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg><svg class="heart-fill-svg" viewBox="0 0 24 24" fill="var(--pink)"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg></span><span class="progress-text">62%</span></div><div class="sound-toggle">♪</div></div>
+  <div>
+    <div class="mem-heading" style="color:var(--gold2); font-family:var(--serif); font-size:20px; text-transform:none; letter-spacing:0;">Make a Wish! 🎂</div>
+    <div class="wish-instruction">🔪 Drag the knife down through the cake to cut it!</div>
+  </div>
+  <div class="cake-scene" id="cakeSceneCut">
+    <div class="knife" id="knife">🔪</div>
+    <div class="cake-cut-line" id="cutLine"></div>
+    <div class="cake-tier tier-top"><div class="frosting"></div></div>
+    <div class="cake-tier tier-mid"><div class="frosting"></div></div>
+    <div class="cake-tier tier-bottom"><div class="frosting"></div></div>
+    <div class="cake-plate"></div>
+  </div>
+  <button class="cta-btn" id="fallbackCutBtn">🎂 Tap to cut (fallback)</button>
+</div>
+
+<!-- Screen 7: Grand finale prep -->
+<div class="screen hidden" id="screen7">
+  <div class="topbar"><div class="progress-badge" data-pct="70"><span class="heart-progress-wrap"><svg class="heart-outline-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg><svg class="heart-fill-svg" viewBox="0 0 24 24" fill="var(--pink)"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg></span><span class="progress-text">70%</span></div><div class="sound-toggle">♪</div></div>
+  <div></div>
+  <div style="text-align:center;">
+    <div class="mem-heading" style="color:var(--gold2); font-family:var(--serif); font-size:20px; text-transform:none; letter-spacing:0;">Make a Wish! 🎂</div>
+    <p class="wish-instruction" style="margin-top:14px; font-size:16px;">🎉 Perfect cut! Happy Birthday!</p>
+    <p class="wish-instruction" id="finalePrepLine2" style="margin-top:8px;">🎊 Time for the grand finale!</p>
+  </div>
+  <div></div>
+</div>
+
+<!-- Screen 8: Personal message -->
+<div class="screen hidden" id="screen8">
+  <div class="topbar"><div class="progress-badge" data-pct="80"><span class="heart-progress-wrap"><svg class="heart-outline-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg><svg class="heart-fill-svg" viewBox="0 0 24 24" fill="var(--pink)"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg></span><span class="progress-text">80%</span></div><div class="sound-toggle">♪</div></div>
+  <div class="mem-heading" style="color:var(--pink);">✦ A Message Just For You ✦</div>
+  <div class="letter-card" id="letterCard">
+    <div id="letterBody"></div>
+    <div class="letter-sig" id="letterSig">— Someone</div>
+  </div>
+  <button class="cta-btn hidden-btn" id="continueBtn8">Continue</button>
+</div>
+
+<!-- Screen 9: Memory capsule -->
+<div class="screen hidden" id="screen9">
+  <div class="topbar"><div class="progress-badge" data-pct="90"><span class="heart-progress-wrap"><svg class="heart-outline-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg><svg class="heart-fill-svg" viewBox="0 0 24 24" fill="var(--pink)"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg></span><span class="progress-text">90%</span></div><div class="sound-toggle">♪</div></div>
+  <div></div>
+  <div class="capsule-card">
+    <div class="capsule-title">Memory Capsule</div>
+    <div class="capsule-sub">A capsule of our beautiful times…</div>
+    <div class="capsule-sub" id="capsuleThanks">Thank you for being in my life.</div>
+    <div class="capsule-divider"></div>
+    <div class="capsule-stat-label">Memories Shared</div>
+    <div class="capsule-stat-val">5 Shared</div>
+  </div>
+  <button class="cta-btn" id="revealFinaleBtn">Reveal Finale ✨</button>
+</div>
+
+<!-- Screen 10: Fireworks finale -->
+<div class="screen hidden" id="screen10" style="background:var(--bgdark);">
+  <div class="topbar"><div class="progress-badge" data-pct="96"><span class="heart-progress-wrap"><svg class="heart-outline-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg><svg class="heart-fill-svg" viewBox="0 0 24 24" fill="var(--pink)"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg></span><span class="progress-text">96%</span></div><div class="sound-toggle">♪</div></div>
+  <div></div>
+  <div>
+    <div class="finale-title">Happy Birthday</div>
+    <div class="finale-sub" id="finaleSub">To ___</div>
+  </div>
+  <button class="cta-btn hidden-btn" id="continueBtn10">See Your Keepsake</button>
+</div>
+
+<!-- Screen 11: Keepsake -->
+<div class="screen hidden" id="screen11">
+  <div class="topbar"><div class="progress-badge" data-pct="100"><span class="heart-progress-wrap"><svg class="heart-outline-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg><svg class="heart-fill-svg" viewBox="0 0 24 24" fill="var(--pink)"><path d="M12 21s-7-4.5-9.5-9C.7 8.2 2.4 4.5 6 4c2-.3 4 .8 6 3 2-2.2 4-3.3 6-3 3.6.5 5.3 4.2 3.5 8-2.5 4.5-9.5 9-9.5 9Z"/></svg></span><span class="progress-text">100%</span></div><div class="sound-toggle">♪</div></div>
+  <div class="keepsake-card">
+    <div class="keepsake-to" id="keepsakeTo">To ___</div>
+    <div class="keepsake-heading">A Birthday Keepsake</div>
+    <div class="collage">
+      <div class="piece piece1"><div class="ph"></div></div>
+      <div class="piece piece2"><div class="ph"></div></div>
+    </div>
+    <p class="final-msg" id="finalMsg">Wishing you a year as wonderful as you are. ♥</p>
+    <div class="final-sig-script" id="finalSigScript">with love, Someone</div>
+  </div>
+  <div class="final-buttons">
+    <button class="keepsake-btn primary" id="downloadBtn">⇩ Download Keepsake</button>
+    <button class="keepsake-btn ghost" id="replayBtn">↻ Watch Again</button>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
