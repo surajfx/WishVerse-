@@ -417,7 +417,6 @@ function renderSharedStage(){
   const photos = getPhotos(w);
   const stepType = sharedSteps[sharedStep] || "final";
   stopStatusRotation();
-
   let html = "";
   if (stepType === "loading") {
     html = `<div class="prelude-icon"><span>${card.icon}</span></div><div class="loading-ring"><i></i></div><div class="shared-kicker" id="statusText">${card.statusMessages[0]}</div><h1 class="prelude-title">A little moment<br>made just for <span>${name}</span></h1><p class="shared-intro">Please wait… your surprise is opening.</p><button class="shared-cta" data-next>Open the surprise <b>→</b></button>`;
@@ -510,9 +509,21 @@ renderCards();
 // Mobile menu and theme controls
 const menuToggle = $("#menuToggle");
 if (menuToggle) {
+  const nav = document.querySelector(".desktop-nav");
   menuToggle.onclick = () => {
-    document.querySelector(".desktop-nav")?.classList.toggle("mobile-open");
+    const open = nav?.classList.toggle("mobile-open");
+    menuToggle.setAttribute("aria-expanded", open ? "true" : "false");
+    menuToggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+    menuToggle.textContent = open ? "×" : "☰";
   };
+  nav?.querySelectorAll("a").forEach(link => {
+    link.addEventListener("click", () => {
+      nav.classList.remove("mobile-open");
+      menuToggle.setAttribute("aria-expanded", "false");
+      menuToggle.setAttribute("aria-label", "Open menu");
+      menuToggle.textContent = "☰";
+    });
+  });
 }
 
 (async () => {
@@ -522,3 +533,4 @@ if (menuToggle) {
   await loadSharedWish();
   document.body.classList.remove("loading-shared-wish");
 })();
+    
