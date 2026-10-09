@@ -533,4 +533,3 @@ if (menuToggle) {
   await loadSharedWish();
   document.body.classList.remove("loading-shared-wish");
 })();
-    
