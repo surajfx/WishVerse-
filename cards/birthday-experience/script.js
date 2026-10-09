@@ -14,7 +14,11 @@ try{
   _set('welcomeName', TO);
   _set('memCounter', 'Memory 1 of 5');
   _set('letterSig', `— ${FROM}`);
-  _set('capsuleThanks', BOXLETTER || 'Thank you for being in my life.');
+  _set('capsuleThanks', `"A capsule of our beautiful times together. ${BOXLETTER || 'Thank you for being in my life.'}"`);
+  _set('capsuleFrom', FROM);
+  const capsulePhotoEl = document.getElementById('capsulePhoto');
+  const capsuleSrc = (COLLAGE[0] || PHOTOS[0]);
+  if (capsulePhotoEl && capsuleSrc) capsulePhotoEl.style.backgroundImage = `url('${capsuleSrc}')`;
   _set('finaleSub', `To ${TO}`);
   _set('keepsakeTo', `To ${TO}`);
   _set('finalSigScript', `with love, ${FROM}`);
@@ -39,7 +43,7 @@ try{
 
 // ---- Screens ----
 const screens = {};
-for(let i=1;i<=11;i++) screens[i] = document.getElementById('screen'+i);
+for(let i=1;i<=10;i++) screens[i] = document.getElementById('screen'+i);
 function fillProgress(screenEl){
   try{
     const badge = screenEl && screenEl.querySelector('.progress-badge');
@@ -61,13 +65,26 @@ function showScreen(n){
   }catch(e){ console.error('showScreen failed', e); }
 }
 
-// ---- Screen 1: Loading (auto-advance) ----
+// ---- Screen 1: Loading (auto-advance with percent) ----
+(function(){
+  const loadPct = document.getElementById('loadPct');
+  let p = 0;
+  const timer = setInterval(()=>{
+    p += 6 + Math.random()*10;
+    if(p >= 100){ p = 100; clearInterval(timer); }
+    if(loadPct) loadPct.textContent = Math.floor(p)+'%';
+  }, 100);
+})();
 setTimeout(()=>showScreen(2), 1500);
 
-// ---- Screen 2: Envelope ----
+// ---- Screen 2: Envelope (tap to open the flap, then advance) ----
 const envelopeWrap = document.getElementById('envelopeWrap');
+let envelopeOpened = false;
 function openEnvelope(){
-  showScreen(3);
+  if(envelopeOpened) return;
+  envelopeOpened = true;
+  envelopeWrap.classList.add('open');
+  setTimeout(()=>showScreen(3), 900);
 }
 envelopeWrap.addEventListener('click', openEnvelope);
 document.getElementById('openSurpriseBtn').addEventListener('click', openEnvelope);
@@ -150,9 +167,35 @@ nextMemoryBtn.addEventListener('click', ()=>{
   }, 450);
 });
 
+// ---- Floating memory photo bubbles (reused behind candles + cake-cut scenes) ----
+function spawnFloatPhotos(containerId){
+  const wrap = document.getElementById(containerId);
+  if(!wrap) return;
+  wrap.innerHTML = '';
+  const pics = PHOTOS.length ? PHOTOS : [null,null,null];
+  pics.slice(0,4).forEach((url,i)=>{
+    const b = document.createElement('div');
+    b.className = 'float-photo';
+    if(url) b.style.backgroundImage = `url('${url}')`;
+    else b.style.background = 'linear-gradient(135deg,var(--pink),var(--purple-acc))';
+    const positions = [{left:'-6%',top:'4%'},{right:'-8%',top:'10%'},{left:'-4%',bottom:'6%'},{right:'-6%',bottom:'0%'}];
+    Object.assign(b.style, positions[i % positions.length]);
+    b.style.animationDuration = (4+Math.random()*2)+'s';
+    b.style.animationDelay = (Math.random()*2)+'s';
+    wrap.appendChild(b);
+  });
+}
+spawnFloatPhotos('floatPhotosCandles');
+spawnFloatPhotos('floatPhotosCut');
+
 // ---- Screen 5: Candles ----
 const candlesWrap = document.getElementById('candlesWrap');
 const blowAllBtn = document.getElementById('blowAllBtn');
+const blowCheek = document.getElementById('blowCheek');
+function puffCheek(){
+  if(!blowCheek) return;
+  blowCheek.classList.remove('puff'); void blowCheek.offsetWidth; blowCheek.classList.add('puff');
+}
 const candleColors = ['#20D9FF','#F02C86','#9147FF','#FFC928','#16E879'];
 let candlesLeft = 5;
 candleColors.forEach((c,i)=>{
@@ -169,16 +212,19 @@ function blowCandle(cd){
   if(candlesLeft<=0) setTimeout(()=>showScreen(6), 500);
 }
 blowAllBtn.addEventListener('click', ()=>{
-  candlesWrap.querySelectorAll('.candle').forEach(cd=>cd.classList.add('blown'));
-  candlesLeft = 0;
-  setTimeout(()=>showScreen(6), 500);
+  puffCheek();
+  setTimeout(()=>{
+    candlesWrap.querySelectorAll('.candle').forEach(cd=>cd.classList.add('blown'));
+    candlesLeft = 0;
+    setTimeout(()=>showScreen(6), 500);
+  }, 250);
 });
-
 // ---- Screen 6: Cut the cake (drag knife) ----
 const knife = document.getElementById('knife');
 const cutLine = document.getElementById('cutLine');
 const cakeSceneCut = document.getElementById('cakeSceneCut');
 const fallbackCutBtn = document.getElementById('fallbackCutBtn');
+const cakeSlice = document.getElementById('cakeSlice');
 let cutDone = false;
 function doCut(){
   if(cutDone) return;
@@ -186,7 +232,15 @@ function doCut(){
   cutLine.classList.add('show');
   knife.style.transition = 'top .5s ease';
   knife.style.top = '150px';
-  setTimeout(()=>showScreen(7), 900);
+  cakeSceneCut.classList.add('cut-apart');
+  setTimeout(()=>{
+    cakeSlice.classList.add('pop');
+    setTimeout(()=>{
+      cakeSlice.classList.remove('pop');
+      cakeSlice.classList.add('eaten');
+      setTimeout(()=>showScreen(7), 650);
+    }, 750);
+  }, 350);
 }
 knife.addEventListener('pointerdown', e=>{
   if(cutDone) return;
@@ -223,12 +277,52 @@ function burstConfetti(count){
     setTimeout(()=>c.remove(), 6500);
   }
 }
+function spawnBalloons(){
+  const stage = document.getElementById('balloonStage');
+  if(!stage) return;
+  stage.innerHTML = '';
+  const colors = ['#FF2D78','#FFC400','#8847FF','#00BFFF','#16E879','#FFA51A','#F02C86'];
+  const count = 7;
+  for(let i=0;i<count;i++){
+    const b = document.createElement('div');
+    b.className = 'balloon';
+    b.style.background = `radial-gradient(circle at 35% 30%, ${colors[i%colors.length]}, ${colors[i%colors.length]}cc)`;
+    b.style.left = (8 + i*(84/count) + Math.random()*4) + '%';
+    b.style.setProperty('--drift', (Math.random()*30-15)+'px');
+    const dur = 2.2 + Math.random()*1.2;
+    b.style.animationDuration = dur+'s';
+    b.style.animationDelay = (i*0.18)+'s';
+    stage.appendChild(b);
+    const popDelay = (i*0.18 + dur) * 1000;
+    setTimeout(()=>{
+      const rect = b.getBoundingClientRect();
+      const stageRect = stage.getBoundingClientRect();
+      const px = rect.left - stageRect.left + rect.width/2;
+      const py = rect.top - stageRect.top + rect.height/2;
+      b.remove();
+      for(let g=0; g<10; g++){
+        const sp = document.createElement('div');
+        sp.className = 'glitter';
+        const size = 3+Math.random()*4;
+        sp.style.width = size+'px'; sp.style.height = size+'px';
+        sp.style.left = px+'px'; sp.style.top = py+'px';
+        sp.style.background = colors[(i+g)%colors.length];
+        const angle = (Math.PI*2*g)/10;
+        const dist = 20+Math.random()*30;
+        sp.style.setProperty('--gx', Math.cos(angle)*dist+'px');
+        sp.style.setProperty('--gy', Math.sin(angle)*dist+'px');
+        stage.appendChild(sp);
+        setTimeout(()=>sp.remove(), 1000);
+      }
+    }, popDelay);
+  }
+}
 let prepStarted = false;
 new MutationObserver(()=>{
   if(!screens[7].classList.contains('hidden') && !prepStarted){
     prepStarted = true;
-    burstConfetti(40);
-    setTimeout(()=>showScreen(8), 2600);
+    spawnBalloons();
+    setTimeout(()=>showScreen(8), 3600);
   }
 }).observe(screens[7], {attributes:true, attributeFilter:['class']});
 
@@ -290,27 +384,28 @@ function launchFirework(){
 }
 let fireworksTimer = null;
 let finaleStarted = false;
+const keepsakeCard = document.getElementById('keepsakeCard');
 new MutationObserver(()=>{
   if(!screens[10].classList.contains('hidden') && !finaleStarted){
     finaleStarted = true;
     launchFirework();
     fireworksTimer = setInterval(launchFirework, 650);
-    burstConfetti(20);
-    setTimeout(()=>document.getElementById('continueBtn10').classList.add('show'), 1800);
+    setTimeout(()=>keepsakeCard.classList.add('show'), 1200);
   } else if(screens[10].classList.contains('hidden') && fireworksTimer){
     clearInterval(fireworksTimer); fireworksTimer = null;
   }
 }).observe(screens[10], {attributes:true, attributeFilter:['class']});
-document.getElementById('continueBtn10').addEventListener('click', ()=>showScreen(11));
 
-// ---- Screen 11: Keepsake ----
+// ---- Replay ----
 document.getElementById('replayBtn').addEventListener('click', ()=>{
   candlesWrap.innerHTML=''; candleColors.forEach((c)=>{ const cd=document.createElement('div'); cd.className='candle'; cd.style.background=c; cd.innerHTML=`<span class="flame">🔥</span>`; cd.addEventListener('click',()=>blowCandle(cd)); candlesWrap.appendChild(cd); });
   candlesLeft = 5;
   cutDone = false; cutLine.classList.remove('show'); knife.style.transition=''; knife.style.top='0px';
+  cakeSceneCut.classList.remove('cut-apart'); cakeSlice.classList.remove('pop','eaten');
   prepStarted = false;
   letterStarted = false; letterCard.classList.remove('show'); continueBtn8.classList.remove('show'); letterBody.innerHTML='';
-  finaleStarted = false; document.getElementById('continueBtn10').classList.remove('show');
+  finaleStarted = false; keepsakeCard.classList.remove('show');
+  envelopeOpened = false; envelopeWrap.classList.remove('open');
   buildMemStack();
   showScreen(1);
   setTimeout(()=>showScreen(2), 1500);
@@ -318,4 +413,3 @@ document.getElementById('replayBtn').addEventListener('click', ()=>{
 document.getElementById('downloadBtn').addEventListener('click', function(){ this.textContent = 'Saved ✓'; });
 
 fillProgress(screens[2]);
-      
