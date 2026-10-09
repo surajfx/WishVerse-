@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b1020">
+<title>Login / Sign Up — WishVerse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main class="page-shell">
+  <div class="page-topbar"><a class="page-brand" href="index.html">Wish<span>Verse</span></a><a class="btn btn-secondary page-back" href="index.html">← Home</a></div>
+  <article class="page-content" style="max-width:620px;margin:auto">
+    <div class="page-kicker">WISHVERSE · ACCOUNT</div>
+    <h1>Welcome back.</h1>
+    <p>Log in to keep your premium card usage linked to your account.</p>
+    <form id="authForm" class="form-stack">
+      <label>Email<input id="email" type="email" required autocomplete="email" placeholder="you@example.com"></label>
+      <label>Password<input id="password" type="password" required minlength="6" autocomplete="current-password" placeholder="At least 6 characters"></label>
+      <button class="btn btn-primary" type="submit" id="loginBtn">Log In</button>
+      <button class="btn btn-secondary" type="button" id="signupBtn">Create Account</button>
+      <div id="authMessage" class="form-note"></div>
+    </form>
+    <p class="form-note" style="margin-top:20px">Your account is intended to keep premium entitlements tied to you instead of a browser or device. Payment access will be connected after the Razorpay integration is completed.</p>
+  </article>
+</main>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+const firebaseConfig = {
+  apiKey:"AIzaSyDhH_fplGM0SYhXYQyGEmSgsxchuUgi43I",
+  authDomain:"surajfx2.firebaseapp.com",
+  databaseURL:"https://surajfx2-default-rtdb.firebaseio.com",
+  projectId:"surajfx2",
+  storageBucket:"surajfx2.firebasestorage.app",
+  messagingSenderId:"386646596801",
+  appId:"1:386646596801:web:db3b3fc2a212d644b28840",
+  measurementId:"G-N6KNJJ5B3D"
+};
+const auth=getAuth(initializeApp(firebaseConfig));
+const form=document.getElementById("authForm"), msg=document.getElementById("authMessage");
+function show(t,ok=false){msg.textContent=t;msg.className=ok?"form-success":"form-error";}
+form.addEventListener("submit",async e=>{
+ e.preventDefault(); const email=document.getElementById("email").value.trim(), password=document.getElementById("password").value;
+ try{await signInWithEmailAndPassword(auth,email,password);show("Logged in successfully. Returning to WishVerse…",true);setTimeout(()=>location.href="index.html",700);}
+ catch(err){show(err.code==="auth/operation-not-allowed"?"Email/password login is not enabled in Firebase yet.":(err.message||"Login failed."));}
+});
+document.getElementById("signupBtn").addEventListener("click",async()=>{
+ const email=document.getElementById("email").value.trim(), password=document.getElementById("password").value;
+ if(!email||password.length<6){show("Enter a valid email and a password of at least 6 characters.");return;}
+ try{await createUserWithEmailAndPassword(auth,email,password);show("Account created successfully. Returning to WishVerse…",true);setTimeout(()=>location.href="index.html",700);}
+ catch(err){show(err.code==="auth/operation-not-allowed"?"Email/password signup is not enabled in Firebase yet.":(err.message||"Could not create account."));}
+});
+</script>
+</body>
+</html>
