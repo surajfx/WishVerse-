@@ -219,6 +219,7 @@ blowAllBtn.addEventListener('click', ()=>{
     setTimeout(()=>showScreen(6), 500);
   }, 250);
 });
+
 // ---- Screen 6: Cut the cake (drag knife) ----
 const knife = document.getElementById('knife');
 const cutLine = document.getElementById('cutLine');
@@ -318,14 +319,19 @@ function spawnBalloons(){
   }
 }
 let prepStarted = false;
+let prepFireworksTimer = null;
 new MutationObserver(()=>{
   if(!screens[7].classList.contains('hidden') && !prepStarted){
     prepStarted = true;
     spawnBalloons();
+    launchFirework();
+    prepFireworksTimer = setInterval(launchFirework, 500);
+    setTimeout(()=>{ clearInterval(prepFireworksTimer); prepFireworksTimer = null; }, 3400);
     setTimeout(()=>showScreen(8), 3600);
+  } else if(screens[7].classList.contains('hidden') && prepFireworksTimer){
+    clearInterval(prepFireworksTimer); prepFireworksTimer = null;
   }
 }).observe(screens[7], {attributes:true, attributeFilter:['class']});
-
 // ---- Screen 8: Personal message (typewriter with pen) ----
 function typeInto(el, text, speed, cb){
   clearTimeout(el._penTimer);
