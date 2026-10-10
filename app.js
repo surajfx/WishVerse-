@@ -112,12 +112,7 @@ function toggleFavorite(id) {
 }
 
 function openCard(id) {
-  selectedCard = cards.find(c => c.id === id) || cards[0];
-  $("#modalCategory").textContent = selectedCard.category.toUpperCase();
-  $("#modalTitle").textContent = selectedCard.title;
-  $("#modalDescription").textContent = selectedCard.desc;
-  $("#modalPreview").innerHTML = `<div class="preview-art ${selectedCard.art}"><span class="preview-icon">${selectedCard.icon}</span><h3>${selectedCard.title}</h3><p>${selectedCard.desc}</p></div>`;
-  $("#cardModal").classList.remove("hidden");
+  location.href = "card.html?id=" + encodeURIComponent(id);
 }
 
 function closeModal(id) { $(id).classList.add("hidden"); }
@@ -540,4 +535,21 @@ if (menuToggle) {
   await initFirebase();
   await loadSharedWish();
   document.body.classList.remove("loading-shared-wish");
+  const qs = new URLSearchParams(window.location.search);
+  const pick = cards.find(c => c.id === (qs.get("create") || qs.get("demo")));
+  if (pick && !sharedId) {
+    selectedCard = pick;
+    if (qs.get("create")) openCustomize();
+    else showSharedExperience({templateId:pick.id, templateTitle:pick.title, category:pick.category, from:"Someone who cares", to:"Your Special Person", message:pick.desc, imageUrl:""}, true);
+  }
+})();
+
+/* Login link becomes "My Account" once logged in (menu keeps only 5 links). */
+(async () => {
+  try {
+    const pay = await import("./shared/payments.js");
+    const user = await pay.waitForUser();
+    const link = document.querySelector('.desktop-nav a[href="login.html"]');
+    if (user && link) { link.href = "account.html"; link.textContent = "🧾 My Account"; }
+  } catch {}
 })();

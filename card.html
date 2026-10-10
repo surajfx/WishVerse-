@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#fff7fb">
+<title>Wish Card — WishVerse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  :root{--ink:#17192b;--sub:#5b6178;--line:#f0e3ea;--rose:#ff2e7e;--rose2:#d81b60;--bg:#fff8fb}
+  html,body{background:var(--bg)!important;color:var(--ink)!important}
+  body{font-family:"DM Sans",system-ui,sans-serif;margin:0}
+  .cp{max-width:680px;margin:auto;padding:0 16px 40px}
+  .cp-head{display:flex;justify-content:space-between;align-items:center;padding:18px 0}
+  .cp-brand{font-weight:800;font-size:24px;text-decoration:none;color:var(--ink)}.cp-brand span{background:linear-gradient(90deg,#ff2e7e,#8b5cf6);-webkit-background-clip:text;color:transparent}
+  .cp-back{border:1px solid var(--line);background:#fff;border-radius:99px;padding:9px 16px;font-weight:700;color:var(--ink);text-decoration:none;font-size:14px}
+  .hero{border-radius:22px;min-height:300px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#fff;padding:30px;box-shadow:0 18px 50px rgba(120,40,80,.18);position:relative;overflow:hidden}
+  .hero .ic{font-size:76px;filter:drop-shadow(0 8px 18px rgba(0,0,0,.3))}
+  .hero h2{font-family:"Playfair Display",serif;font-size:38px;margin:10px 0 6px;color:#fff;line-height:1.1}
+  .hero p{color:#fff!important;margin:0;opacity:.92;max-width:380px;font-size:15px}
+  .box{background:#fff;border:1px solid var(--line);border-radius:26px;padding:26px;margin-top:20px;box-shadow:0 8px 30px rgba(180,80,120,.06)}
+  .pill{display:inline-block;background:#fff0f5;border:1px solid #f6d6e2;color:#b5547a;font-weight:800;letter-spacing:.06em;font-size:13px;padding:8px 16px;border-radius:99px}
+  h1.t{font-size:34px;line-height:1.15;margin:16px 0 10px;color:var(--ink)}
+  .lead{color:var(--sub);font-size:17px;line-height:1.65;margin:0}
+  hr{border:0;border-top:1px solid var(--line);margin:22px 0}
+  .price{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .price b{font-size:46px;letter-spacing:-1px}.price s{color:#9aa0b5;font-size:20px}
+  .off{background:linear-gradient(110deg,#ff2e7e,#d81b60);color:#fff;font-weight:800;font-size:13px;padding:8px 14px;border-radius:99px}
+  .eyebrow{font-size:13px;font-weight:800;letter-spacing:.07em;color:#6b7390;text-transform:uppercase;margin:0 0 14px}
+  ul.ck{list-style:none;padding:0;margin:0;display:grid;gap:14px}
+  ul.ck li{display:flex;gap:14px;align-items:center;color:#4a5068;font-size:17px}
+  ul.ck li:before{content:"✓";flex:none;width:30px;height:30px;border-radius:50%;background:#e6f8f0;color:#12a56a;display:grid;place-items:center;font-weight:800;font-size:15px}
+  .cta{display:block;width:100%;border:0;border-radius:99px;padding:18px;font:800 18px "DM Sans",sans-serif;cursor:pointer;margin-top:12px;text-align:center;text-decoration:none;box-sizing:border-box}
+  .cta.main{background:linear-gradient(110deg,#ff2e7e,#d81b60);color:#fff;box-shadow:0 12px 28px rgba(255,46,126,.3)}
+  .cta.alt{background:#fff;color:var(--ink);border:1px solid #e6dde2}
+  .cta.dark{background:#17192b;color:#fff}
+  .cta[disabled]{opacity:.6}
+  .secure{color:#6b7390;font-size:14px;font-weight:600;margin:16px 0 0}
+  .msg{min-height:20px;margin-top:10px;font-weight:600;font-size:14px}
+  .info{background:#fafafa;border:1px solid #eee;border-radius:20px;padding:20px;margin-top:20px;display:grid;gap:16px}
+  .info div small{display:block;color:#6b7390;font-weight:800;letter-spacing:.06em;font-size:12px}.info div b{font-size:17px}
+  .quote{font-family:"Playfair Display",serif;font-size:21px;line-height:1.55;color:#5a2a40;background:#fff4f8;border-radius:18px;padding:22px;margin:0}
+  .steps{display:grid;gap:14px;margin-top:6px}
+  .step{position:relative;background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px;overflow:hidden}
+  .step i{position:absolute;right:14px;top:-4px;font-size:74px;font-style:normal;font-weight:800;color:#f6f1f4}
+  .step b{display:block;font-size:19px;margin-bottom:6px;position:relative}.step p{margin:0;color:var(--sub);line-height:1.6;position:relative}
+  h3.sec{font-size:28px;text-align:center;margin:44px 0 8px;line-height:1.2;color:var(--ink)}
+  .kick{text-align:center;color:var(--rose);font-weight:800;letter-spacing:.08em;font-size:13px;margin-top:40px}
+  details{background:#fff7fa;border:1px solid #f3dfe7;border-radius:20px;padding:20px 22px;margin-top:12px}
+  summary{cursor:pointer;font-weight:700;font-size:18px;list-style:none;display:flex;justify-content:space-between;gap:12px;color:var(--ink)}
+  summary::-webkit-details-marker{display:none}summary:after{content:"+";color:var(--rose);font-size:24px;line-height:1}
+  details[open] summary:after{content:"–"}details p{color:var(--sub);line-height:1.7;margin:12px 0 0}
+  .more{border:2px dotted #f0d4df;border-radius:26px;padding:26px;margin-top:40px;text-align:center;background:#fffafc}
+  .more h4{font-size:22px;margin:0 0 8px}.more p{color:var(--sub);line-height:1.6;margin:0 0 18px}
+  .chip{display:inline-flex;align-items:center;gap:8px;border:1px solid #f0d4df;background:#fff;border-radius:99px;padding:13px 22px;margin:6px;font-weight:700;color:#4a4f68;text-decoration:none}
+  footer.ft{margin-top:50px;border-top:1px solid var(--line);padding:30px 0 10px;text-align:center}
+  .ft .links{display:flex;flex-wrap:wrap;justify-content:center;gap:10px 22px;margin:14px 0}
+  .ft .links a{color:#4a4f68;font-weight:600;text-decoration:none;font-size:15px}
+  .ft small{color:#8b90a5;display:block;line-height:1.7;font-size:13px}
+  .hide{display:none!important}
+  @media(min-width:700px){.cp{max-width:760px}}
+</style>
+</head>
+<body>
+<div class="cp">
+  <div class="cp-head"><a class="cp-brand" href="index.html">Wish<span>Verse</span></a><a class="cp-back" href="index.html#explore">← All cards</a></div>
+  <div id="page"></div>
+
+  <footer class="ft">
+    <div class="cp-brand" style="font-size:22px">Wish<span>Verse</span></div>
+    <div class="links">
+      <a href="privacy.html">Privacy Policy</a><a href="terms.html">Terms &amp; Conditions</a><a href="refund.html">Refund &amp; Cancellation</a>
+      <a href="contact.html">Contact Us</a><a href="team.html">Team</a><a href="profile.html">Profile</a><a href="pricing.html">Pricing</a>
+    </div>
+    <small>Payments secured by Razorpay · Support: <a href="mailto:trendingeditday@gmail.com" style="color:#b5547a">trendingeditday@gmail.com</a></small>
+    <small>© WishVerse by SurajFX. Made for love, friendship and unforgettable moments.</small>
+  </footer>
+</div>
+
+<script type="module">
+import { cards } from "./cards/index.js";
+import { auth, waitForUser, call, startCheckout } from "./shared/payments.js";
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const id = new URLSearchParams(location.search).get("id");
+const card = cards.find(c => c.id === id);
+const page = document.getElementById("page");
+if (!card) { page.innerHTML = `<div class="box"><h1 class="t">Card not found</h1><p class="lead">Please pick a card from the home page.</p><a class="cta main" href="index.html#explore">Browse cards</a></div>`; }
+
+
+function render() {
+  const more = cards.filter(c => c.id !== card.id && c.category === card.category).concat(cards.filter(c => c.id !== card.id && c.category !== card.category)).slice(0, 3);
+  page.innerHTML = `
+  <div class="hero ${card.art}"><div class="ic">${card.icon}</div><h2>${esc(card.finalTitle)}</h2><p>${esc(card.openIntro)}</p></div>
+
+  <div class="box">
+    <span class="pill">${card.icon} ${esc(card.category.toUpperCase())}</span>
+    <h1 class="t">${esc(card.title)} ${card.icon}</h1>
+    <p class="lead">${esc(card.desc)} Add your own words and photos, then share it as a private link.</p>
+    <hr>
+    <div id="buy">
+      <div class="price"><b>₹35</b><s>₹299</s><span class="off">88% OFF</span></div>
+      <p class="secure" style="margin:6px 0 0">for this card · or all cards for <b>₹99</b></p>
+    </div>
+    <hr>
+    <p class="eyebrow">What you get</p>
+    <ul class="ck">
+      <li>Animated step-by-step wish experience</li>
+      <li>Your names, message &amp; photos</li>
+      <li>Up to 7 creations for this card</li>
+      <li>Magic shareable link</li>
+      <li>Downloadable keepsake image</li>
+      <li>No ads inside the experience</li>
+    </ul>
+    <div id="actions" style="margin-top:22px"></div>
+    <div id="msg" class="msg"></div>
+    <p class="secure">🛡 Secure Razorpay payment · Instant unlock</p>
+    <div class="info">
+      <div><small>HOW IT'S DELIVERED</small><b>Shareable web link</b></div>
+      <div><small>CUSTOMIZABLE</small><b>Names, message &amp; photos</b></div>
+      <div><small>USES PER CARD</small><b>7 creations</b></div>
+      <div><small>FORMAT</small><b>Works on any phone, no app</b></div>
+    </div>
+  </div>
+
+  <div class="box"><p class="eyebrow">Sample message</p><p class="quote">“${esc(card.example)}”</p></div>
+
+  <p class="kick">EASY SETUP</p><h3 class="sec">Create your wish in 3 minutes</h3>
+  <div class="steps">
+    <div class="step"><i>01</i><b>Unlock the card</b><p>Pay once with UPI, card or net banking. It unlocks on your account instantly.</p></div>
+    <div class="step"><i>02</i><b>Personalize it</b><p>Write your names and message, and add photos if you like.</p></div>
+    <div class="step"><i>03</i><b>Share the link</b><p>Send it on WhatsApp or anywhere. They open it and the surprise begins.</p></div>
+  </div>
+
+  <p class="kick">FAQ</p><h3 class="sec">Got questions?</h3>
+  <details><summary>What is ${esc(card.title)}?</summary><p>${esc(card.desc)} It opens as a private animated page with your own message and photos.</p></details>
+  <details><summary>How do I send it?</summary><p>After you create it, you get a link. Copy it and send it on WhatsApp, Instagram or anywhere else.</p></details>
+  <details><summary>Can I preview before paying?</summary><p>Yes, tap <b>Live Demo</b> to watch the full experience with sample details first.</p></details>
+  <details><summary>How many times can I create this card?</summary><p>The ₹35 plan gives up to 7 creations for this card. The ₹99 All Cards Pass gives 7 creations for every card, separately.</p></details>
+  <details><summary>What if my payment fails or something goes wrong?</summary><p>Open <a href="account.html" style="color:#d81b60">My Account</a> and use <b>Report problem</b> on that payment, or read our <a href="refund.html" style="color:#d81b60">refund policy</a>.</p></details>
+
+  <div class="more"><h4>Explore more wish cards</h4><p>Find the right card for every moment.</p>
+    ${more.map(c => `<a class="chip" href="card.html?id=${c.id}">${esc(c.title)} ${c.icon} →</a>`).join("")}
+  </div>`;
+}
+
+function say(t, ok) { const m = document.getElementById("msg"); m.textContent = t; m.style.color = ok ? "#12a56a" : "#d81b60"; }
+const demoBtn = `<a class="cta alt" href="index.html?demo=${id}">👁 Live Demo</a>`;
+function showBuy() {
+  document.getElementById("actions").innerHTML = `
+    <button class="cta main" id="buy1">✨ Get This Card (₹35)</button>
+    <button class="cta dark" id="buyAll">💎 All Cards Pass (₹99)</button>${demoBtn}`;
+  const go = (plan, btn) => async () => {
+    const u = auth.currentUser || await waitForUser();
+    if (!u) { location.href = "login.html?next=" + encodeURIComponent("card.html?id=" + id); return; }
+    btn.disabled = true; say("Opening secure payment…", true);
+    try {
+      const r = await startCheckout(plan, plan === "single" ? id : null);
+      if (r.ok) { say("Payment successful! Unlocking…", true); setTimeout(() => location.reload(), 1200); return; }
+      say(r.cancelled ? "Payment cancelled. You were not charged." : r.error, false);
+    } catch (e) { say(e.message || "Could not start payment.", false); }
+    btn.disabled = false;
+  };
+  document.getElementById("buy1").onclick = go("single", document.getElementById("buy1"));
+  document.getElementById("buyAll").onclick = go("all", document.getElementById("buyAll"));
+}
+async function init() {
+  showBuy();
+  const u = auth.currentUser || await waitForUser();
+  if (!u) return;
+  try {
+    const a = await call("getMyAccount");
+    if (a.suspended) { document.getElementById("actions").innerHTML = ""; say("Your account is suspended. Please contact support.", false); return; }
+    if (a.all || a.cards.includes(id)) {
+      const left = a.usesPerCard - (a.usage[id] || 0);
+      document.getElementById("buy").innerHTML = `<p class="eyebrow" style="margin:0">Unlocked ✓</p><div class="price"><b style="font-size:30px">${left} of ${a.usesPerCard}</b><span class="lead">creations left</span></div>`;
+      document.getElementById("actions").innerHTML = left > 0
+        ? `<a class="cta main" href="index.html?create=${id}">✦ Create My Wish</a>${demoBtn}`
+        : `<button class="cta alt" disabled>All ${a.usesPerCard} creations used</button>${demoBtn}`;
+    }
+  } catch { /* stay on the buy view */ }
+}
+if (card) { document.title = `${card.title} — WishVerse`; render(); init(); }
+</script>
+</body>
+</html>
