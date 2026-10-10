@@ -1,13 +1,15 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Shared wish links are public to read, but can ONLY be created by the
+    // createWish Cloud Function after it verifies payment + usage limit.
     match /wishes/{wishId} {
       allow read: if true;
-      allow create: if request.resource.data.templateId is string
-        && request.resource.data.from is string
-        && request.resource.data.to is string
-        && request.resource.data.message is string;
-      allow update, delete: if false;
+      allow write: if false;
+    }
+    // payments, entitlements, users, securityEvents: server-only (Admin SDK bypasses rules)
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0b1020">
+<title>Admin — WishVerse</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  body{font-family:"DM Sans",system-ui,sans-serif}
+  .wrap{max-width:1180px;margin:auto;padding:22px 16px 80px}
+  .top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}
+  .tab{border:1px solid var(--border);background:var(--surface);color:var(--text);padding:10px 16px;border-radius:12px;font-weight:700;cursor:pointer}
+  .tab.on{background:linear-gradient(110deg,var(--primary),var(--secondary));color:#10172b;border-color:transparent}
+  .badge{background:#ff5d8f;color:#fff;border-radius:99px;font-size:11px;padding:1px 7px;margin-left:6px}
+  .stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+  .stat{background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:16px}
+  .stat b{display:block;font-size:26px;margin-top:4px}.stat span{color:var(--muted);font-size:13px}
+  .bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .bar select,.bar input{padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);font:inherit}
+  .tbl{overflow-x:auto;border:1px solid var(--border);border-radius:16px}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:820px}
+  th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+  th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em;background:var(--surface2)}
+  .pill{display:inline-block;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:700}
+  .pill.paid{background:#123d2c;color:#75e6b0}.pill.failed{background:#4a1a2a;color:#ff91b6}.pill.created{background:#2b3248;color:#9ca8c1}
+  .pill.refunded{background:#2a2f55;color:#b99bff}.pill.pending{background:#4a3b12;color:#ffd479}.pill.rejected{background:#3a2330;color:#ff91b6}.pill.approved{background:#2a2f55;color:#b99bff}
+  .pill.sus{background:#4a1a2a;color:#ff91b6}.pill.warn{background:#4a3b12;color:#ffd479}
+  button.act{border:1px solid var(--border);background:var(--surface);color:var(--text);padding:6px 11px;border-radius:9px;font-weight:700;cursor:pointer;font-size:12.5px;margin:2px 2px 2px 0}
+  button.act.danger{background:#5a1f33;border-color:#8a2f4d;color:#ffd0df}
+  button.act.ok{background:#14503a;border-color:#1f7a58;color:#c9ffe6}
+  .muted{color:var(--muted)}.msg{margin:10px 0;min-height:20px;font-size:14px}
+  .reqbox{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:12px;margin-top:10px;max-width:680px}
+  .none{padding:26px;text-align:center;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><h1 style="margin:0">WishVerse Admin</h1><div><span id="me" class="muted"></span> <a class="btn btn-secondary" style="min-height:40px;padding:8px 14px" href="index.html">← Site</a></div></div>
+  <div id="gate" class="msg muted">Checking access…</div>
+  <div id="app" class="hidden">
+    <div class="tabs" id="tabs">
+      <button class="tab on" data-t="overview">Overview</button>
+      <button class="tab" data-t="payments">Payments</button>
+      <button class="tab" data-t="refunds">Refund requests<span id="rfBadge" class="badge hidden"></span></button>
+      <button class="tab" data-t="plan99">₹99 / ₹35 buyers</button>
+      <button class="tab" data-t="users">Users</button>
+      <button class="tab" data-t="security">Bypass / Security<span id="secBadge" class="badge hidden"></span></button>
+    </div>
+    <div id="msg" class="msg"></div>
+    <div id="view"></div>
+  </div>
+</div>
+<script type="module">
+import { cards } from "./cards/index.js";
+import { auth, waitForUser, call, rupees, fmtDate, esc } from "./shared/payments.js";
+const $ = (s) => document.querySelector(s);
+const cardName = (id) => (cards.find(c => c.id === id) || {}).title || id;
+let tab = "overview", pays = [], users = [], events = [], overview = null;
+
+const say = (t, bad) => { const m = $("#msg"); m.textContent = t; m.style.color = bad ? "#ff91b6" : "#75e6b0"; };
+async function guard(fn) { try { say("Working…"); const r = await fn(); say("Done ✓"); return r; } catch (e) { say(e.message || "Failed", true); } }
+
+(async () => {
+  const user = auth.currentUser || await waitForUser();
+  if (!user) { location.href = "login.html?next=admin.html"; return; }
+  let chk; try { chk = await call("adminCheck"); } catch { chk = { isAdmin: false }; }
+  if (!chk.isAdmin) { $("#gate").textContent = "You are not authorised to view this page."; return; }
+  $("#gate").classList.add("hidden"); $("#app").classList.remove("hidden"); $("#me").textContent = chk.email;
+  document.querySelectorAll(".tab").forEach(b => b.onclick = () => { tab = b.dataset.t; document.querySelectorAll(".tab").forEach(x => x.classList.toggle("on", x === b)); render(); });
+  await refresh();
+})();
+
+async function refresh() {
+  say("Loading…");
+  try {
+    [overview, { payments: pays }, { users }, { events }] = await Promise.all([
+      call("adminOverview"), call("adminListPayments"), call("adminListUsers"), call("adminSecurityEvents"),
+    ]);
+    say("");
+  } catch (e) { say(e.message || "Could not load data", true); }
+  const rf = pays.filter(p => p.refundRequest && p.refundRequest.status === "pending").length;
+  $("#rfBadge").textContent = rf; $("#rfBadge").classList.toggle("hidden", !rf);
+  const fl = users.filter(u => u.flags > 0).length;
+  $("#secBadge").textContent = fl; $("#secBadge").classList.toggle("hidden", !fl);
+  render();
+}
+
+const planName = (p) => p.plan === "all" ? "₹99 All Cards" : "₹35 · " + cardName(p.cardId);
+const pill = (s) => `<span class="pill ${s}">${s}</span>`;
+
+function render() {
+  const v = $("#view");
+  if (tab === "overview") return v.innerHTML = overviewHtml();
+  if (tab === "payments") return paymentsView(v);
+  if (tab === "refunds") return refundsView(v);
+  if (tab === "plan99") return buyersView(v);
+  if (tab === "users") return usersView(v);
+  if (tab === "security") return securityView(v);
+}
+
+function overviewHtml() {
+  const o = overview; if (!o) return "";
+  const st = (l, n) => `<div class="stat"><span>${l}</span><b>${n}</b></div>`;
+  return `<div class="stats">
+    ${st("Total orders", o.totalOrders)}${st("✅ Successful", o.paid)}${st("❌ Failed", o.failed)}${st("⏳ Abandoned (not paid)", o.created)}
+    ${st("↩ Refunded", o.refunded)}${st("📝 Refund requests pending", o.refundRequestsPending)}
+    ${st("₹99 buyers", o.plan99Buyers)}${st("₹35 buyers", o.plan35Buyers)}
+    ${st("Revenue (paid)", rupees(o.revenuePaise))}${st("Refunded amount", rupees(o.refundedPaise))}
+    ${st("Suspended users", o.suspended)}${st("Flagged users", o.flaggedUsers)}
+  </div><p class="muted" style="margin-top:14px">Revenue shown is for payments currently marked “paid”. Refunded orders are counted separately. Stats are calculated from the latest 2,000 orders.</p>`;
+}
+
+function paymentsView(v) {
+  v.innerHTML = `<div class="bar">
+    <select id="fs"><option value="">All status</option><option>paid</option><option>failed</option><option>created</option><option>refunded</option></select>
+    <select id="fp"><option value="">All plans</option><option value="all">₹99 All Cards</option><option value="single">₹35 Single</option></select>
+    <input id="fq" placeholder="Search email / payment id" style="min-width:240px"><button class="act" id="rl">↻ Reload</button></div><div class="tbl" id="tb"></div>`;
+  const draw = () => {
+    const s = $("#fs").value, p = $("#fp").value, q = $("#fq").value.toLowerCase();
+    const rows = pays.filter(x => (!s || x.status === s) && (!p || x.plan === p) && (!q || (x.email || "").toLowerCase().includes(q) || (x.razorpayPaymentId || "").toLowerCase().includes(q) || x.id.toLowerCase().includes(q)));
+    $("#tb").innerHTML = rows.length ? `<table><tr><th>Date</th><th>User</th><th>Plan</th><th>Amount</th><th>Status</th><th>Details</th><th></th></tr>${rows.map(x => `<tr>
+      <td>${fmtDate(x.createdAt)}</td><td>${esc(x.email)}</td><td>${esc(planName(x))}</td><td>${rupees(x.amount)}</td><td>${pill(x.status)}</td>
+      <td class="muted">${x.razorpayPaymentId ? esc(x.razorpayPaymentId) + "<br>" : ""}${x.method ? esc(x.method) + " · " : ""}${x.error ? "⚠ " + esc(x.error) : ""}${x.refundRequest ? "<br>refund req: " + pill(x.refundRequest.status) : ""}</td>
+      <td>${x.status === "paid" ? `<button class="act danger" data-refund="${x.id}">Refund</button>` : ""}${x.status !== "refunded" ? `<button class="act" data-sync="${x.id}">Sync</button>` : ""}</td></tr>`).join("")}</table>` : `<div class="none">No payments match.</div>`;
+    bindActions();
+  };
+  ["fs", "fp"].forEach(i => $("#" + i).onchange = draw); $("#fq").oninput = draw; $("#rl").onclick = refresh; draw();
+}
+
+function refundsView(v) {
+  const rows = pays.filter(p => p.refundRequest).sort((a, b) => (a.refundRequest.status === "pending" ? -1 : 1) - (b.refundRequest.status === "pending" ? -1 : 1) || b.refundRequest.at - a.refundRequest.at);
+  v.innerHTML = rows.length ? rows.map(p => `<div class="reqbox">
+    <b>${esc(p.email)}</b> · ${esc(planName(p))} · ${rupees(p.amount)} ${pill(p.refundRequest.status)}
+    <div class="muted" style="margin:4px 0">Reported ${fmtDate(p.refundRequest.at)} · Uses consumed when reported: <b>${p.refundRequest.usageAtRequest ?? "?"}</b> · Ref ${esc(p.razorpayPaymentId || "")}</div>
+    <div style="margin:8px 0">“${esc(p.refundRequest.message)}”</div>
+    ${p.refundRequest.adminNote ? `<div class="muted">Admin note: ${esc(p.refundRequest.adminNote)}</div>` : ""}
+    ${p.refundRequest.status === "pending" ? `<button class="act ok" data-refund="${p.id}">Approve & refund ${rupees(p.amount)}</button><button class="act danger" data-reject="${p.id}">Reject</button>` : ""}
+  </div>`).join("") : `<div class="none">No refund requests.</div>`;
+  bindActions();
+}
+
+function buyersView(v) {
+  const map = {};
+  pays.filter(p => p.status === "paid").forEach(p => { (map[p.uid] ||= { email: p.email, uid: p.uid, list: [] }).list.push(p); });
+  const rows = Object.values(map).sort((a, b) => b.list[0].paidAt - a.list[0].paidAt);
+  const u = Object.fromEntries(users.map(x => [x.uid, x]));
+  v.innerHTML = `<div class="bar"><select id="bp"><option value="">All paid users</option><option value="all">₹99 only</option><option value="single">₹35 only</option></select></div><div class="tbl" id="tb"></div>`;
+  const draw = () => {
+    const f = $("#bp").value;
+    const r = rows.filter(x => !f || x.list.some(p => p.plan === f));
+    $("#tb").innerHTML = r.length ? `<table><tr><th>User</th><th>Plans bought</th><th>Last paid</th><th>Flags</th><th>Status</th><th></th></tr>${r.map(x => `<tr>
+      <td>${esc(x.email)}</td><td>${x.list.map(p => esc(planName(p))).join("<br>")}</td><td>${fmtDate(x.list[0].paidAt)}</td>
+      <td>${u[x.uid]?.flags ? `<span class="pill warn">${u[x.uid].flags} flag(s)</span>` : "—"}</td>
+      <td>${u[x.uid]?.suspended ? '<span class="pill sus">suspended</span>' : "active"}</td>
+      <td>${suspendBtn(u[x.uid] || { uid: x.uid })}</td></tr>`).join("")}</table>` : `<div class="none">No paid users.</div>`;
+    bindActions();
+  };
+  $("#bp").onchange = draw; draw();
+}
+
+const suspendBtn = (u) => u.isAdmin ? "" : u.suspended ? `<button class="act ok" data-unsus="${u.uid}">Unsuspend</button>` : `<button class="act danger" data-sus="${u.uid}">Suspend</button>`;
+
+function usersView(v) {
+  v.innerHTML = `<div class="bar"><input id="uq" placeholder="Search email" style="min-width:240px"></div><div class="tbl" id="tb"></div>`;
+  const draw = () => {
+    const q = $("#uq").value.toLowerCase();
+    const r = users.filter(u => !q || u.email.toLowerCase().includes(q)).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    $("#tb").innerHTML = `<table><tr><th>Email</th><th>Joined</th><th>Last login</th><th>Plan</th><th>Flags</th><th>Status</th><th></th></tr>${r.map(u => `<tr>
+      <td>${esc(u.email)}${u.isAdmin ? ' <span class="pill paid">admin</span>' : ""}</td><td>${fmtDate(u.createdAt)}</td><td>${fmtDate(u.lastSignIn)}</td>
+      <td>${u.hasAll ? "₹99 All" : u.cards.length ? "₹35 × " + u.cards.length : "—"}</td><td>${u.flags ? `<span class="pill warn">${u.flags}</span>` : "—"}</td>
+      <td>${u.suspended ? `<span class="pill sus">suspended</span><div class="muted">${esc(u.reason)}</div>` : "active"}</td><td>${suspendBtn(u)}</td></tr>`).join("")}</table>`;
+    bindActions();
+  };
+  $("#uq").oninput = draw; draw();
+}
+
+const evLabel = { wish_without_entitlement: "Tried to create wish without paying", bad_signature: "Fake payment signature", amount_mismatch: "Paid amount ≠ plan price", verify_foreign_order: "Used someone else's order", order_mismatch: "Payment/order mismatch", bad_webhook_signature: "Fake webhook call" };
+function securityView(v) {
+  const u = Object.fromEntries(users.map(x => [x.uid, x]));
+  const byUser = {};
+  events.forEach(e => { if (e.uid) (byUser[e.uid] ||= []).push(e); });
+  const flagged = Object.entries(byUser).sort((a, b) => b[1].length - a[1].length);
+  v.innerHTML = `<h3>Suspicious users</h3><p class="muted">Users who tried to bypass the payment system. Nothing is suspended automatically — you decide.</p>` +
+    (flagged.length ? `<div class="tbl"><table><tr><th>User</th><th>Attempts</th><th>What happened</th><th>Last</th><th>Status</th><th></th></tr>${flagged.map(([uid, list]) => `<tr>
+      <td>${esc(u[uid]?.email || list[0].email || uid)}</td><td><span class="pill ${list.length >= 3 ? "failed" : "warn"}">${list.length}</span></td>
+      <td>${[...new Set(list.map(e => evLabel[e.type] || e.type))].map(esc).join("<br>")}</td><td>${fmtDate(list[0].at)}</td>
+      <td>${u[uid]?.suspended ? '<span class="pill sus">suspended</span>' : "active"}</td><td>${u[uid] ? suspendBtn(u[uid]) : ""}</td></tr>`).join("")}</table></div>` : `<div class="none">No bypass attempts detected 🎉</div>`) +
+    `<h3 style="margin-top:26px">Latest events</h3>` + (events.length ? `<div class="tbl"><table><tr><th>Time</th><th>Type</th><th>User</th><th>Detail</th></tr>${events.map(e => `<tr><td>${fmtDate(e.at)}</td><td>${esc(evLabel[e.type] || e.type)}</td><td>${esc(e.email || e.uid || "—")}</td><td class="muted">${esc(e.detail)}</td></tr>`).join("")}</table></div>` : `<div class="none">No events.</div>`);
+  bindActions();
+}
+
+function bindActions() {
+  document.querySelectorAll("[data-refund]").forEach(b => b.onclick = async () => {
+    const p = pays.find(x => x.id === b.dataset.refund);
+    if (!confirm(`Refund ${rupees(p.amount)} to ${p.email} via Razorpay? This also removes their plan and cannot be undone.`)) return;
+    const note = prompt("Note for the user (optional):", "") || "";
+    if (await guard(() => call("adminRefund", { paymentId: p.id, note }))) refresh();
+  });
+  document.querySelectorAll("[data-reject]").forEach(b => b.onclick = async () => {
+    const note = prompt("Reason shown to the user:", ""); if (note === null) return;
+    if (await guard(() => call("adminRejectRefund", { paymentId: b.dataset.reject, note }))) refresh();
+  });
+  document.querySelectorAll("[data-sync]").forEach(b => b.onclick = async () => {
+    const r = await guard(() => call("adminSyncPayment", { paymentId: b.dataset.sync }));
+    if (r) { alert(`Razorpay says: ${r.razorpayStatus}\n${r.note}`); refresh(); }
+  });
+  document.querySelectorAll("[data-sus]").forEach(b => b.onclick = async () => {
+    const reason = prompt("Reason for suspension (saved for you):", "Payment bypass attempt"); if (reason === null) return;
+    if (await guard(() => call("adminSetSuspended", { uid: b.dataset.sus, suspended: true, reason }))) refresh();
+  });
+  document.querySelectorAll("[data-unsus]").forEach(b => b.onclick = async () => {
+    if (!confirm("Unsuspend this user?")) return;
+    if (await guard(() => call("adminSetSuspended", { uid: b.dataset.unsus, suspended: false }))) refresh();
+  });
+}
+</script>
+</body>
+</html>

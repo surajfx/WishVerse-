@@ -280,7 +280,7 @@ $("#wishForm").onsubmit = async e => {
     templateId: selectedCard.id, templateTitle: selectedCard.title,
     category: selectedCard.category, from: $("#fromInput").value.trim(),
     to: $("#toInput").value.trim(), message: $("#messageInput").value.trim(),
-    imageUrl: uploadedImageUrls[0] || "", imageUrls: uploadedImageUrls, createdAt: firestoreApi.serverTimestamp()
+    imageUrl: uploadedImageUrls[0] || "", imageUrls: uploadedImageUrls
   };
   if (CINEMATIC_CARDS.includes(selectedCard.id)) {
     payload.gfNotes = [1,2,3,4].map(i => $(`#gfNote${i}`).value.trim() || GF_DEFAULTS.notes[i-1]);
@@ -289,19 +289,27 @@ $("#wishForm").onsubmit = async e => {
     payload.gfCollage = (gfCollageIdx.length ? gfCollageIdx : [0,1]).map(i => uploadedImageUrls[i]).filter(Boolean);
   }
   try {
-    if (!firebaseReady || !db) {
-      toast("Firebase is not connected. Check Firebase setup.");
+    const pay = await import("./shared/payments.js");
+    const user = pay.auth.currentUser || await pay.waitForUser();
+    if (!user) {
+      toast("Please log in to create your wish.");
+      setTimeout(() => location.href = "login.html?next=pricing.html%3Fcard%3D" + selectedCard.id, 1200);
       return;
     }
-    const { addDoc, collection } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
-    const ref = await addDoc(collection(db, "wishes"), payload);
-    const link = `${location.origin}${location.pathname}?wish=${ref.id}`;
+    const res = await pay.call("createWish", payload);
+    const link = `${location.origin}${location.pathname}?wish=${res.id}`;
     $("#shareLink").value = link;
     $("#wishForm").classList.add("hidden"); $("#createdResult").classList.remove("hidden");
     toast("Wish saved successfully");
   } catch (error) {
     console.error(error);
-    toast("Firebase error. Check Firestore rules and setup.");
+    const m = String(error && error.message || "");
+    if (m.includes("NO_ENTITLEMENT")) {
+      toast("Unlock this card first to create your wish.");
+      setTimeout(() => location.href = "pricing.html?card=" + selectedCard.id, 1300);
+    } else if (m.includes("LIMIT_REACHED")) toast("You have used all 7 creations for this card.");
+    else if (m.includes("SUSPENDED")) toast("Your account is suspended. Please contact support.");
+    else toast("Could not save your wish. Please try again.");
   }
 };
 

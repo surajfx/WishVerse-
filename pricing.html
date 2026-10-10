@@ -30,7 +30,10 @@
       <li>Personalize your message & photos</li>
       <li>Share your finished wish</li>
     </ul>
-    <a class="btn btn-secondary full-width" href="login.html?plan=single">Choose ₹35 Plan</a>
+    <label class="form-note" style="display:block;margin:10px 0 8px">Which card?
+      <select id="cardSelect" style="width:100%;margin-top:6px;padding:12px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text)"></select>
+    </label>
+    <button class="btn btn-secondary full-width" data-plan="single">Choose ₹35 Plan</button>
   </div>
   <div class="plan-card featured">
     <div class="plan-badge">BEST VALUE</div>
@@ -42,11 +45,33 @@
       <li>Using one card does not reduce another card's allowance</li>
       <li>Personalize & share every finished wish</li>
     </ul>
-    <a class="btn btn-primary full-width" href="login.html?plan=all">Choose ₹99 Plan</a>
+    <button class="btn btn-primary full-width" data-plan="all">Choose ₹99 Plan</button>
   </div>
 </div>
-<p class="form-note" style="margin-top:20px">Usage is tracked per account and per card. A use is consumed when a finished wish is created/shared, not while you are only previewing or editing. Payment and entitlement verification will be handled through the connected payment system.</p>
+<p class="form-note" style="margin-top:20px">Usage is tracked per account and per card. A use is consumed when a finished wish is created/shared, not while you are only previewing or editing. Payments are processed securely by Razorpay and verified on our server before anything unlocks.</p>
+<div id="payMsg" class="form-note" style="margin-top:14px;font-size:14px"></div>
   </article>
 </main>
+<script type="module">
+import { cards } from "./cards/index.js";
+import { auth, waitForUser, startCheckout } from "./shared/payments.js";
+const sel = document.getElementById("cardSelect"), msg = document.getElementById("payMsg");
+sel.innerHTML = cards.map(c => `<option value="${c.id}">${c.icon} ${c.title}</option>`).join("");
+const pre = new URLSearchParams(location.search).get("card");
+if (pre && cards.some(c => c.id === pre)) sel.value = pre;
+const say = (t, ok) => { msg.textContent = t; msg.className = ok ? "form-success" : "form-error"; msg.style.fontSize = "14px"; };
+document.querySelectorAll("[data-plan]").forEach(btn => btn.onclick = async () => {
+  const user = auth.currentUser || await waitForUser();
+  if (!user) { location.href = "login.html?next=" + encodeURIComponent("pricing.html" + location.search); return; }
+  btn.disabled = true; say("Opening secure payment…", true);
+  try {
+    const r = await startCheckout(btn.dataset.plan, btn.dataset.plan === "single" ? sel.value : null);
+    if (r.ok) { say("Payment successful! Your plan is unlocked. Taking you to create your wish…", true); setTimeout(() => location.href = "index.html#explore", 1800); }
+    else if (r.cancelled) say("Payment cancelled. You were not charged.", false);
+    else say(r.error, false);
+  } catch (e) { say(e.message || "Could not start payment.", false); }
+  btn.disabled = false;
+});
+</script>
 </body>
 </html>

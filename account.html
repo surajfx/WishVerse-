@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b1020">
+<title>My Account — WishVerse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .pay-row{background:var(--surface2);border:1px solid var(--border);border-radius:18px;padding:16px;margin-top:12px}
+  .pay-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+  .pill{display:inline-block;padding:4px 11px;border-radius:99px;font-size:12px;font-weight:700}
+  .pill.paid{background:#123d2c;color:#75e6b0}.pill.failed{background:#4a1a2a;color:#ff91b6}
+  .pill.refunded{background:#2a2f55;color:#b99bff}.pill.pending{background:#4a3b12;color:#ffd479}.pill.rejected{background:#3a2330;color:#ff91b6}
+  .meta{color:var(--muted);font-size:13px;margin-top:6px;line-height:1.6}
+  textarea.report{width:100%;min-height:96px;margin-top:10px;padding:12px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font:inherit;resize:vertical}
+  .usage{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .usage span{background:var(--surface2);border:1px solid var(--border);border-radius:99px;padding:6px 12px;font-size:13px}
+  .btn.small{min-height:40px;padding:9px 16px;border-radius:12px;font-size:14px}
+</style>
+</head>
+<body>
+<main class="page-shell">
+  <div class="page-topbar">
+    <a class="page-brand" href="index.html">Wish<span>Verse</span></a>
+    <a class="btn btn-secondary page-back" href="index.html">← Home</a>
+  </div>
+  <article class="page-content">
+    <div class="page-kicker">WISHVERSE · MY ACCOUNT</div>
+    <h1>My Account</h1>
+    <div id="state" class="form-note">Loading…</div>
+    <div id="body" class="hidden">
+      <p id="who" class="form-note"></p>
+      <div id="suspendedBox" class="form-error hidden">Your account is suspended. Please contact support.</div>
+      <h2>My plan</h2>
+      <div id="plan"></div>
+      <h2>My payments</h2>
+      <div id="payments"></div>
+      <p class="form-note" style="margin-top:20px">Had a problem with a payment? Use <b>Report problem</b> on that payment. You can report each payment only once, in up to 100 words. We review every report. See the <a href="refund.html" style="color:var(--primary)">Refund policy</a>.</p>
+      <p style="margin-top:18px"><a id="adminLink" class="btn btn-secondary hidden" href="admin.html">Open Admin Panel</a> <button id="logoutBtn" class="btn btn-secondary">Log out</button></p>
+    </div>
+  </article>
+</main>
+<script type="module">
+import { cards } from "./cards/index.js";
+import { auth, waitForUser, call, logout, rupees, fmtDate, esc } from "./shared/payments.js";
+const $ = (s) => document.querySelector(s);
+const title = (id) => (cards.find(c => c.id === id) || {}).title || id;
+const wc = (t) => t.trim().split(/\s+/).filter(Boolean).length;
+
+async function load() {
+  const user = auth.currentUser || await waitForUser();
+  if (!user) { location.href = "login.html?next=account.html"; return; }
+  let a;
+  try { a = await call("getMyAccount"); }
+  catch (e) { $("#state").textContent = "Could not load your account. Please refresh."; return; }
+  $("#state").classList.add("hidden"); $("#body").classList.remove("hidden");
+  $("#who").textContent = "Logged in as " + a.email;
+  if (a.suspended) $("#suspendedBox").classList.remove("hidden");
+  if (a.isAdmin) $("#adminLink").classList.remove("hidden");
+
+  const used = (id) => a.usage[id] || 0;
+  let planHtml = "";
+  if (a.all) planHtml = `<div class="pay-row"><b>✦ All Cards Pass</b><div class="meta">Each card has its own ${a.usesPerCard} creations.</div><div class="usage">${cards.map(c => `<span>${esc(c.title)}: ${used(c.id)}/${a.usesPerCard}</span>`).join("")}</div></div>`;
+  else if (a.cards.length) planHtml = `<div class="pay-row"><b>Single card plans</b><div class="usage">${a.cards.map(id => `<span>${esc(title(id))}: ${used(id)}/${a.usesPerCard}</span>`).join("")}</div></div>`;
+  else planHtml = `<div class="pay-row">No active plan. <a href="pricing.html" style="color:var(--primary)">View plans →</a></div>`;
+  $("#plan").innerHTML = planHtml;
+
+  $("#payments").innerHTML = a.payments.length ? a.payments.map(rowHtml).join("") : `<div class="pay-row meta">No payments yet.</div>`;
+  document.querySelectorAll("[data-report]").forEach(b => b.onclick = () => openReport(b.dataset.report));
+}
+
+function rowHtml(p) {
+  const what = p.plan === "all" ? "All Cards Pass" : "One Card — " + title(p.cardId);
+  let extra = "";
+  if (p.status === "paid" && !p.refundRequest) extra = `<div id="rep-${p.id}"><button class="btn btn-secondary small" data-report="${p.id}" style="margin-top:10px">Report problem</button></div>`;
+  if (p.refundRequest) {
+    const r = p.refundRequest;
+    extra = `<div class="meta">Your report <span class="pill ${r.status === "approved" ? "refunded" : r.status}">${r.status === "approved" ? "refund approved" : r.status}</span> · ${fmtDate(r.at)}<br>“${esc(r.message)}”${r.adminNote ? `<br><b>Our reply:</b> ${esc(r.adminNote)}` : ""}</div>`;
+  }
+  return `<div class="pay-row"><div class="pay-top"><b>${esc(what)} · ${rupees(p.amount)}</b><span class="pill ${p.status}">${p.status}</span></div>
+  <div class="meta">${fmtDate(p.createdAt)}${p.razorpayPaymentId ? " · Ref: " + esc(p.razorpayPaymentId) : ""}${p.status === "failed" && p.error ? "<br>Reason: " + esc(p.error) : ""}</div>${extra}</div>`;
+}
+
+function openReport(id) {
+  $("#rep-" + id).innerHTML = `<textarea class="report" id="txt-${id}" placeholder="Tell us what went wrong (max 100 words)"></textarea>
+  <div class="meta"><span id="cnt-${id}">0</span>/100 words · You can only send this once.</div>
+  <div id="err-${id}" class="form-error"></div>
+  <button class="btn btn-primary small" id="send-${id}">Send report</button>`;
+  const t = $("#txt-" + id), cnt = $("#cnt-" + id), send = $("#send-" + id), err = $("#err-" + id);
+  t.oninput = () => { const n = wc(t.value); cnt.textContent = n; cnt.style.color = n > 100 ? "#ff91b6" : ""; };
+  send.onclick = async () => {
+    const n = wc(t.value);
+    if (n < 3) { err.textContent = "Please write at least 3 words."; return; }
+    if (n > 100) { err.textContent = "Maximum 100 words allowed."; return; }
+    if (!confirm("You can send only one report for this payment. Send now?")) return;
+    send.disabled = true; err.textContent = "";
+    try { await call("requestRefund", { paymentId: id, message: t.value }); await load(); }
+    catch (e) { err.textContent = e.message || "Could not send report."; send.disabled = false; }
+  };
+}
+$("#logoutBtn").onclick = async () => { await logout(); location.href = "index.html"; };
+load();
+</script>
+</body>
+</html>

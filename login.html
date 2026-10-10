@@ -23,7 +23,7 @@
       <button class="btn btn-secondary" type="button" id="signupBtn">Create Account</button>
       <div id="authMessage" class="form-note"></div>
     </form>
-    <p class="form-note" style="margin-top:20px">Your account is intended to keep premium entitlements tied to you instead of a browser or device. Payment access will be connected after the Razorpay integration is completed.</p>
+    <p class="form-note" style="margin-top:20px">Your account is intended to keep premium entitlements tied to you instead of a browser or device. Payments are handled securely by Razorpay.</p>
   </article>
 </main>
 <script type="module">
@@ -40,17 +40,19 @@ const firebaseConfig = {
   measurementId:"G-N6KNJJ5B3D"
 };
 const auth=getAuth(initializeApp(firebaseConfig));
+const nextRaw=new URLSearchParams(location.search).get("next")||"";
+const dest=/^[a-z0-9_-]+\.html(\?[^\s]*)?$/i.test(nextRaw)?nextRaw:"index.html";
 const form=document.getElementById("authForm"), msg=document.getElementById("authMessage");
 function show(t,ok=false){msg.textContent=t;msg.className=ok?"form-success":"form-error";}
 form.addEventListener("submit",async e=>{
  e.preventDefault(); const email=document.getElementById("email").value.trim(), password=document.getElementById("password").value;
- try{await signInWithEmailAndPassword(auth,email,password);show("Logged in successfully. Returning to WishVerse…",true);setTimeout(()=>location.href="index.html",700);}
+ try{await signInWithEmailAndPassword(auth,email,password);show("Logged in successfully. Redirecting…",true);setTimeout(()=>location.href=dest,700);}
  catch(err){show(err.code==="auth/operation-not-allowed"?"Email/password login is not enabled in Firebase yet.":(err.message||"Login failed."));}
 });
 document.getElementById("signupBtn").addEventListener("click",async()=>{
  const email=document.getElementById("email").value.trim(), password=document.getElementById("password").value;
  if(!email||password.length<6){show("Enter a valid email and a password of at least 6 characters.");return;}
- try{await createUserWithEmailAndPassword(auth,email,password);show("Account created successfully. Returning to WishVerse…",true);setTimeout(()=>location.href="index.html",700);}
+ try{await createUserWithEmailAndPassword(auth,email,password);show("Account created successfully. Redirecting…",true);setTimeout(()=>location.href=dest,700);}
  catch(err){show(err.code==="auth/operation-not-allowed"?"Email/password signup is not enabled in Firebase yet.":(err.message||"Could not create account."));}
 });
 </script>
