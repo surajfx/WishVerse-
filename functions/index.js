@@ -11,7 +11,7 @@ const FV = admin.firestore.FieldValue;
 const RZP_KEY_ID = defineString("RAZORPAY_KEY_ID");
 const RZP_KEY_SECRET = defineSecret("RAZORPAY_KEY_SECRET");
 const RZP_WEBHOOK_SECRET = defineSecret("RAZORPAY_WEBHOOK_SECRET");
-const ADMIN_UIDS = defineString("ADMIN_UIDS"); // comma separated Firebase Auth UIDs
+const OWNER_EMAIL = defineString("OWNER_EMAIL", { default: "suraj7uddin@gmail.com" }); // the one owner; owner appoints other admins from the admin panel
 
 const REGION = "asia-south1";
 const OPTS = { region: REGION, secrets: [RZP_KEY_SECRET], cors: true };
@@ -20,15 +20,32 @@ const WH_OPTS = { region: REGION, secrets: [RZP_KEY_SECRET, RZP_WEBHOOK_SECRET] 
 const rzp = () => new Razorpay({ key_id: RZP_KEY_ID.value(), key_secret: RZP_KEY_SECRET.value() });
 
 /* ------------------------------ helpers ------------------------------ */
-const isAdminUid = (uid) => ADMIN_UIDS.value().split(",").map((x) => x.trim()).filter(Boolean).includes(uid);
+const lc = (e) => String(e || "").trim().toLowerCase();
+const OWNER = () => lc(OWNER_EMAIL.value());
+async function isAdminEmail(email, verified) {
+  email = lc(email);
+  if (!email || !verified) return false;
+  if (email === OWNER()) return true;
+  return (await db.doc(`admins/${email}`).get()).exists;
+}
+const isOwnerAuth = (a) => !!a.token.email_verified && lc(a.token.email) === OWNER();
+const isAdminAuth = (a) => isAdminEmail(a.token.email, a.token.email_verified);
 
+// Only Google logins are accepted (verified e-mail). Blocks throw-away password accounts.
 function needAuth(req) {
   if (!req.auth) throw new HttpsError("unauthenticated", "Please log in first.");
+  const prov = req.auth.token.firebase && req.auth.token.firebase.sign_in_provider;
+  if (prov !== "google.com" || !req.auth.token.email_verified) throw new HttpsError("permission-denied", "GOOGLE_LOGIN_REQUIRED");
   return req.auth;
 }
-function needAdmin(req) {
+async function needAdmin(req) {
   const a = needAuth(req);
-  if (!isAdminUid(a.uid)) throw new HttpsError("permission-denied", "Admins only.");
+  if (!(await isAdminAuth(a))) throw new HttpsError("permission-denied", "Admins only.");
+  return a;
+}
+function needOwner(req) {
+  const a = needAuth(req);
+  if (!isOwnerAuth(a)) throw new HttpsError("permission-denied", "Owner only.");
   return a;
 }
 async function needActiveUser(req) {
@@ -42,6 +59,40 @@ async function touchUser(a) {
     { email: a.token.email || "", lastSeen: FV.serverTimestamp() },
     { merge: true }
   );
+  await applyPendingGrants(a.uid, a.token.email);
+}
+// Free plan given by an admin (no Razorpay involved). Shows in the payments list as "granted".
+async function grantEntitlement(uid, email, g) {
+  const id = "grant_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
+  const batch = db.batch();
+  batch.set(db.doc(`payments/${id}`), {
+    uid, email: lc(email), plan: g.plan, cardId: g.plan === "single" ? g.cardId : null, amount: 0, currency: "INR",
+    status: "granted", grantedBy: g.by || "", note: String(g.note || "").slice(0, 200), attempts: 0,
+    createdAt: FV.serverTimestamp(), paidAt: FV.serverTimestamp(),
+  });
+  batch.set(db.doc(`entitlements/${uid}`),
+    g.plan === "all" ? { all: { paymentId: id, at: Date.now() } } : { cards: { [g.cardId]: { paymentId: id, at: Date.now() } } },
+    { merge: true });
+  await batch.commit();
+  return id;
+}
+async function applyPendingGrants(uid, email) {
+  const e = lc(email);
+  if (!e) return;
+  const ref = db.doc(`pendingGrants/${e}`);
+  const s = await ref.get();
+  if (!s.exists) return;
+  for (const g of s.data().grants || []) await grantEntitlement(uid, e, g);
+  await ref.delete();
+}
+async function getPricingDoc() {
+  const s = await db.doc("config/pricing").get();
+  const d = s.exists ? s.data() : {};
+  const D = L.DEFAULT_PRICING, pick = (k) => ({
+    amount: d[k] && Number.isInteger(d[k].amount) ? d[k].amount : D[k].amount,
+    old: d[k] && Number.isInteger(d[k].old) ? d[k].old : D[k].old,
+  });
+  return { single: pick("single"), all: pick("all") };
 }
 async function logEvent(type, uid, email, detail) {
   try {
@@ -57,6 +108,7 @@ function cleanPayment(id, d) {
     id, uid: d.uid, email: d.email, plan: d.plan, cardId: d.cardId || null,
     amount: d.amount, status: d.status, razorpayPaymentId: d.razorpayPaymentId || null,
     method: d.method || null, error: d.error || null, attempts: d.attempts || 0,
+    note: d.note || "", grantedBy: d.grantedBy || "",
     createdAt: ms(d.createdAt), paidAt: ms(d.paidAt), refundedAt: ms(d.refundedAt),
     refundRequest: d.refundRequest
       ? {
@@ -118,8 +170,9 @@ async function revokeEntitlement(p) {
 exports.createOrder = onCall(OPTS, async (req) => {
   const a = await needActiveUser(req);
   const { plan, cardId } = req.data || {};
-  const planDef = L.PLANS[plan];
-  if (!planDef) throw new HttpsError("invalid-argument", "Unknown plan.");
+  if (!L.PLANS[plan]) throw new HttpsError("invalid-argument", "Unknown plan.");
+  if (await isAdminAuth(a)) throw new HttpsError("failed-precondition", "Admins already have free access.");
+  const planDef = { amount: (await getPricingDoc())[plan].amount, label: plan === "all" ? "All Cards Pass" : "One Card" };
   if (plan === "single" && !L.CARDS[cardId]) throw new HttpsError("invalid-argument", "Choose a valid card.");
   await touchUser(a);
 
@@ -243,7 +296,7 @@ exports.getMyAccount = onCall(OPTS, async (req) => {
   return {
     email: a.token.email || "",
     suspended: !!(u.exists && u.data().suspended),
-    isAdmin: isAdminUid(a.uid),
+    isAdmin: await isAdminAuth(a), isOwner: isOwnerAuth(a),
     all: !!ent.all,
     cards: Object.keys(ent.cards || {}),
     usage: ent.usage || {},
@@ -280,12 +333,15 @@ exports.createWish = onCall(OPTS, async (req) => {
   if (!wish) throw new HttpsError("invalid-argument", "Please fill From, To and Message.");
   const eRef = db.doc(`entitlements/${a.uid}`);
   const wRef = db.collection("wishes").doc();
+  const isAdmin = await isAdminAuth(a);
   try {
     await db.runTransaction(async (tx) => {
-      const es = await tx.get(eRef);
-      const c = L.checkEntitlement(es.exists ? es.data() : null, wish.templateId);
-      if (!c.ok) throw new HttpsError(c.reason === "LIMIT_REACHED" ? "resource-exhausted" : "failed-precondition", c.reason);
-      tx.update(eRef, { [`usage.${wish.templateId}`]: FV.increment(1) });
+      if (!isAdmin) { // owner/admins use every card free and unlimited
+        const es = await tx.get(eRef);
+        const c = L.checkEntitlement(es.exists ? es.data() : null, wish.templateId);
+        if (!c.ok) throw new HttpsError(c.reason === "LIMIT_REACHED" ? "resource-exhausted" : "failed-precondition", c.reason);
+        tx.update(eRef, { [`usage.${wish.templateId}`]: FV.increment(1) });
+      }
       tx.set(wRef, { ...wish, ownerUid: a.uid, createdAt: FV.serverTimestamp() });
     });
   } catch (e) {
@@ -300,7 +356,7 @@ exports.createWish = onCall(OPTS, async (req) => {
 /* -------------------------------- admin -------------------------------- */
 exports.adminCheck = onCall(OPTS, async (req) => {
   const a = needAuth(req);
-  return { isAdmin: isAdminUid(a.uid), email: a.token.email || "" };
+  return { isAdmin: await isAdminAuth(a), isOwner: isOwnerAuth(a), email: a.token.email || "" };
 });
 
 async function allPayments(limit = 2000) {
@@ -309,7 +365,7 @@ async function allPayments(limit = 2000) {
 }
 
 exports.adminOverview = onCall(OPTS, async (req) => {
-  needAdmin(req);
+  await needAdmin(req);
   const [pays, users, ev] = await Promise.all([
     allPayments(),
     db.collection("users").get(),
@@ -324,6 +380,7 @@ exports.adminOverview = onCall(OPTS, async (req) => {
     paid: paid.length,
     failed: by("failed").length,
     refunded: refunded.length,
+    granted: by("granted").length,
     refundRequestsPending: pays.filter((p) => p.refundRequest && p.refundRequest.status === "pending").length,
     plan99Buyers: new Set(pays.filter((p) => p.plan === "all" && (p.status === "paid")).map((p) => p.uid)).size,
     plan35Buyers: new Set(pays.filter((p) => p.plan === "single" && p.status === "paid").map((p) => p.uid)).size,
@@ -335,18 +392,19 @@ exports.adminOverview = onCall(OPTS, async (req) => {
 });
 
 exports.adminListPayments = onCall(OPTS, async (req) => {
-  needAdmin(req);
+  await needAdmin(req);
   return { payments: await allPayments(1000) }; // filtering is done in the browser
 });
 
 exports.adminListUsers = onCall(OPTS, async (req) => {
-  needAdmin(req);
+  await needAdmin(req);
   const [list, docs, ents, ev] = await Promise.all([
     admin.auth().listUsers(1000),
     db.collection("users").get(),
     db.collection("entitlements").get(),
     db.collection("securityEvents").orderBy("at", "desc").limit(500).get(),
   ]);
+  const adm = new Set((await db.collection("admins").get()).docs.map((d) => d.id));
   const meta = {}; docs.forEach((d) => (meta[d.id] = d.data()));
   const entm = {}; ents.forEach((d) => (entm[d.id] = d.data()));
   const flags = {}; ev.docs.forEach((d) => { const u = d.data().uid; if (u) flags[u] = (flags[u] || 0) + 1; });
@@ -357,22 +415,24 @@ exports.adminListUsers = onCall(OPTS, async (req) => {
       suspended: !!(meta[u.uid] && meta[u.uid].suspended), reason: (meta[u.uid] && meta[u.uid].suspendReason) || "",
       hasAll: !!(entm[u.uid] && entm[u.uid].all),
       cards: Object.keys((entm[u.uid] && entm[u.uid].cards) || {}),
-      flags: flags[u.uid] || 0, isAdmin: isAdminUid(u.uid),
+      flags: flags[u.uid] || 0, isAdmin: lc(u.email) === OWNER() || adm.has(lc(u.email)),
     })),
   };
 });
 
 exports.adminSecurityEvents = onCall(OPTS, async (req) => {
-  needAdmin(req);
+  await needAdmin(req);
   const s = await db.collection("securityEvents").orderBy("at", "desc").limit(200).get();
   return { events: s.docs.map((d) => ({ id: d.id, ...d.data(), at: ms(d.data().at) })) };
 });
 
 exports.adminSetSuspended = onCall(OPTS, async (req) => {
-  needAdmin(req);
+  await needAdmin(req);
   const { uid, suspended, reason } = req.data || {};
   if (!uid) throw new HttpsError("invalid-argument", "uid missing");
-  if (isAdminUid(uid)) throw new HttpsError("failed-precondition", "Cannot suspend an admin.");
+  let target = null;
+  try { target = await admin.auth().getUser(uid); } catch { throw new HttpsError("not-found", "User not found."); }
+  if (target.uid === req.auth.uid || await isAdminEmail(target.email, true)) throw new HttpsError("failed-precondition", "Cannot suspend an admin.");
   await db.doc(`users/${uid}`).set(
     { suspended: !!suspended, suspendReason: suspended ? String(reason || "").slice(0, 300) : "", suspendedAt: suspended ? FV.serverTimestamp() : null },
     { merge: true }
@@ -383,7 +443,7 @@ exports.adminSetSuspended = onCall(OPTS, async (req) => {
 });
 
 exports.adminRefund = onCall(OPTS, async (req) => {
-  const a = needAdmin(req);
+  const a = await needAdmin(req);
   const { paymentId, note } = req.data || {};
   const ref = db.doc(`payments/${paymentId}`);
   const s = await ref.get();
@@ -405,7 +465,7 @@ exports.adminRefund = onCall(OPTS, async (req) => {
 });
 
 exports.adminRejectRefund = onCall(OPTS, async (req) => {
-  needAdmin(req);
+  await needAdmin(req);
   const { paymentId, note } = req.data || {};
   const ref = db.doc(`payments/${paymentId}`);
   const s = await ref.get();
@@ -420,7 +480,7 @@ exports.adminRejectRefund = onCall(OPTS, async (req) => {
 
 // Re-check an order directly with Razorpay (fixes "user paid but nothing unlocked").
 exports.adminSyncPayment = onCall(OPTS, async (req) => {
-  needAdmin(req);
+  await needAdmin(req);
   const { paymentId } = req.data || {};
   const s = await db.doc(`payments/${paymentId}`).get();
   if (!s.exists) throw new HttpsError("not-found", "Payment not found.");
@@ -433,4 +493,82 @@ exports.adminSyncPayment = onCall(OPTS, async (req) => {
   }
   const last = items[items.length - 1];
   return { ok: true, razorpayStatus: last ? last.status : "no payment attempt", note: "No captured payment found at Razorpay." };
+});
+
+/* ----------------------- pricing (owner/admin editable) ----------------------- */
+exports.getPricing = onCall({ region: REGION, cors: true }, async () => getPricingDoc());
+
+exports.adminSetPricing = onCall(OPTS, async (req) => {
+  await needAdmin(req);
+  const v = L.normalizePricing(req.data);
+  if (!v.ok) throw new HttpsError("invalid-argument", v.error);
+  await db.doc("config/pricing").set(v.value);
+  return v.value;
+});
+
+/* ------------------------ free plans given by admins ------------------------ */
+exports.adminGrantPlan = onCall(OPTS, async (req) => {
+  const a = await needAdmin(req);
+  const { email, plan, cardId, note } = req.data || {};
+  if (!L.isEmail(email)) throw new HttpsError("invalid-argument", "Enter a valid email.");
+  if (!L.PLANS[plan]) throw new HttpsError("invalid-argument", "Unknown plan.");
+  if (plan === "single" && !L.CARDS[cardId]) throw new HttpsError("invalid-argument", "Choose a card.");
+  const g = { plan, cardId: plan === "single" ? cardId : null, note: String(note || "").slice(0, 200), by: a.token.email || a.uid };
+  let user = null;
+  try { user = await admin.auth().getUserByEmail(lc(email)); }
+  catch (e) { if (e.code !== "auth/user-not-found") throw e; }
+  if (user) { await grantEntitlement(user.uid, email, g); return { ok: true, status: "granted" }; }
+  // Not signed up yet: it will be applied automatically on their first Google login.
+  const ref = db.doc(`pendingGrants/${lc(email)}`);
+  const s = await ref.get();
+  const grants = s.exists ? s.data().grants || [] : [];
+  grants.push(g);
+  await ref.set({ grants, updatedAt: FV.serverTimestamp() });
+  return { ok: true, status: "pending" };
+});
+
+exports.adminRevokeGrant = onCall(OPTS, async (req) => {
+  await needAdmin(req);
+  const ref = db.doc(`payments/${(req.data || {}).paymentId}`);
+  const s = await ref.get();
+  if (!s.exists || s.data().status !== "granted") throw new HttpsError("failed-precondition", "Only granted plans can be revoked.");
+  await ref.update({ status: "revoked", refundedAt: FV.serverTimestamp() });
+  await revokeEntitlement(s.data());
+  return { ok: true };
+});
+
+exports.adminListPending = onCall(OPTS, async (req) => {
+  await needAdmin(req);
+  const s = await db.collection("pendingGrants").get();
+  return { pending: s.docs.map((d) => ({ email: d.id, grants: d.data().grants || [] })) };
+});
+
+exports.adminCancelPending = onCall(OPTS, async (req) => {
+  await needAdmin(req);
+  await db.doc(`pendingGrants/${lc((req.data || {}).email)}`).delete();
+  return { ok: true };
+});
+
+/* ------------------------------ owner: admins ------------------------------ */
+exports.adminListAdmins = onCall(OPTS, async (req) => {
+  needOwner(req);
+  const s = await db.collection("admins").get();
+  return { owner: OWNER(), admins: s.docs.map((d) => ({ email: d.id, addedBy: d.data().addedBy || "" })) };
+});
+
+exports.adminAddAdmin = onCall(OPTS, async (req) => {
+  const a = needOwner(req);
+  const email = lc((req.data || {}).email);
+  if (!L.isEmail(email)) throw new HttpsError("invalid-argument", "Enter a valid Gmail address.");
+  if (email === OWNER()) throw new HttpsError("failed-precondition", "That is already the owner.");
+  await db.doc(`admins/${email}`).set({ addedBy: a.token.email, at: FV.serverTimestamp() });
+  return { ok: true };
+});
+
+exports.adminRemoveAdmin = onCall(OPTS, async (req) => {
+  needOwner(req);
+  const email = lc((req.data || {}).email);
+  if (email === OWNER()) throw new HttpsError("failed-precondition", "Owner cannot be removed.");
+  await db.doc(`admins/${email}`).delete();
+  return { ok: true };
 });

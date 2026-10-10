@@ -9,23 +9,30 @@ const apply = (cur, upd) => { const o = JSON.parse(JSON.stringify(cur || {})); f
 const snap = (p) => ({ exists: p in store, data: () => JSON.parse(JSON.stringify(store[p])), id: p.split("/").pop(), ref: docRef(p) });
 const docRef = (p) => ({ path: p, id: p.split("/").pop(), get: async () => snap(p),
   set: async (d, o) => { store[p] = o && o.merge ? apply(store[p], d) : apply({}, d); },
-  update: async (d) => { if (!(p in store)) throw new Error("no doc " + p); store[p] = apply(store[p], d); } });
+  update: async (d) => { if (!(p in store)) throw new Error("no doc " + p); store[p] = apply(store[p], d); },
+  delete: async () => { delete store[p]; } });
 let n = 0;
-const fakeDb = { doc: docRef, collection: (c) => ({ doc: (id) => docRef(`${c}/${id || "auto" + ++n}`), add: async (d) => { store[`${c}/ev${++n}`] = apply({}, d); } }),
+const fakeDb = { doc: docRef,
+  batch: () => { const ops = []; return { set: (r, d, o) => ops.push(() => r.set(d, o)), commit: async () => { for (const f of ops) await f(); } }; }, collection: (c) => ({
+    get: async () => ({ docs: Object.keys(store).filter((k) => k.startsWith(c + "/")).map(snap) }),
+    where: (f, _op, v) => ({ get: async () => ({ docs: Object.keys(store).filter((k) => k.startsWith(c + "/") && store[k][f] === v).map(snap) }) }),
+    doc: (id) => docRef(`${c}/${id || "auto" + ++n}`), add: async (d) => { store[`${c}/ev${++n}`] = apply({}, d); } }),
   runTransaction: async (fn) => fn({ get: async (r) => r.get(), set: (r, d) => { store[r.path] = apply({}, d); }, update: (r, d) => { store[r.path] = apply(store[r.path], d); } }) };
 const fsFn = () => fakeDb; fsFn.FieldValue = { serverTimestamp: () => TS, increment: inc, delete: () => DEL };
 class HttpsError extends Error { constructor(code, msg) { super(msg); this.code = code; } }
 const handlers = {};
 const stubs = {
   "firebase-functions/v2/https": { onCall: (o, f) => f, onRequest: (o, f) => f, HttpsError },
-  "firebase-functions/params": { defineSecret: (n) => ({ value: () => "secret" }), defineString: (n) => ({ value: () => (n === "ADMIN_UIDS" ? "adm1" : "rzp_key") }) },
-  "firebase-admin": { initializeApp() {}, firestore: Object.assign(fsFn, {}), auth: () => ({ updateUser: async () => {}, revokeRefreshTokens: async () => {} }) },
+  "firebase-functions/params": { defineSecret: (n) => ({ value: () => "secret" }), defineString: (n) => ({ value: () => (n === "OWNER_EMAIL" ? "owner@x.com" : "rzp_key") }) },
+  "firebase-admin": { initializeApp() {}, firestore: Object.assign(fsFn, {}), auth: () => ({ updateUser: async () => {}, revokeRefreshTokens: async () => {},
+    getUser: async (uid) => ({ uid, email: uid + "@x.com" }),
+    getUserByEmail: async (e) => { if (e.startsWith("ghost")) { const x = new Error("nf"); x.code = "auth/user-not-found"; throw x; } return { uid: e.split("@")[0], email: e }; } }) },
   razorpay: class { constructor() { this.orders = { create: async (o) => ({ id: "order_" + ++n, ...o }) };
     this.payments = { fetch: async (id) => ({ id, order_id: global.__order, status: "captured", amount: global.__amt, currency: "INR", method: "upi" }), refund: async () => ({ id: "rfnd_1" }) }; } },
 };
 const origLoad = Module._load; Module._load = function (r, ...a) { return stubs[r] || origLoad.call(this, r, ...a); };
 const fn = require("../index.js");
-const req = (uid, data) => ({ auth: { uid, token: { email: uid + "@x.com" } }, data });
+const req = (uid, data, prov = "google.com") => ({ auth: { uid, token: { email: uid + "@x.com", email_verified: true, firebase: { sign_in_provider: prov } } }, data });
 const code = async (p) => { try { await p; return "OK"; } catch (e) { return e.code + ":" + e.message; } };
 
 (async () => {
@@ -71,16 +78,73 @@ const code = async (p) => { try { await p; return "OK"; } catch (e) { return e.c
 
   // 6) admin only; refund revokes plan
   assert.match(await code(fn.adminRefund(req("u1", { paymentId: o.orderId }))), /permission-denied/);
-  assert.strictEqual((await fn.adminRefund(req("adm1", { paymentId: o.orderId, note: "ok" }))).refundId, "rfnd_1");
+  assert.strictEqual((await fn.adminRefund(req("owner", { paymentId: o.orderId, note: "ok" }))).refundId, "rfnd_1");
   assert.strictEqual(store[`payments/${o.orderId}`].status, "refunded");
   assert.strictEqual(store[`payments/${o.orderId}`].refundRequest.status, "approved");
   assert.strictEqual(store["entitlements/u1"].all, null);
   assert.match(await code(fn.createWish(req("u1", wish))), /NO_ENTITLEMENT/);
-  assert.match(await code(fn.adminRefund(req("adm1", { paymentId: o.orderId }))), /Only paid/); // no double refund
+  assert.match(await code(fn.adminRefund(req("owner", { paymentId: o.orderId }))), /Only paid/); // no double refund
 
   // 7) suspend blocks everything; admin can't be suspended
-  await fn.adminSetSuspended(req("adm1", { uid: "u1", suspended: true, reason: "bypass" }));
+  await fn.adminSetSuspended(req("owner", { uid: "u1", suspended: true, reason: "bypass" }));
   assert.match(await code(fn.createOrder(req("u1", { plan: "all" }))), /SUSPENDED/);
-  assert.match(await code(fn.adminSetSuspended(req("adm1", { uid: "adm1", suspended: true }))), /Cannot suspend an admin/);
+  assert.match(await code(fn.adminSetSuspended(req("owner", { uid: "owner", suspended: true }))), /Cannot suspend an admin/);
+  // ---- 8) Google-only login ----
+  assert.match(await code(fn.createOrder(req("u9", { plan: "all" }, "password"))), /GOOGLE_LOGIN_REQUIRED/);
+  assert.match(await code(fn.getMyAccount({ auth: { uid: "u9", token: { email: "u9@x.com", email_verified: false, firebase: { sign_in_provider: "google.com" } } } })), /GOOGLE_LOGIN_REQUIRED/);
+
+  // ---- 9) owner: free + unlimited, cannot buy ----
+  for (let i = 0; i < 12; i++) await fn.createWish(req("owner", wish));
+  assert(!store["entitlements/owner"], "owner usage must not be tracked");
+  assert.match(await code(fn.createOrder(req("owner", { plan: "all" }))), /free access/);
+  const me = await fn.getMyAccount(req("owner", {})); assert(me.isAdmin && me.isOwner);
+
+  // ---- 10) owner appoints admins; others cannot ----
+  assert.match(await code(fn.adminAddAdmin(req("u2", { email: "helper@x.com" }))), /Owner only/);
+  assert.match(await code(fn.adminAddAdmin(req("owner", { email: "not-an-email" }))), /invalid-argument/);
+  await fn.adminAddAdmin(req("owner", { email: "Helper@x.com" }));
+  assert(store["admins/helper@x.com"]);
+  assert.match(await code(fn.adminAddAdmin(req("helper", { email: "z@x.com" }))), /Owner only/); // admins can't appoint admins
+  assert.strictEqual((await fn.adminCheck(req("helper", {}))).isAdmin, true);
+  assert.strictEqual((await fn.adminCheck(req("u2", {}))).isAdmin, false);
+  for (let i = 0; i < 9; i++) await fn.createWish(req("helper", wish)); // admins are free too
+  assert.match(await code(fn.adminRemoveAdmin(req("owner", { email: "owner@x.com" }))), /Owner cannot/);
+
+  // ---- 11) grant plan free (existing user) -> works, shows as granted, revocable ----
+  assert.match(await code(fn.adminGrantPlan(req("u2", { email: "u5@x.com", plan: "all" }))), /Admins only/);
+  assert.match(await code(fn.adminGrantPlan(req("helper", { email: "u5@x.com", plan: "single" }))), /Choose a card/);
+  assert.strictEqual((await fn.adminGrantPlan(req("helper", { email: "u5@x.com", plan: "single", cardId: "sorry", note: "friend" }))).status, "granted");
+  assert.strictEqual((await fn.createWish(req("u5", { ...wish, templateId: "sorry" }))).id.length > 0, true);
+  assert.match(await code(fn.createWish(req("u5", wish))), /NO_ENTITLEMENT/); // only the granted card
+  const gid = Object.keys(store).find((k) => k.startsWith("payments/grant_")).split("/")[1];
+  assert.strictEqual(store[`payments/${gid}`].status, "granted"); assert.strictEqual(store[`payments/${gid}`].amount, 0);
+  assert.match(await code(fn.adminRefund(req("helper", { paymentId: gid }))), /Only paid/); // grants never hit Razorpay
+  await fn.adminRevokeGrant(req("helper", { paymentId: gid }));
+  assert.match(await code(fn.createWish(req("u5", { ...wish, templateId: "sorry" }))), /NO_ENTITLEMENT/);
+
+  // ---- 12) grant to someone who has not signed up yet -> pending, applied at first login ----
+  assert.strictEqual((await fn.adminGrantPlan(req("owner", { email: "ghost1@x.com", plan: "all" }))).status, "pending");
+  assert((await fn.adminListPending(req("owner", {}))).pending.some((p) => p.email === "ghost1@x.com"));
+  const acc = await fn.getMyAccount(req("ghost1", {}));
+  assert.strictEqual(acc.all, true); assert(!store["pendingGrants/ghost1@x.com"]);
+
+  // ---- 13) price control ----
+  assert.match(await code(fn.adminSetPricing(req("u2", { single: 10, all: 20 }))), /Admins only/);
+  assert.match(await code(fn.adminSetPricing(req("owner", { single: 0, all: 99 }))), /invalid-argument/);
+  assert.match(await code(fn.adminSetPricing(req("owner", { single: 10, all: "abc" }))), /invalid-argument/);
+  let pr = await fn.getPricing({}); assert.strictEqual(pr.single.amount, 3500);
+  await fn.adminSetPricing(req("helper", { single: 19, singleOld: 299, all: 149.5, allOld: "" }));
+  pr = await fn.getPricing({});
+  assert.deepStrictEqual(pr, { single: { amount: 1900, old: 29900 }, all: { amount: 14950, old: 0 } });
+  const o3 = await fn.createOrder(req("u7", { plan: "all" })); assert.strictEqual(o3.amount, 14950);
+  assert.strictEqual(store[`payments/${o3.orderId}`].amount, 14950);
+
+  // ---- 14) admins/owner cannot be suspended; normal users can ----
+  assert.match(await code(fn.adminSetSuspended(req("helper", { uid: "owner", suspended: true }))), /Cannot suspend an admin/);
+  assert.match(await code(fn.adminSetSuspended(req("owner", { uid: "helper", suspended: true }))), /Cannot suspend an admin/);
+  await fn.adminSetSuspended(req("helper", { uid: "u7", suspended: true, reason: "x" }));
+  assert.match(await code(fn.createOrder(req("u7", { plan: "all" }))), /SUSPENDED/);
+  await fn.adminSetSuspended(req("helper", { uid: "u7", suspended: false }));
+  assert.strictEqual((await fn.createOrder(req("u7", { plan: "single", cardId: "miss" }))).amount, 1900);
   console.log("ALL FLOW TESTS PASSED");
 })().catch((e) => { console.error("FLOW TEST FAILED:", e); process.exit(1); });

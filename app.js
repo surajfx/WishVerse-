@@ -86,6 +86,10 @@ function cardHTML(card) {
 function bindCardButtons() {
   document.querySelectorAll("[data-open]").forEach(b => b.onclick = () => openCard(b.dataset.open));
   document.querySelectorAll("[data-fav]").forEach(b => b.onclick = () => toggleFavorite(b.dataset.fav));
+  document.querySelectorAll(".wish-card").forEach(c => c.onclick = e => {
+    if (e.target.closest("[data-fav]")) return;
+    const b = c.querySelector("[data-open]"); if (b) openCard(b.dataset.open);
+  });
 }
 
 function renderCards() {

@@ -13,7 +13,7 @@
   .top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
   .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}
   .tab{border:1px solid var(--border);background:var(--surface);color:var(--text);padding:10px 16px;border-radius:12px;font-weight:700;cursor:pointer}
-  .tab.on{background:linear-gradient(110deg,var(--primary),var(--secondary));color:#10172b;border-color:transparent}
+  .tab.on{background:var(--brand);color:#fff;border-color:transparent}
   .badge{background:#ff5d8f;color:#fff;border-radius:99px;font-size:11px;padding:1px 7px;margin-left:6px}
   .stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
   .stat{background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:16px}
@@ -25,16 +25,20 @@
   th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--border);vertical-align:top}
   th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em;background:var(--surface2)}
   .pill{display:inline-block;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:700}
-  .pill.paid{background:#123d2c;color:#75e6b0}.pill.failed{background:#4a1a2a;color:#ff91b6}.pill.created{background:#2b3248;color:#9ca8c1}
-  .pill.refunded{background:#2a2f55;color:#b99bff}.pill.pending{background:#4a3b12;color:#ffd479}.pill.rejected{background:#3a2330;color:#ff91b6}.pill.approved{background:#2a2f55;color:#b99bff}
-  .pill.sus{background:#4a1a2a;color:#ff91b6}.pill.warn{background:#4a3b12;color:#ffd479}
+  .pill{--c:var(--muted);background:color-mix(in srgb,var(--c) 16%,transparent);color:var(--c)}
+  .pill.paid,.pill.granted{--c:var(--ok)}.pill.failed,.pill.rejected,.pill.sus,.pill.revoked{--c:var(--bad)}.pill.created{--c:var(--muted)}
+  .pill.refunded,.pill.approved{--c:var(--secondary)}.pill.pending,.pill.warn{--c:var(--warn)}
   button.act{border:1px solid var(--border);background:var(--surface);color:var(--text);padding:6px 11px;border-radius:9px;font-weight:700;cursor:pointer;font-size:12.5px;margin:2px 2px 2px 0}
-  button.act.danger{background:#5a1f33;border-color:#8a2f4d;color:#ffd0df}
-  button.act.ok{background:#14503a;border-color:#1f7a58;color:#c9ffe6}
+  button.act.danger{background:color-mix(in srgb,var(--bad) 18%,transparent);border-color:color-mix(in srgb,var(--bad) 45%,transparent);color:var(--bad)}
+  button.act.ok{background:color-mix(in srgb,var(--ok) 18%,transparent);border-color:color-mix(in srgb,var(--ok) 45%,transparent);color:var(--ok)}
+  .form{display:grid;gap:12px;max-width:520px}.form label{display:grid;gap:6px;font-size:13px;color:var(--muted)}
+  .form .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  h3.h{margin:26px 0 10px}
   .muted{color:var(--muted)}.msg{margin:10px 0;min-height:20px;font-size:14px}
   .reqbox{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:12px;margin-top:10px;max-width:680px}
   .none{padding:26px;text-align:center;color:var(--muted)}
 </style>
+  <script src="shared/theme.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -45,8 +49,11 @@
       <button class="tab on" data-t="overview">Overview</button>
       <button class="tab" data-t="payments">Payments</button>
       <button class="tab" data-t="refunds">Refund requests<span id="rfBadge" class="badge hidden"></span></button>
-      <button class="tab" data-t="plan99">₹99 / ₹35 buyers</button>
+      <button class="tab" data-t="plan99">Paid buyers</button>
       <button class="tab" data-t="users">Users</button>
+      <button class="tab" data-t="pricing">Pricing</button>
+      <button class="tab" data-t="grant">Give free plan</button>
+      <button id="adminsTab" class="tab hidden" data-t="admins">Admins</button>
       <button class="tab" data-t="security">Bypass / Security<span id="secBadge" class="badge hidden"></span></button>
     </div>
     <div id="msg" class="msg"></div>
@@ -55,10 +62,10 @@
 </div>
 <script type="module">
 import { cards } from "./cards/index.js";
-import { auth, waitForUser, call, rupees, fmtDate, esc } from "./shared/payments.js";
+import { auth, waitForUser, call, rupees, fmtDate, esc, DEFAULT_PRICING } from "./shared/payments.js";
 const $ = (s) => document.querySelector(s);
 const cardName = (id) => (cards.find(c => c.id === id) || {}).title || id;
-let tab = "overview", pays = [], users = [], events = [], overview = null;
+let tab = "overview", pays = [], users = [], events = [], overview = null, isOwner = false, pending = [], prices = null, admins = null;
 
 const say = (t, bad) => { const m = $("#msg"); m.textContent = t; m.style.color = bad ? "#ff91b6" : "#75e6b0"; };
 async function guard(fn) { try { say("Working…"); const r = await fn(); say("Done ✓"); return r; } catch (e) { say(e.message || "Failed", true); } }
@@ -68,7 +75,8 @@ async function guard(fn) { try { say("Working…"); const r = await fn(); say("D
   if (!user) { location.href = "login.html?next=admin.html"; return; }
   let chk; try { chk = await call("adminCheck"); } catch { chk = { isAdmin: false }; }
   if (!chk.isAdmin) { $("#gate").textContent = "You are not authorised to view this page."; return; }
-  $("#gate").classList.add("hidden"); $("#app").classList.remove("hidden"); $("#me").textContent = chk.email;
+  $("#gate").classList.add("hidden"); $("#app").classList.remove("hidden"); $("#me").textContent = (chk.isOwner ? "👑 Owner · " : "Admin · ") + chk.email;
+  isOwner = !!chk.isOwner; if (isOwner) $("#adminsTab").classList.remove("hidden");
   document.querySelectorAll(".tab").forEach(b => b.onclick = () => { tab = b.dataset.t; document.querySelectorAll(".tab").forEach(x => x.classList.toggle("on", x === b)); render(); });
   await refresh();
 })();
@@ -76,9 +84,10 @@ async function guard(fn) { try { say("Working…"); const r = await fn(); say("D
 async function refresh() {
   say("Loading…");
   try {
-    [overview, { payments: pays }, { users }, { events }] = await Promise.all([
-      call("adminOverview"), call("adminListPayments"), call("adminListUsers"), call("adminSecurityEvents"),
+    [overview, { payments: pays }, { users }, { events }, { pending }, prices] = await Promise.all([
+      call("adminOverview"), call("adminListPayments"), call("adminListUsers"), call("adminSecurityEvents"), call("adminListPending"), call("getPricing"),
     ]);
+    if (isOwner) admins = await call("adminListAdmins");
     say("");
   } catch (e) { say(e.message || "Could not load data", true); }
   const rf = pays.filter(p => p.refundRequest && p.refundRequest.status === "pending").length;
@@ -88,7 +97,7 @@ async function refresh() {
   render();
 }
 
-const planName = (p) => p.plan === "all" ? "₹99 All Cards" : "₹35 · " + cardName(p.cardId);
+const planName = (p) => (p.plan === "all" ? "All Cards Pass" : "One Card · " + cardName(p.cardId)) + (p.status === "granted" || p.status === "revoked" ? " (free)" : "");
 const pill = (s) => `<span class="pill ${s}">${s}</span>`;
 
 function render() {
@@ -99,6 +108,9 @@ function render() {
   if (tab === "plan99") return buyersView(v);
   if (tab === "users") return usersView(v);
   if (tab === "security") return securityView(v);
+  if (tab === "pricing") return pricingView(v);
+  if (tab === "grant") return grantView(v);
+  if (tab === "admins") return adminsView(v);
 }
 
 function overviewHtml() {
@@ -106,7 +118,7 @@ function overviewHtml() {
   const st = (l, n) => `<div class="stat"><span>${l}</span><b>${n}</b></div>`;
   return `<div class="stats">
     ${st("Total orders", o.totalOrders)}${st("✅ Successful", o.paid)}${st("❌ Failed", o.failed)}${st("⏳ Abandoned (not paid)", o.created)}
-    ${st("↩ Refunded", o.refunded)}${st("📝 Refund requests pending", o.refundRequestsPending)}
+    ${st("↩ Refunded", o.refunded)}${st("🎁 Free plans given", o.granted)}${st("📝 Refund requests pending", o.refundRequestsPending)}
     ${st("₹99 buyers", o.plan99Buyers)}${st("₹35 buyers", o.plan35Buyers)}
     ${st("Revenue (paid)", rupees(o.revenuePaise))}${st("Refunded amount", rupees(o.refundedPaise))}
     ${st("Suspended users", o.suspended)}${st("Flagged users", o.flaggedUsers)}
@@ -115,16 +127,16 @@ function overviewHtml() {
 
 function paymentsView(v) {
   v.innerHTML = `<div class="bar">
-    <select id="fs"><option value="">All status</option><option>paid</option><option>failed</option><option>created</option><option>refunded</option></select>
-    <select id="fp"><option value="">All plans</option><option value="all">₹99 All Cards</option><option value="single">₹35 Single</option></select>
+    <select id="fs"><option value="">All status</option><option>paid</option><option>failed</option><option>created</option><option>refunded</option><option>granted</option><option>revoked</option></select>
+    <select id="fp"><option value="">All plans</option><option value="all">All Cards Pass</option><option value="single">Single card</option></select>
     <input id="fq" placeholder="Search email / payment id" style="min-width:240px"><button class="act" id="rl">↻ Reload</button></div><div class="tbl" id="tb"></div>`;
   const draw = () => {
     const s = $("#fs").value, p = $("#fp").value, q = $("#fq").value.toLowerCase();
     const rows = pays.filter(x => (!s || x.status === s) && (!p || x.plan === p) && (!q || (x.email || "").toLowerCase().includes(q) || (x.razorpayPaymentId || "").toLowerCase().includes(q) || x.id.toLowerCase().includes(q)));
     $("#tb").innerHTML = rows.length ? `<table><tr><th>Date</th><th>User</th><th>Plan</th><th>Amount</th><th>Status</th><th>Details</th><th></th></tr>${rows.map(x => `<tr>
-      <td>${fmtDate(x.createdAt)}</td><td>${esc(x.email)}</td><td>${esc(planName(x))}</td><td>${rupees(x.amount)}</td><td>${pill(x.status)}</td>
+      <td>${fmtDate(x.createdAt)}</td><td>${esc(x.email)}</td><td>${esc(planName(x))}</td><td>${x.status === "granted" || x.status === "revoked" ? "Free" : rupees(x.amount)}</td><td>${pill(x.status)}</td>
       <td class="muted">${x.razorpayPaymentId ? esc(x.razorpayPaymentId) + "<br>" : ""}${x.method ? esc(x.method) + " · " : ""}${x.error ? "⚠ " + esc(x.error) : ""}${x.refundRequest ? "<br>refund req: " + pill(x.refundRequest.status) : ""}</td>
-      <td>${x.status === "paid" ? `<button class="act danger" data-refund="${x.id}">Refund</button>` : ""}${x.status !== "refunded" ? `<button class="act" data-sync="${x.id}">Sync</button>` : ""}</td></tr>`).join("")}</table>` : `<div class="none">No payments match.</div>`;
+      <td>${x.status === "paid" ? `<button class="act danger" data-refund="${x.id}">Refund</button>` : ""}${x.status === "granted" ? `<button class="act danger" data-revoke="${x.id}">Revoke</button>` : ""}${x.status !== "refunded" && x.status !== "granted" && x.status !== "revoked" ? `<button class="act" data-sync="${x.id}">Sync</button>` : ""}</td></tr>`).join("")}</table>` : `<div class="none">No payments match.</div>`;
     bindActions();
   };
   ["fs", "fp"].forEach(i => $("#" + i).onchange = draw); $("#fq").oninput = draw; $("#rl").onclick = refresh; draw();
@@ -147,7 +159,7 @@ function buyersView(v) {
   pays.filter(p => p.status === "paid").forEach(p => { (map[p.uid] ||= { email: p.email, uid: p.uid, list: [] }).list.push(p); });
   const rows = Object.values(map).sort((a, b) => b.list[0].paidAt - a.list[0].paidAt);
   const u = Object.fromEntries(users.map(x => [x.uid, x]));
-  v.innerHTML = `<div class="bar"><select id="bp"><option value="">All paid users</option><option value="all">₹99 only</option><option value="single">₹35 only</option></select></div><div class="tbl" id="tb"></div>`;
+  v.innerHTML = `<div class="bar"><select id="bp"><option value="">All paid users</option><option value="all">All Cards Pass only</option><option value="single">Single card only</option></select></div><div class="tbl" id="tb"></div>`;
   const draw = () => {
     const f = $("#bp").value;
     const r = rows.filter(x => !f || x.list.some(p => p.plan === f));
@@ -170,7 +182,7 @@ function usersView(v) {
     const r = users.filter(u => !q || u.email.toLowerCase().includes(q)).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
     $("#tb").innerHTML = `<table><tr><th>Email</th><th>Joined</th><th>Last login</th><th>Plan</th><th>Flags</th><th>Status</th><th></th></tr>${r.map(u => `<tr>
       <td>${esc(u.email)}${u.isAdmin ? ' <span class="pill paid">admin</span>' : ""}</td><td>${fmtDate(u.createdAt)}</td><td>${fmtDate(u.lastSignIn)}</td>
-      <td>${u.hasAll ? "₹99 All" : u.cards.length ? "₹35 × " + u.cards.length : "—"}</td><td>${u.flags ? `<span class="pill warn">${u.flags}</span>` : "—"}</td>
+      <td>${u.isAdmin ? "👑 free" : u.hasAll ? "All Cards" : u.cards.length ? "Single × " + u.cards.length : "—"}</td><td>${u.flags ? `<span class="pill warn">${u.flags}</span>` : "—"}</td>
       <td>${u.suspended ? `<span class="pill sus">suspended</span><div class="muted">${esc(u.reason)}</div>` : "active"}</td><td>${suspendBtn(u)}</td></tr>`).join("")}</table>`;
     bindActions();
   };
@@ -192,6 +204,56 @@ function securityView(v) {
   bindActions();
 }
 
+function pricingView(v) {
+  const p = prices || { single: DEFAULT_PRICING.single, all: DEFAULT_PRICING.all };
+  const r = (x) => x ? x / 100 : "";
+  v.innerHTML = `<h3 class="h" style="margin-top:0">Plan prices (₹)</h3>
+  <p class="muted">Changes apply instantly on the website. Orders already created keep the price they were created at. Old price is the crossed-out price; leave empty to hide it.</p>
+  <div class="form">
+    <b>One Card plan</b><div class="row"><label>Price<input id="ps" type="number" min="1" step="0.5" value="${r(p.single.amount)}"></label><label>Old price (optional)<input id="pso" type="number" min="0" value="${r(p.single.old)}"></label></div>
+    <b>All Cards Pass</b><div class="row"><label>Price<input id="pa" type="number" min="1" step="0.5" value="${r(p.all.amount)}"></label><label>Old price (optional)<input id="pao" type="number" min="0" value="${r(p.all.old)}"></label></div>
+    <button class="btn btn-primary" id="savePrice">Save prices</button></div>`;
+  $("#savePrice").onclick = async () => {
+    const d = { single: $("#ps").value, singleOld: $("#pso").value, all: $("#pa").value, allOld: $("#pao").value };
+    if (await guard(() => call("adminSetPricing", d))) refresh();
+  };
+}
+
+function grantView(v) {
+  const granted = pays.filter(p => p.status === "granted");
+  v.innerHTML = `<h3 class="h" style="margin-top:0">Give a free plan</h3>
+  <p class="muted">Enter the person's Gmail. If they have not logged in yet, the plan is applied automatically on their first Google login.</p>
+  <div class="form">
+    <label>Gmail<input id="ge" type="email" placeholder="friend@gmail.com"></label>
+    <div class="row"><label>Plan<select id="gp"><option value="all">All Cards Pass</option><option value="single">One Card</option></select></label>
+    <label>Card (for One Card)<select id="gc" disabled>${cards.map(c => `<option value="${c.id}">${esc(c.title)}</option>`).join("")}</select></label></div>
+    <label>Note (optional)<input id="gn" maxlength="100" placeholder="e.g. giveaway winner"></label>
+    <button class="btn btn-primary" id="goGrant">🎁 Give plan</button></div>
+  <h3 class="h">Waiting for first login</h3>
+  ${pending.length ? `<div class="tbl"><table><tr><th>Email</th><th>Plans</th><th></th></tr>${pending.map(x => `<tr><td>${esc(x.email)}</td><td>${x.grants.map(g => esc(g.plan === "all" ? "All Cards Pass" : "One Card · " + cardName(g.cardId))).join("<br>")}</td><td><button class="act danger" data-cancelp="${esc(x.email)}">Cancel</button></td></tr>`).join("")}</table></div>` : `<div class="none">Nobody waiting.</div>`}
+  <h3 class="h">Free plans given</h3>
+  ${granted.length ? `<div class="tbl"><table><tr><th>Date</th><th>User</th><th>Plan</th><th>By / note</th><th></th></tr>${granted.map(x => `<tr><td>${fmtDate(x.createdAt)}</td><td>${esc(x.email)}</td><td>${esc(planName(x))}</td><td class="muted">${esc(x.grantedBy)}${x.note ? " · " + esc(x.note) : ""}</td><td><button class="act danger" data-revoke="${x.id}">Revoke</button></td></tr>`).join("")}</table></div>` : `<div class="none">No free plans given yet.</div>`}`;
+  $("#gp").onchange = () => $("#gc").disabled = $("#gp").value !== "single";
+  $("#goGrant").onclick = async () => {
+    const d = { email: $("#ge").value.trim(), plan: $("#gp").value, cardId: $("#gp").value === "single" ? $("#gc").value : null, note: $("#gn").value };
+    const r = await guard(() => call("adminGrantPlan", d));
+    if (r) { alert(r.status === "granted" ? "Plan given. It is active now." : "Saved. It will activate when this person first logs in with Google."); refresh(); }
+  };
+  bindActions();
+}
+
+function adminsView(v) {
+  const a = admins || { owner: "", admins: [] };
+  v.innerHTML = `<h3 class="h" style="margin-top:0">Admins</h3>
+  <p class="muted">Admins can see all payments, refund, suspend, change prices and give free plans. They use every card free. Only the owner can add or remove admins.</p>
+  <div class="tbl" style="max-width:640px"><table style="min-width:0"><tr><th>Email</th><th>Role</th><th></th></tr>
+    <tr><td>${esc(a.owner)}</td><td><span class="pill paid">owner</span></td><td></td></tr>
+    ${a.admins.map(x => `<tr><td>${esc(x.email)}</td><td><span class="pill pending">admin</span></td><td><button class="act danger" data-rmadmin="${esc(x.email)}">Remove</button></td></tr>`).join("")}</table></div>
+  <div class="form" style="margin-top:18px"><label>Add admin (Gmail)<input id="ae" type="email" placeholder="partner@gmail.com"></label><button class="btn btn-primary" id="addAdmin">Make admin</button></div>`;
+  $("#addAdmin").onclick = async () => { if (await guard(() => call("adminAddAdmin", { email: $("#ae").value }))) refresh(); };
+  bindActions();
+}
+
 function bindActions() {
   document.querySelectorAll("[data-refund]").forEach(b => b.onclick = async () => {
     const p = pays.find(x => x.id === b.dataset.refund);
@@ -206,6 +268,17 @@ function bindActions() {
   document.querySelectorAll("[data-sync]").forEach(b => b.onclick = async () => {
     const r = await guard(() => call("adminSyncPayment", { paymentId: b.dataset.sync }));
     if (r) { alert(`Razorpay says: ${r.razorpayStatus}\n${r.note}`); refresh(); }
+  });
+  document.querySelectorAll("[data-revoke]").forEach(b => b.onclick = async () => {
+    if (!confirm("Remove this free plan from the user?")) return;
+    if (await guard(() => call("adminRevokeGrant", { paymentId: b.dataset.revoke }))) refresh();
+  });
+  document.querySelectorAll("[data-cancelp]").forEach(b => b.onclick = async () => {
+    if (await guard(() => call("adminCancelPending", { email: b.dataset.cancelp }))) refresh();
+  });
+  document.querySelectorAll("[data-rmadmin]").forEach(b => b.onclick = async () => {
+    if (!confirm("Remove admin access for " + b.dataset.rmadmin + "?")) return;
+    if (await guard(() => call("adminRemoveAdmin", { email: b.dataset.rmadmin }))) refresh();
   });
   document.querySelectorAll("[data-sus]").forEach(b => b.onclick = async () => {
     const reason = prompt("Reason for suspension (saved for you):", "Payment bypass attempt"); if (reason === null) return;

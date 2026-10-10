@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+  <script src="shared/theme.js"></script>
 </head>
 <body>
 <main class="page-shell">
@@ -23,7 +24,7 @@
   <div class="plan-card">
     <div class="plan-badge">SINGLE CARD</div>
     <h2 style="margin-top:16px">One Card</h2>
-    <div class="price-row"><span class="old-price">₹299</span><span class="new-price">₹35</span><span class="discount">88% OFF</span></div>
+    <div class="price-row"><span class="old-price" data-old="single"></span><span class="new-price" data-new="single">₹35</span><span class="discount" data-off="single"></span></div>
     <ul>
       <li>1 selected wish card</li>
       <li>Up to 7 creations for that card</li>
@@ -33,19 +34,19 @@
     <label class="form-note" style="display:block;margin:10px 0 8px">Which card?
       <select id="cardSelect" style="width:100%;margin-top:6px;padding:12px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text)"></select>
     </label>
-    <button class="btn btn-secondary full-width" data-plan="single">Choose ₹35 Plan</button>
+    <button class="btn btn-secondary full-width" data-plan="single">Choose <span data-new="single">₹35</span> Plan</button>
   </div>
   <div class="plan-card featured">
     <div class="plan-badge">BEST VALUE</div>
     <h2 style="margin-top:16px">All Cards Pass</h2>
-    <div class="price-row"><span class="old-price">₹999</span><span class="new-price">₹99</span><span class="discount">90% OFF</span></div>
+    <div class="price-row"><span class="old-price" data-old="all"></span><span class="new-price" data-new="all">₹99</span><span class="discount" data-off="all"></span></div>
     <ul>
       <li>Access to all available cards</li>
       <li>Each card gets its own 7-use allowance</li>
       <li>Using one card does not reduce another card's allowance</li>
       <li>Personalize & share every finished wish</li>
     </ul>
-    <button class="btn btn-primary full-width" data-plan="all">Choose ₹99 Plan</button>
+    <button class="btn btn-primary full-width" data-plan="all">Choose <span data-new="all">₹99</span> Plan</button>
   </div>
 </div>
 <p class="form-note" style="margin-top:20px">Usage is tracked per account and per card. A use is consumed when a finished wish is created/shared, not while you are only previewing or editing. Payments are processed securely by Razorpay and verified on our server before anything unlocks.</p>
@@ -54,7 +55,13 @@
 </main>
 <script type="module">
 import { cards } from "./cards/index.js";
-import { auth, waitForUser, startCheckout } from "./shared/payments.js";
+import { auth, waitForUser, startCheckout, loadPricing, inr, offPct } from "./shared/payments.js";
+loadPricing(pr => ["single", "all"].forEach(k => {
+  const a = pr[k].amount, o = pr[k].old, off = offPct(a, o);
+  document.querySelectorAll(`[data-new="${k}"]`).forEach(e => e.textContent = inr(a));
+  document.querySelectorAll(`[data-old="${k}"]`).forEach(e => e.textContent = off ? inr(o) : "");
+  document.querySelectorAll(`[data-off="${k}"]`).forEach(e => e.textContent = off ? off + "% OFF" : "");
+}));
 const sel = document.getElementById("cardSelect"), msg = document.getElementById("payMsg");
 sel.innerHTML = cards.map(c => `<option value="${c.id}">${c.icon} ${c.title}</option>`).join("");
 const pre = new URLSearchParams(location.search).get("card");

@@ -40,4 +40,9 @@ assert.deepStrictEqual(w.imageUrls, ["https://res.cloudinary.com/x/1.jpg"]);
 assert(!("ownerUid" in w) && !("isPaid" in w));
 assert.strictEqual(L.sanitizeWish({ templateId: "miss", from: "A", to: "B", message: "x".repeat(9999) }).message.length, 3000);
 assert.strictEqual(L.PLANS.all.amount, 9900); assert.strictEqual(L.PLANS.single.amount, 3500);
+// pricing normalisation (rupees in, paise out)
+assert.deepStrictEqual(L.normalizePricing({ single: 35, singleOld: 299, all: 99, allOld: 999 }).value, { single: { amount: 3500, old: 29900 }, all: { amount: 9900, old: 99900 } });
+assert.strictEqual(L.normalizePricing({ single: 35, singleOld: 20, all: 99 }).value.single.old, 0); // old <= price hides the strike
+assert(!L.normalizePricing({ single: 0.5, all: 99 }).ok); assert(!L.normalizePricing({ single: 35, all: 60000 }).ok); assert(!L.normalizePricing({}).ok);
+assert(L.isEmail("a@b.co")); assert(!L.isEmail("a@b")); assert(!L.isEmail("x y@z.com"));
 console.log("ALL LOGIC TESTS PASSED");

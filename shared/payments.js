@@ -26,6 +26,19 @@ export const waitForUser = () => new Promise((res) => {
 });
 export const logout = () => signOut(auth);
 
+export const DEFAULT_PRICING = { single: { amount: 3500, old: 29900 }, all: { amount: 9900, old: 99900 } };
+export const inr = (paise) => "₹" + (paise / 100).toLocaleString("en-IN", { maximumFractionDigits: 2 });
+export const offPct = (a, o) => (o > a ? Math.round((1 - a / o) * 100) : 0);
+// Calls cb(prices) right away with cached/default prices, then again with the live ones.
+export function loadPricing(cb) {
+  let cur = DEFAULT_PRICING;
+  try { const c = JSON.parse(sessionStorage.getItem("wv-pricing")); if (c && c.single && c.all) cur = c; } catch {}
+  cb(cur);
+  httpsCallable(functions, "getPricing")({}).then((r) => {
+    try { sessionStorage.setItem("wv-pricing", JSON.stringify(r.data)); } catch {}
+    cb(r.data);
+  }).catch(() => {});
+}
 export const rupees = (paise) => "₹" + (paise / 100).toLocaleString("en-IN");
 export const fmtDate = (ms) => ms ? new Date(ms).toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "—";
 export const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));

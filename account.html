@@ -12,14 +12,16 @@
   .pay-row{background:var(--surface2);border:1px solid var(--border);border-radius:18px;padding:16px;margin-top:12px}
   .pay-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
   .pill{display:inline-block;padding:4px 11px;border-radius:99px;font-size:12px;font-weight:700}
-  .pill.paid{background:#123d2c;color:#75e6b0}.pill.failed{background:#4a1a2a;color:#ff91b6}
-  .pill.refunded{background:#2a2f55;color:#b99bff}.pill.pending{background:#4a3b12;color:#ffd479}.pill.rejected{background:#3a2330;color:#ff91b6}
+  .pill{--c:var(--muted);background:color-mix(in srgb,var(--c) 16%,transparent);color:var(--c)}
+  .pill.paid,.pill.granted{--c:var(--ok)}.pill.failed,.pill.rejected,.pill.sus,.pill.revoked{--c:var(--bad)}.pill.created{--c:var(--muted)}
+  .pill.refunded,.pill.approved{--c:var(--secondary)}.pill.pending,.pill.warn{--c:var(--warn)}
   .meta{color:var(--muted);font-size:13px;margin-top:6px;line-height:1.6}
   textarea.report{width:100%;min-height:96px;margin-top:10px;padding:12px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font:inherit;resize:vertical}
   .usage{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
   .usage span{background:var(--surface2);border:1px solid var(--border);border-radius:99px;padding:6px 12px;font-size:13px}
   .btn.small{min-height:40px;padding:9px 16px;border-radius:12px;font-size:14px}
 </style>
+  <script src="shared/theme.js"></script>
 </head>
 <body>
 <main class="page-shell">
@@ -63,7 +65,8 @@ async function load() {
 
   const used = (id) => a.usage[id] || 0;
   let planHtml = "";
-  if (a.all) planHtml = `<div class="pay-row"><b>✦ All Cards Pass</b><div class="meta">Each card has its own ${a.usesPerCard} creations.</div><div class="usage">${cards.map(c => `<span>${esc(c.title)}: ${used(c.id)}/${a.usesPerCard}</span>`).join("")}</div></div>`;
+  if (a.isAdmin) planHtml = `<div class="pay-row"><b>👑 ${a.isOwner ? "Owner" : "Admin"} access</b><div class="meta">All cards are free and unlimited for you.</div></div>`;
+  else if (a.all) planHtml = `<div class="pay-row"><b>✦ All Cards Pass</b><div class="meta">Each card has its own ${a.usesPerCard} creations.</div><div class="usage">${cards.map(c => `<span>${esc(c.title)}: ${used(c.id)}/${a.usesPerCard}</span>`).join("")}</div></div>`;
   else if (a.cards.length) planHtml = `<div class="pay-row"><b>Single card plans</b><div class="usage">${a.cards.map(id => `<span>${esc(title(id))}: ${used(id)}/${a.usesPerCard}</span>`).join("")}</div></div>`;
   else planHtml = `<div class="pay-row">No active plan. <a href="pricing.html" style="color:var(--primary)">View plans →</a></div>`;
   $("#plan").innerHTML = planHtml;

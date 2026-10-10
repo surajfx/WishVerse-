@@ -6,6 +6,29 @@ const PLANS = {
   all: { amount: 9900, label: "All Cards Pass (₹99)" },
 };
 const USES_PER_CARD = 7;
+// Defaults only; the live prices live in Firestore config/pricing (admin can change them).
+const DEFAULT_PRICING = {
+  single: { amount: 3500, old: 29900 },
+  all: { amount: 9900, old: 99900 },
+};
+const isEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(e || "").trim()) && String(e).length <= 254;
+
+// Admin enters rupees; we store paise. old = crossed-out "MRP" (0 = hide).
+function normalizePricing(inp) {
+  inp = inp || {};
+  const rs = (v) => (typeof v === "number" ? v : Number(v));
+  const out = {};
+  for (const [plan, k, ko] of [["single", "single", "singleOld"], ["all", "all", "allOld"]]) {
+    const r = rs(inp[k]);
+    if (!Number.isFinite(r) || r < 1 || r > 50000) return { ok: false, error: `${plan} price must be between ₹1 and ₹50,000.` };
+    const amount = Math.round(r * 100);
+    let old = inp[ko] === "" || inp[ko] == null ? 0 : Math.round(rs(inp[ko]) * 100);
+    if (!Number.isFinite(old) || old < 0 || old > 5000000) return { ok: false, error: `${plan} old price is invalid.` };
+    if (old <= amount) old = 0;
+    out[plan] = { amount, old };
+  }
+  return { ok: true, value: out };
+}
 
 const CARDS = {
   "proposal": ["Proposal", "Love"],
@@ -91,7 +114,7 @@ function sanitizeWish(p) {
 }
 
 module.exports = {
-  PLANS, USES_PER_CARD, CARDS,
+  PLANS, USES_PER_CARD, CARDS, DEFAULT_PRICING, isEmail, normalizePricing,
   verifyCheckoutSignature, verifyWebhookSignature,
   validateRefundMessage, wordCount, checkEntitlement, sanitizeWish,
 };

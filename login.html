@@ -2,59 +2,75 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#0b1020">
-<title>Login / Sign Up — WishVerse</title>
+<meta name="theme-color" content="#0a0a12">
+<title>Login — WishVerse</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+<style>
+  .g-btn{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;min-height:56px;border-radius:99px;border:1px solid #dadce0;background:#fff;color:#1f1f1f;font:600 16px "DM Sans",sans-serif;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.12);transition:.2s}
+  .g-btn:hover{transform:translateY(-2px)}.g-btn[disabled]{opacity:.65;cursor:wait}
+  .g-btn svg{width:22px;height:22px;flex:none}
+  .perks{display:grid;gap:10px;margin:22px 0 4px;padding:0;list-style:none}
+  .perks li{display:flex;gap:10px;align-items:center;color:var(--muted);font-size:14px}
+  .perks li:before{content:"✓";display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok);font-size:12px;font-weight:800;flex:none}
+</style>
+<script src="shared/theme.js"></script>
 </head>
 <body>
 <main class="page-shell">
   <div class="page-topbar"><a class="page-brand" href="index.html">Wish<span>Verse</span></a><a class="btn btn-secondary page-back" href="index.html">← Home</a></div>
-  <article class="page-content" style="max-width:620px;margin:auto">
+  <article class="page-content" style="max-width:560px;margin:auto">
     <div class="page-kicker">WISHVERSE · ACCOUNT</div>
-    <h1>Welcome back.</h1>
-    <p>Log in to keep your premium card usage linked to your account.</p>
-    <form id="authForm" class="form-stack">
-      <label>Email<input id="email" type="email" required autocomplete="email" placeholder="you@example.com"></label>
-      <label>Password<input id="password" type="password" required minlength="6" autocomplete="current-password" placeholder="At least 6 characters"></label>
-      <button class="btn btn-primary" type="submit" id="loginBtn">Log In</button>
-      <button class="btn btn-secondary" type="button" id="signupBtn">Create Account</button>
-      <div id="authMessage" class="form-note"></div>
-    </form>
-    <p class="form-note" style="margin-top:20px">Your account is intended to keep premium entitlements tied to you instead of a browser or device. Payments are handled securely by Razorpay.</p>
+    <h1>Welcome 👋</h1>
+    <p>Continue with your Google account. One tap, no password to remember.</p>
+    <div class="form-stack">
+      <button class="g-btn" id="googleBtn" type="button">
+        <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.9 2.4 30.4 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z"/><path fill="#FBBC05" d="M10.5 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.9-6.1A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.9 2.3-8.4 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg>
+        <span>Continue with Google</span>
+      </button>
+      <div id="authMessage" class="form-error"></div>
+    </div>
+    <ul class="perks">
+      <li>Your plan stays with your account on every device</li>
+      <li>Payments secured by Razorpay</li>
+      <li>We never see your Google password</li>
+    </ul>
+    <p class="form-note" style="margin-top:18px">By continuing you agree to our <a href="terms.html" style="color:var(--primary)">Terms</a> and <a href="privacy.html" style="color:var(--primary)">Privacy Policy</a>.</p>
   </article>
 </main>
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-const firebaseConfig = {
-  apiKey:"AIzaSyDhH_fplGM0SYhXYQyGEmSgsxchuUgi43I",
-  authDomain:"surajfx2.firebaseapp.com",
-  databaseURL:"https://surajfx2-default-rtdb.firebaseio.com",
-  projectId:"surajfx2",
-  storageBucket:"surajfx2.firebasestorage.app",
-  messagingSenderId:"386646596801",
-  appId:"1:386646596801:web:db3b3fc2a212d644b28840",
-  measurementId:"G-N6KNJJ5B3D"
+import { auth } from "./shared/payments.js";
+import { GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+const nextRaw = new URLSearchParams(location.search).get("next") || "";
+const dest = /^[a-z0-9_-]+\.html(\?[^\s]*)?$/i.test(nextRaw) ? nextRaw : "index.html";
+const btn = document.getElementById("googleBtn"), msg = document.getElementById("authMessage");
+const say = (t, ok) => { msg.textContent = t; msg.className = ok ? "form-success" : "form-error"; };
+const provider = new GoogleAuthProvider(); provider.setCustomParameters({ prompt: "select_account" });
+const go = () => { say("Signed in. Redirecting…", true); setTimeout(() => location.href = dest, 500); };
+
+getRedirectResult(auth).then(r => { if (r && r.user) go(); }).catch(e => say(friendly(e)));
+onAuthStateChanged(auth, u => { if (u) go(); });
+
+function friendly(e) {
+  const c = e && e.code || "";
+  if (c === "auth/operation-not-allowed") return "Google sign-in is not enabled yet in Firebase.";
+  if (c === "auth/unauthorized-domain") return "This website address is not authorised in Firebase (Authentication → Settings → Authorized domains).";
+  if (c === "auth/popup-closed-by-user" || c === "auth/cancelled-popup-request") return "Sign-in was cancelled.";
+  if (c === "auth/network-request-failed") return "Network problem. Please check your internet and try again.";
+  return (e && e.message) || "Could not sign in. Please try again.";
+}
+btn.onclick = async () => {
+  btn.disabled = true; say("");
+  try { await signInWithPopup(auth, provider); go(); }
+  catch (e) {
+    if (e.code === "auth/popup-blocked" || e.code === "auth/operation-not-supported-in-this-environment") {
+      try { await signInWithRedirect(auth, provider); return; } catch (e2) { say(friendly(e2)); }
+    } else say(friendly(e));
+  }
+  btn.disabled = false;
 };
-const auth=getAuth(initializeApp(firebaseConfig));
-const nextRaw=new URLSearchParams(location.search).get("next")||"";
-const dest=/^[a-z0-9_-]+\.html(\?[^\s]*)?$/i.test(nextRaw)?nextRaw:"index.html";
-const form=document.getElementById("authForm"), msg=document.getElementById("authMessage");
-function show(t,ok=false){msg.textContent=t;msg.className=ok?"form-success":"form-error";}
-form.addEventListener("submit",async e=>{
- e.preventDefault(); const email=document.getElementById("email").value.trim(), password=document.getElementById("password").value;
- try{await signInWithEmailAndPassword(auth,email,password);show("Logged in successfully. Redirecting…",true);setTimeout(()=>location.href=dest,700);}
- catch(err){show(err.code==="auth/operation-not-allowed"?"Email/password login is not enabled in Firebase yet.":(err.message||"Login failed."));}
-});
-document.getElementById("signupBtn").addEventListener("click",async()=>{
- const email=document.getElementById("email").value.trim(), password=document.getElementById("password").value;
- if(!email||password.length<6){show("Enter a valid email and a password of at least 6 characters.");return;}
- try{await createUserWithEmailAndPassword(auth,email,password);show("Account created successfully. Redirecting…",true);setTimeout(()=>location.href=dest,700);}
- catch(err){show(err.code==="auth/operation-not-allowed"?"Email/password signup is not enabled in Firebase yet.":(err.message||"Could not create account."));}
-});
 </script>
 </body>
 </html>
