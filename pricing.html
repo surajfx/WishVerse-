@@ -55,13 +55,15 @@
 </main>
 <script type="module">
 import { cards } from "./cards/index.js";
-import { auth, waitForUser, startCheckout, loadPricing, inr, offPct } from "./shared/payments.js";
-loadPricing(pr => ["single", "all"].forEach(k => {
+import { auth, waitForUser, loadPricing, inr, offPct } from "./shared/payments.js";
+import { payWithPopup } from "./shared/pay-modal.js";
+let PR = null;
+loadPricing(pr => { PR = pr; ["single", "all"].forEach(k => {
   const a = pr[k].amount, o = pr[k].old, off = offPct(a, o);
   document.querySelectorAll(`[data-new="${k}"]`).forEach(e => e.textContent = inr(a));
   document.querySelectorAll(`[data-old="${k}"]`).forEach(e => e.textContent = off ? inr(o) : "");
   document.querySelectorAll(`[data-off="${k}"]`).forEach(e => e.textContent = off ? off + "% OFF" : "");
-}));
+}); });
 const sel = document.getElementById("cardSelect"), msg = document.getElementById("payMsg");
 sel.innerHTML = cards.map(c => `<option value="${c.id}">${c.icon} ${c.title}</option>`).join("");
 const pre = new URLSearchParams(location.search).get("card");
@@ -70,13 +72,16 @@ const say = (t, ok) => { msg.textContent = t; msg.className = ok ? "form-success
 document.querySelectorAll("[data-plan]").forEach(btn => btn.onclick = async () => {
   const user = auth.currentUser || await waitForUser();
   if (!user) { location.href = "login.html?next=" + encodeURIComponent("pricing.html" + location.search); return; }
-  btn.disabled = true; say("Opening secure payment…", true);
-  try {
-    const r = await startCheckout(btn.dataset.plan, btn.dataset.plan === "single" ? sel.value : null);
-    if (r.ok) { say("Payment successful! Your plan is unlocked. Taking you to create your wish…", true); setTimeout(() => location.href = "index.html#explore", 1800); }
-    else if (r.cancelled) say("Payment cancelled. You were not charged.", false);
-    else say(r.error, false);
-  } catch (e) { say(e.message || "Could not start payment.", false); }
+  const plan = btn.dataset.plan, cid = plan === "single" ? sel.value : null;
+  const card = cards.find(c => c.id === cid), price = inr(((PR || {})[plan] || { amount: plan === "all" ? 9900 : 3500 }).amount);
+  btn.disabled = true; say("", true);
+  const r = await payWithPopup({
+    plan, cardId: cid, icon: plan === "all" ? "💎" : (card ? card.icon : "✨"),
+    name: plan === "all" ? "All Cards Pass" : (card ? card.title : "One Card"), price,
+    perks: plan === "all" ? ["Every card unlocked", "7 creations for each card", "Pay with UPI, cards, netbanking or wallets"] : ["This card unlocked instantly", "7 creations for this card", "Pay with UPI, cards, netbanking or wallets"],
+    doneLabel: "Create my wish ✦", onDone: () => location.href = "index.html#explore",
+  });
+  if (!r.ok) say("", true);
   btn.disabled = false;
 });
 </script>

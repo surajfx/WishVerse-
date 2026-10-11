@@ -113,8 +113,54 @@ function sanitizeWish(p) {
   return out;
 }
 
+/* ---------- share preview (WhatsApp / Instagram / Telegram link cards) ---------- */
+const SITE = "https://wishverse.surajfx.in";
+const escHtml = (v) => String(v == null ? "" : v).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const validWishId = (id) => /^[A-Za-z0-9]{10,40}$/.test(String(id || ""));
+
+// Title/description/image for a wish (or a generic fallback when the wish does not exist).
+function shareMeta(wish) {
+  if (!wish) {
+    return { title: "WishVerse — Beautiful Wishes", desc: "Create a beautiful, personal wish and share it with someone special.", image: `${SITE}/share-img/default.jpg` };
+  }
+  const card = CARDS[wish.templateId];
+  const label = card ? card[0] : "Wish";
+  const to = String(wish.to || "").trim().slice(0, 40);
+  const from = String(wish.from || "").trim().slice(0, 40);
+  const title = to ? `${label} for ${to} 💌 | WishVerse` : `${label} | WishVerse`;
+  const desc = from ? `${from} made a little surprise for you. Tap to open it.` : "Someone made a little surprise for you. Tap to open it.";
+  const image = `${SITE}/share-img/${card ? wish.templateId : "default"}.jpg`;
+  return { title, desc, image };
+}
+
+// Tiny HTML page: crawlers read the tags, people are redirected straight to the real wish.
+function shareHtml(id, wish) {
+  const m = shareMeta(wish);
+  const target = `${SITE}/?wish=${encodeURIComponent(id)}`;
+  const t = escHtml(m.title), d = escHtml(m.desc), i = escHtml(m.image), u = escHtml(target);
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${t}</title>
+<meta name="description" content="${d}">
+<meta property="og:site_name" content="WishVerse">
+<meta property="og:type" content="website">
+<meta property="og:title" content="${t}">
+<meta property="og:description" content="${d}">
+<meta property="og:image" content="${i}">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:url" content="${u}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="${t}"><meta name="twitter:description" content="${d}"><meta name="twitter:image" content="${i}">
+<meta http-equiv="refresh" content="0;url=${u}">
+<style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#fff1f6;font:600 16px system-ui,sans-serif;color:#7a2b4c}</style>
+</head><body><p>Opening your surprise… ✨</p>
+<script>location.replace(${JSON.stringify(target)});</script>
+<noscript><a href="${u}">Open your surprise</a></noscript></body></html>`;
+}
+
 module.exports = {
   PLANS, USES_PER_CARD, CARDS, DEFAULT_PRICING, isEmail, normalizePricing,
+  SITE, escHtml, validWishId, shareMeta, shareHtml,
   verifyCheckoutSignature, verifyWebhookSignature,
   validateRefundMessage, wordCount, checkEntitlement, sanitizeWish,
 };

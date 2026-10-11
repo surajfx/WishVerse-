@@ -19,6 +19,18 @@
   textarea.report{width:100%;min-height:96px;margin-top:10px;padding:12px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font:inherit;resize:vertical}
   .usage{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
   .usage span{background:var(--surface2);border:1px solid var(--border);border-radius:99px;padding:6px 12px;font-size:13px}
+  .credit{display:grid;grid-template-columns:1fr auto;gap:4px 10px;align-items:center;margin-top:12px}
+  .credit b{font-weight:600}.credit span.left{font-size:13px;color:var(--muted);font-weight:600}
+  .bar{grid-column:1/-1;height:8px;border-radius:99px;background:color-mix(in srgb,var(--muted) 22%,transparent);overflow:hidden}
+  .bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--primary),var(--secondary));transition:width .6s ease}
+  .bar i.low{background:var(--warn)}.bar i.zero{background:var(--bad)}
+  .plan-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+  .wish-row{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+  .wish-row .acts{display:flex;gap:8px;flex-wrap:wrap}
+  .danger-zone{margin-top:28px;border:1px solid color-mix(in srgb,var(--bad) 45%,transparent);border-radius:18px;padding:16px;background:color-mix(in srgb,var(--bad) 7%,transparent)}
+  .danger-zone h2{margin-top:0;color:var(--bad)}
+  .btn.danger{background:var(--bad);color:#fff;border:0}.btn.danger:disabled{opacity:.45}
+  .del-input{width:100%;margin-top:10px;padding:12px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font:inherit;letter-spacing:1px}
   .btn.small{min-height:40px;padding:9px 16px;border-radius:12px;font-size:14px}
 </style>
   <script src="shared/theme.js"></script>
@@ -38,10 +50,25 @@
       <div id="suspendedBox" class="form-error hidden">Your account is suspended. Please contact support.</div>
       <h2>My plan</h2>
       <div id="plan"></div>
+      <h2>My wishes</h2>
+      <div id="wishes"></div>
       <h2>My payments</h2>
       <div id="payments"></div>
       <p class="form-note" style="margin-top:20px">Had a problem with a payment? Use <b>Report problem</b> on that payment. You can report each payment only once, in up to 100 words. We review every report. See the <a href="refund.html" style="color:var(--primary)">Refund policy</a>.</p>
-      <p style="margin-top:18px"><a id="adminLink" class="btn btn-secondary hidden" href="admin.html">Open Admin Panel</a> <button id="logoutBtn" class="btn btn-secondary">Log out</button></p>
+      <p style="margin-top:18px"><a id="adminLink" class="btn btn-secondary hidden" href="admin.html">Open Admin Panel</a> <button id="logoutBtn" class="btn btn-secondary">↩ Log out</button></p>
+      <div class="danger-zone" id="dangerZone">
+        <h2>Delete my account</h2>
+        <p class="meta">This permanently deletes your login, your plan and credits, and all wishes you created. Their share links will stop working. This cannot be undone and paid plans are not refunded automatically. Payment records are kept for accounting. If something went wrong with a payment, please use <b>Report problem</b> first.</p>
+        <button id="delOpen" class="btn btn-secondary small" style="margin-top:10px">Delete my account…</button>
+        <div id="delBox" class="hidden">
+          <input id="delInput" class="del-input" placeholder="Type DELETE to confirm" autocomplete="off">
+          <div id="delErr" class="form-error"></div>
+          <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap">
+            <button id="delGo" class="btn danger small" disabled>Delete forever</button>
+            <button id="delCancel" class="btn btn-secondary small">Cancel</button>
+          </div>
+        </div>
+      </div>
     </div>
   </article>
 </main>
@@ -64,13 +91,26 @@ async function load() {
   if (a.isAdmin) $("#adminLink").classList.remove("hidden");
 
   const used = (id) => a.usage[id] || 0;
+  const per = a.usesPerCard;
+  const credit = (c) => { const u = used(c.id), left = Math.max(per - u, 0), pct = Math.round(left / per * 100);
+    return `<div class="credit"><b>${c.icon || ""} ${esc(c.title)}</b><span class="left">${left} of ${per} left</span><div class="bar"><i class="${left === 0 ? "zero" : left <= 2 ? "low" : ""}" style="width:${pct}%"></i></div></div>`; };
   let planHtml = "";
   if (a.isAdmin) planHtml = `<div class="pay-row"><b>👑 ${a.isOwner ? "Owner" : "Admin"} access</b><div class="meta">All cards are free and unlimited for you.</div></div>`;
-  else if (a.all) planHtml = `<div class="pay-row"><b>✦ All Cards Pass</b><div class="meta">Each card has its own ${a.usesPerCard} creations.</div><div class="usage">${cards.map(c => `<span>${esc(c.title)}: ${used(c.id)}/${a.usesPerCard}</span>`).join("")}</div></div>`;
-  else if (a.cards.length) planHtml = `<div class="pay-row"><b>Single card plans</b><div class="usage">${a.cards.map(id => `<span>${esc(title(id))}: ${used(id)}/${a.usesPerCard}</span>`).join("")}</div></div>`;
-  else planHtml = `<div class="pay-row">No active plan. <a href="pricing.html" style="color:var(--primary)">View plans →</a></div>`;
+  else if (a.all) {
+    const list = [...cards].sort((x, y) => used(y.id) - used(x.id));
+    planHtml = `<div class="pay-row"><div class="plan-head"><b>✦ All Cards Pass</b><span class="pill paid">active</span></div><div class="meta">Every card has its own ${per} creations. Cards you used are listed first.</div>${list.map(credit).join("")}</div>`;
+  } else if (a.cards.length) {
+    planHtml = `<div class="pay-row"><div class="plan-head"><b>Single card plans</b><span class="pill paid">active</span></div><div class="meta">${per} creations for each card you bought.</div>${a.cards.map(id => cards.find(c => c.id === id) || { id, title: id }).map(credit).join("")}</div>`;
+  } else planHtml = `<div class="pay-row">No active plan. <a href="pricing.html" style="color:var(--primary)">View plans →</a></div>`;
   $("#plan").innerHTML = planHtml;
 
+  const base = a.shareBase || "https://asia-south1-surajfx2.cloudfunctions.net/wishShare";
+  $("#wishes").innerHTML = a.wishes && a.wishes.length ? a.wishes.map(w => {
+    const link = `${base}?id=${w.id}`;
+    return `<div class="pay-row wish-row"><div><b>${esc(title(w.templateId))}</b> for ${esc(w.to || "someone special")}<div class="meta">${fmtDate(w.createdAt)}</div></div>
+    <div class="acts"><a class="btn btn-secondary small" href="${esc(link)}" target="_blank" rel="noopener">Open</a><button class="btn btn-secondary small" data-copy="${esc(link)}">Copy link</button><a class="btn btn-secondary small" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent("💌 I made a little surprise for you on WishVerse: " + link)}">WhatsApp</a></div></div>`;
+  }).join("") : `<div class="pay-row meta">No wishes created yet.</div>`;
+  document.querySelectorAll("[data-copy]").forEach(b => b.onclick = async () => { try { await navigator.clipboard.writeText(b.dataset.copy); b.textContent = "Copied ✓"; setTimeout(() => b.textContent = "Copy link", 1500); } catch {} });
   $("#payments").innerHTML = a.payments.length ? a.payments.map(rowHtml).join("") : `<div class="pay-row meta">No payments yet.</div>`;
   document.querySelectorAll("[data-report]").forEach(b => b.onclick = () => openReport(b.dataset.report));
 }
@@ -104,6 +144,21 @@ function openReport(id) {
     catch (e) { err.textContent = e.message || "Could not send report."; send.disabled = false; }
   };
 }
+$("#delOpen").onclick = () => { $("#delBox").classList.remove("hidden"); $("#delOpen").classList.add("hidden"); $("#delInput").focus(); };
+$("#delCancel").onclick = () => { $("#delBox").classList.add("hidden"); $("#delOpen").classList.remove("hidden"); $("#delInput").value = ""; $("#delErr").textContent = ""; $("#delGo").disabled = true; };
+$("#delInput").oninput = () => { $("#delGo").disabled = $("#delInput").value.trim() !== "DELETE"; };
+$("#delGo").onclick = async () => {
+  if (!confirm("Last warning: your account, plan, credits and all wishes will be deleted forever. Continue?")) return;
+  $("#delGo").disabled = true; $("#delErr").textContent = "Deleting…";
+  try { await call("deleteMyAccount", { confirm: "DELETE" }); try { await logout(); } catch {} location.href = "index.html?deleted=1"; }
+  catch (e) {
+    const m = String(e && e.message || "");
+    $("#delErr").textContent = m.includes("SUSPENDED") ? "Your account is suspended, so it cannot be deleted. Please contact support."
+      : m.includes("REFUND_PENDING") ? "You have a refund report that is still pending. You can delete your account after we reply."
+      : m.includes("owner") ? "The owner account cannot be deleted here." : "Could not delete the account. Please try again.";
+    $("#delGo").disabled = false;
+  }
+};
 $("#logoutBtn").onclick = async () => { await logout(); location.href = "index.html"; };
 load();
 </script>

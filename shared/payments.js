@@ -44,15 +44,18 @@ export const fmtDate = (ms) => ms ? new Date(ms).toLocaleString("en-IN", { day: 
 export const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 // Opens Razorpay Checkout for a plan. Resolves {ok:true} or {ok:false,cancelled:true|error}.
-export async function startCheckout(plan, cardId) {
+// hooks (optional): onOpen() when the Razorpay window opens, onVerifying() after the customer paid.
+export async function startCheckout(plan, cardId, hooks = {}) {
   await loadCheckoutScript();
   const o = await call("createOrder", { plan, cardId });
   return new Promise((resolve) => {
     const rz = new window.Razorpay({
       key: o.keyId, order_id: o.orderId, amount: o.amount, currency: o.currency,
       name: "WishVerse", description: o.label, prefill: { email: o.email },
-      theme: { color: "#8bd8ff" },
+      theme: { color: "#e8346f" },
+      retry: { enabled: true },
       handler: async (r) => {
+        try { hooks.onVerifying && hooks.onVerifying(); } catch {}
         try { await call("verifyPayment", r); resolve({ ok: true }); }
         catch (e) { resolve({ ok: false, error: e.message || "Verification failed. If money was deducted it will be unlocked shortly." }); }
       },
@@ -62,6 +65,7 @@ export async function startCheckout(plan, cardId) {
       call("reportPaymentFailure", { orderId: o.orderId, description: resp?.error?.description }).catch(() => {});
     });
     rz.open();
+    try { hooks.onOpen && hooks.onOpen(); } catch {}
   });
 }
 function loadCheckoutScript() {

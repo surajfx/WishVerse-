@@ -14,6 +14,7 @@ const RZP_WEBHOOK_SECRET = defineSecret("RAZORPAY_WEBHOOK_SECRET");
 const OWNER_EMAIL = defineString("OWNER_EMAIL", { default: "suraj7uddin@gmail.com" }); // the one owner; owner appoints other admins from the admin panel
 
 const REGION = "asia-south1";
+const SHARE_BASE = () => `https://${REGION}-${process.env.GCLOUD_PROJECT || "surajfx2"}.cloudfunctions.net/wishShare`;
 const OPTS = { region: REGION, secrets: [RZP_KEY_SECRET], cors: true };
 const WH_OPTS = { region: REGION, secrets: [RZP_KEY_SECRET, RZP_WEBHOOK_SECRET] };
 
@@ -284,11 +285,14 @@ exports.razorpayWebhook = onRequest(WH_OPTS, async (req, res) => {
 exports.getMyAccount = onCall(OPTS, async (req) => {
   const a = needAuth(req);
   await touchUser(a);
-  const [u, e, ps] = await Promise.all([
+  const [u, e, ps, ws] = await Promise.all([
     db.doc(`users/${a.uid}`).get(),
     db.doc(`entitlements/${a.uid}`).get(),
     db.collection("payments").where("uid", "==", a.uid).get(),
+    db.collection("wishes").where("ownerUid", "==", a.uid).get(),
   ]);
+  const wishes = ws.docs.map((d) => ({ id: d.id, templateId: d.data().templateId, to: d.data().to || "", createdAt: ms(d.data().createdAt) }))
+    .sort((x, y) => (y.createdAt || 0) - (x.createdAt || 0)).slice(0, 100);
   const ent = e.exists ? e.data() : {};
   const payments = ps.docs.map((d) => cleanPayment(d.id, d.data()))
     .filter((p) => p.status !== "created")
@@ -301,8 +305,40 @@ exports.getMyAccount = onCall(OPTS, async (req) => {
     cards: Object.keys(ent.cards || {}),
     usage: ent.usage || {},
     usesPerCard: L.USES_PER_CARD,
-    payments,
+    payments, wishes, shareBase: SHARE_BASE(),
   };
+});
+
+// Permanently deletes the account + its wishes. Payment records stay (accounting / refund disputes).
+exports.deleteMyAccount = onCall(OPTS, async (req) => {
+  const a = needAuth(req);
+  if ((req.data || {}).confirm !== "DELETE") throw new HttpsError("invalid-argument", "Type DELETE to confirm.");
+  if (isOwnerAuth(a)) throw new HttpsError("failed-precondition", "The owner account cannot be deleted here.");
+  const u = await db.doc(`users/${a.uid}`).get();
+  // A suspended user must not be able to wipe the account and come back clean.
+  if (u.exists && u.data().suspended) throw new HttpsError("permission-denied", "SUSPENDED");
+  const ps = await db.collection("payments").where("uid", "==", a.uid).get();
+  if (ps.docs.some((d) => d.data().refundRequest && d.data().refundRequest.status === "pending")) {
+    throw new HttpsError("failed-precondition", "REFUND_PENDING");
+  }
+  const ws = await db.collection("wishes").where("ownerUid", "==", a.uid).get();
+  for (let i = 0; i < ws.docs.length; i += 25) await Promise.all(ws.docs.slice(i, i + 25).map((d) => d.ref.delete()));
+  await db.doc(`entitlements/${a.uid}`).delete();
+  await db.doc(`users/${a.uid}`).delete();
+  await logEvent("account_deleted", a.uid, a.token.email, `wishes removed: ${ws.docs.length}`);
+  await admin.auth().deleteUser(a.uid);
+  return { ok: true, wishesDeleted: ws.docs.length };
+});
+
+/* Public link-preview page: WhatsApp/Instagram/Telegram read the og: tags, people get redirected. */
+exports.wishShare = onRequest({ region: REGION }, async (req, res) => {
+  const id = String(req.query.id || req.path.split("/").filter(Boolean).pop() || "");
+  if (!L.validWishId(id)) return res.redirect(302, L.SITE);
+  let wish = null;
+  try { const s = await db.doc(`wishes/${id}`).get(); if (s.exists) wish = s.data(); } catch (e) { console.error("wishShare", e); }
+  res.set("Cache-Control", "public, max-age=300, s-maxage=300");
+  res.set("Content-Type", "text/html; charset=utf-8");
+  res.status(wish ? 200 : 404).send(L.shareHtml(id, wish));
 });
 
 // One refund report per payment, ever (enforced in a transaction), max 100 words.
@@ -350,7 +386,7 @@ exports.createWish = onCall(OPTS, async (req) => {
     }
     throw e;
   }
-  return { id: wRef.id };
+  return { id: wRef.id, shareUrl: `${SHARE_BASE()}?id=${wRef.id}` };
 });
 
 /* -------------------------------- admin -------------------------------- */

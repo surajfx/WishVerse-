@@ -24,7 +24,7 @@ const handlers = {};
 const stubs = {
   "firebase-functions/v2/https": { onCall: (o, f) => f, onRequest: (o, f) => f, HttpsError },
   "firebase-functions/params": { defineSecret: (n) => ({ value: () => "secret" }), defineString: (n) => ({ value: () => (n === "OWNER_EMAIL" ? "owner@x.com" : "rzp_key") }) },
-  "firebase-admin": { initializeApp() {}, firestore: Object.assign(fsFn, {}), auth: () => ({ updateUser: async () => {}, revokeRefreshTokens: async () => {},
+  "firebase-admin": { initializeApp() {}, firestore: Object.assign(fsFn, {}), auth: () => ({ deleteUser: async (uid) => { (global.__deleted ||= []).push(uid); }, updateUser: async () => {}, revokeRefreshTokens: async () => {},
     getUser: async (uid) => ({ uid, email: uid + "@x.com" }),
     getUserByEmail: async (e) => { if (e.startsWith("ghost")) { const x = new Error("nf"); x.code = "auth/user-not-found"; throw x; } return { uid: e.split("@")[0], email: e }; } }) },
   razorpay: class { constructor() { this.orders = { create: async (o) => ({ id: "order_" + ++n, ...o }) };
@@ -146,5 +146,46 @@ const code = async (p) => { try { await p; return "OK"; } catch (e) { return e.c
   assert.match(await code(fn.createOrder(req("u7", { plan: "all" }))), /SUSPENDED/);
   await fn.adminSetSuspended(req("helper", { uid: "u7", suspended: false }));
   assert.strictEqual((await fn.createOrder(req("u7", { plan: "single", cardId: "miss" }))).amount, 1900);
+
+  // ---- 15) account page data: wishes + share base ----
+  const accU = await fn.getMyAccount(req("helper", {}));
+  assert(accU.wishes.length >= 9 && accU.wishes[0].id && accU.shareBase.endsWith("/wishShare"));
+  const cw = await fn.createWish(req("helper", { ...wish, to: "Riya <b>", from: "Sam" }));
+  assert(cw.shareUrl.endsWith("/wishShare?id=" + cw.id));
+
+  // ---- 16) share preview page: OG tags, escaped, generic for unknown ids ----
+  const mkRes = () => { const r = { h: {}, set(k, v) { r.h[k] = v; }, status(c) { r.code = c; return r; }, send(b) { r.body = b; return r; }, redirect(c, u) { r.code = c; r.to = u; return r; } }; return r; };
+  const realId = "AbCdEfGhIj1234567890"; store["wishes/" + realId] = store["wishes/" + cw.id]; // real Firestore ids are 20 chars
+  let r1 = mkRes(); await fn.wishShare({ query: { id: realId }, path: "/" }, r1);
+  assert.strictEqual(r1.code, 200);
+  assert(r1.body.includes('property="og:title" content="Miss You for Riya &lt;b&gt; 💌 | WishVerse"'), "title escaped");
+  assert(r1.body.includes("/share-img/miss.jpg") && r1.body.includes("og:image:width"));
+  assert(r1.body.includes("?wish=" + realId) && !r1.body.includes("<b>"));
+  let r2 = mkRes(); await fn.wishShare({ query: { id: "doesNotExist12345" }, path: "/" }, r2);
+  assert.strictEqual(r2.code, 404); assert(r2.body.includes("share-img/default.jpg"));
+  let r3 = mkRes(); await fn.wishShare({ query: { id: "../../etc" }, path: "/" }, r3);
+  assert.strictEqual(r3.code, 302);
+
+  // ---- 17) delete account ----
+  assert.match(await code(fn.deleteMyAccount(req("u8", {}))), /invalid-argument/);
+  assert.match(await code(fn.deleteMyAccount(req("owner", { confirm: "DELETE" }))), /owner account/);
+  // suspended user cannot wipe their account
+  await fn.adminSetSuspended(req("owner", { uid: "u2", suspended: true, reason: "x" }));
+  assert.match(await code(fn.deleteMyAccount(req("u2", { confirm: "DELETE" }))), /SUSPENDED/);
+  await fn.adminSetSuspended(req("owner", { uid: "u2", suspended: false }));
+  // pending refund report blocks deletion
+  const op = await fn.createOrder(req("u10", { plan: "single", cardId: "miss" })); global.__order = op.orderId; global.__amt = op.amount;
+  const sp = crypto.createHmac("sha256", "secret").update(`${op.orderId}|pay_10`).digest("hex");
+  await fn.verifyPayment(req("u10", { razorpay_order_id: op.orderId, razorpay_payment_id: "pay_10", razorpay_signature: sp }));
+  await fn.createWish(req("u10", { ...wish, to: "Z" }));
+  await fn.requestRefund(req("u10", { paymentId: op.orderId, message: "please check this" }));
+  assert.match(await code(fn.deleteMyAccount(req("u10", { confirm: "DELETE" }))), /REFUND_PENDING/);
+  store[`payments/${op.orderId}`].refundRequest.status = "rejected";
+  const del = await fn.deleteMyAccount(req("u10", { confirm: "DELETE" }));
+  assert.strictEqual(del.wishesDeleted, 1);
+  assert(!store["entitlements/u10"] && !store["users/u10"]);
+  assert(!Object.keys(store).some((k) => k.startsWith("wishes/") && store[k].ownerUid === "u10"), "wishes removed");
+  assert(store[`payments/${op.orderId}`], "payment record kept");
+  assert((global.__deleted || []).includes("u10"));
   console.log("ALL FLOW TESTS PASSED");
 })().catch((e) => { console.error("FLOW TEST FAILED:", e); process.exit(1); });

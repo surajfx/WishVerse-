@@ -296,8 +296,13 @@ $("#wishForm").onsubmit = async e => {
       return;
     }
     const res = await pay.call("createWish", payload);
-    const link = `${location.origin}${location.pathname}?wish=${res.id}`;
+    // Preview-friendly link (WhatsApp/Instagram read card title + picture from it), falls back to the plain link.
+    const link = res.shareUrl || `${location.origin}${location.pathname}?wish=${res.id}`;
     $("#shareLink").value = link;
+    const msg = `💌 I made a little surprise for you on WishVerse. Tap to open it: ${link}`;
+    $("#shareWhatsApp").href = "https://wa.me/?text=" + encodeURIComponent(msg);
+    $("#shareNative").style.display = navigator.share ? "" : "none";
+    $("#shareNative").onclick = () => navigator.share({ title: "A surprise for you 💌", text: "I made a little surprise for you on WishVerse.", url: link }).catch(() => {});
     $("#wishForm").classList.add("hidden"); $("#createdResult").classList.remove("hidden");
     toast("Wish saved successfully");
   } catch (error) {

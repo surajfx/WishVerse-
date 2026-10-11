@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#0b1020" />
   <title>WishVerse — Beautiful Wishes</title>
+  <meta name="description" content="Create a beautiful, personal wish and share it with someone special.">
+  <meta property="og:site_name" content="WishVerse"><meta property="og:type" content="website">
+  <meta property="og:title" content="WishVerse — Beautiful Wishes">
+  <meta property="og:description" content="Create a beautiful, personal wish and share it with someone special.">
+  <meta property="og:image" content="https://wishverse.surajfx.in/share-img/default.jpg">
+  <meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Cormorant+Garamond:ital,wght@0,500;1,500;1,600&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
@@ -155,8 +162,12 @@
       <div id="createdResult" class="created-result hidden">
         <div class="success-icon">✓</div>
         <h3>Your wish is ready!</h3>
-        <p>Copy the link and share your beautiful moment.</p>
+        <p>Share the link on WhatsApp or Instagram. It shows a pretty preview with the card title and picture.</p>
         <div class="share-row"><input id="shareLink" readonly><button id="copyLink" class="btn btn-secondary">Copy</button></div>
+        <div class="share-actions">
+          <a id="shareWhatsApp" class="btn btn-secondary" target="_blank" rel="noopener">💬 WhatsApp</a>
+          <button id="shareNative" class="btn btn-secondary" type="button">📤 Share…</button>
+        </div>
         <button id="closeAfterCreate" class="btn btn-primary full-width">Done</button>
       </div>
     </div>

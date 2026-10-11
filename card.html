@@ -79,8 +79,11 @@
 
 <script type="module">
 import { cards } from "./cards/index.js";
-import { auth, waitForUser, call, startCheckout, loadPricing, inr, offPct } from "./shared/payments.js";
+import { auth, waitForUser, call, loadPricing, inr, offPct } from "./shared/payments.js";
+import { payWithPopup } from "./shared/pay-modal.js";
+let PR = null;
 function applyPricing(pr) {
+  PR = pr;
   ["single", "all"].forEach(k => {
     const a = pr[k].amount, o = pr[k].old, off = offPct(a, o);
     document.querySelectorAll(`[data-new="${k}"]`).forEach(e => e.textContent = inr(a));
@@ -160,12 +163,15 @@ function showBuy() {
   const go = (plan, btn) => async () => {
     const u = auth.currentUser || await waitForUser();
     if (!u) { location.href = "login.html?next=" + encodeURIComponent("card.html?id=" + id); return; }
-    btn.disabled = true; say("Opening secure payment…", true);
-    try {
-      const r = await startCheckout(plan, plan === "single" ? id : null);
-      if (r.ok) { say("Payment successful! Unlocking…", true); setTimeout(() => location.reload(), 1200); return; }
-      say(r.cancelled ? "Payment cancelled. You were not charged." : r.error, false);
-    } catch (e) { say(e.message || "Could not start payment.", false); }
+    const cardDef = cards.find(x => x.id === id) || {};
+    const price = inr(((PR || {})[plan] || { amount: plan === "all" ? 9900 : 3500 }).amount);
+    btn.disabled = true; say("", true);
+    const r = await payWithPopup({
+      plan, cardId: plan === "single" ? id : null, icon: plan === "all" ? "💎" : (cardDef.icon || "✨"),
+      name: plan === "all" ? "All Cards Pass" : (cardDef.title || "One Card"), price,
+      perks: plan === "all" ? ["Every card unlocked", "7 creations for each card", "Pay with UPI, cards, netbanking or wallets"] : ["This card unlocked instantly", "7 creations for this card", "Pay with UPI, cards, netbanking or wallets"],
+      doneLabel: "Create my wish ✦", onDone: () => location.reload(),
+    });
     btn.disabled = false;
   };
   loadPricing(applyPricing);

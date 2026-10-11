@@ -341,3 +341,7 @@ input:focus,textarea:focus{border-color:var(--primary)}
 html{background:var(--bg)}
 body{min-height:100vh;background-repeat:no-repeat}
 .page-back{min-height:44px;padding:10px 18px;font-size:14px}
+
+/* share buttons after creating a wish */
+.share-actions{display:flex;gap:10px;margin:12px 0;flex-wrap:wrap}
+.share-actions .btn{flex:1 1 140px;text-align:center;text-decoration:none}

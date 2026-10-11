@@ -18,7 +18,7 @@ firebase functions:secrets:set RAZORPAY_KEY_SECRET      # Key Secret paste korun
 firebase functions:secrets:set RAZORPAY_WEBHOOK_SECRET  # nijer deoa webhook password
 firebase deploy --only functions,firestore:rules
 ```
-Deploy-er somoy prompt ashbe: `RAZORPAY_KEY_ID` (rzp_test_xxx) ar `OWNER_EMAIL` (default `suraj7uddin@gmail.com`, Enter chaple hobe).
+`functions/.env` file-e `RAZORPAY_KEY_ID` (public) ar `OWNER_EMAIL` already deya ache, tai deploy-er somoy kono prompt ashbe na. **Key Secret kono file-e likhben na**, sudhu `functions:secrets:set` command-e paste korben. Chat-e secret share hoye gele Razorpay Dashboard theke regenerate kore notun secret set kore nin (Live-e jawar age obosshoi).
 
 ## Razorpay webhook (khub joruri)
 Razorpay Dashboard → Settings → Webhooks → Add:
@@ -46,3 +46,12 @@ Wish ekhon sudhu `createWish` function diye save hoy (Firestore rules browser th
 - Owner ba admin-ke suspend kora jay na.
 - Free plan: Give free plan tab e Gmail ar plan din. Se age login na korle first Google login e auto active hoy. Revoke korle plan chole jay.
 - Price: Pricing tab e rupee te likhun. Website-e sob jaygay sathe sathe bodle jay.
+
+## Share link preview (WhatsApp / Instagram)
+Wish toiri hole je link pawa jay (`.../wishShare?id=...`) setai share korte hobe. WhatsApp/Insta-te card-er title (jemon "Birthday Surprise for Riya") ar ekta sundor chhobi preview hishebe dekhay, tarpor click korle wish khule jay. Chhobi gulo `share-img/` folder-e (card-wise). Eta GitHub Pages-e push korte hobe, ar `wishShare` function deploy hote hobe (`firebase deploy --only functions`).
+
+## Account page
+Log out, Delete my account (DELETE likhe confirm), plan-er card-wise credit bar ("5 of 7 left"), nijer banano wish-er link (Copy / WhatsApp). Suspended user ba pending refund report thakle account delete hoy na. Payment record accounting-er jonno thake.
+
+## Payment popup
+Pay korar age WishVerse-er nijer popup ashe (price, kon plan), tarpor Razorpay window, tarpor "Confirming" animation, shesh e success (confetti) ba failure (Try again).
