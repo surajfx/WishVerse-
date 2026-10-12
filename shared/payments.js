@@ -1,7 +1,7 @@
 // Shared client for auth + Cloud Functions (payments, account, admin).
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
+import { API_BASE } from "./config.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDhH_fplGM0SYhXYQyGEmSgsxchuUgi43I",
@@ -16,9 +16,23 @@ const firebaseConfig = {
 
 export const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 export const auth = getAuth(app);
-const functions = getFunctions(app, "asia-south1");
-
-export const call = async (name, data = {}) => (await httpsCallable(functions, name)(data)).data;
+const NOT_READY = "The WishVerse server is not connected yet. If you are the site owner, finish the Cloudflare Worker setup (see setup guide), then try again.";
+const notReady = () => { const e = new Error(NOT_READY); e.code = "SERVER_NOT_READY"; return e; };
+// Calls the WishVerse API (Cloudflare Worker). Sends the Firebase login token so the server knows who you are.
+export const call = async (name, data = {}) => {
+  if (!API_BASE || API_BASE.includes("YOUR-")) throw notReady();
+  const headers = { "Content-Type": "application/json" };
+  const u = auth.currentUser;
+  if (u) { try { headers.Authorization = "Bearer " + (await u.getIdToken()); } catch {} }
+  let res;
+  try { res = await fetch(`${API_BASE}/${name}`, { method: "POST", headers, body: JSON.stringify(data) }); }
+  catch { throw notReady(); }
+  let j = null;
+  try { j = await res.json(); } catch {}
+  if (!j) throw notReady();
+  if (j.error) { const e = new Error(j.error.message || "Something went wrong."); e.code = j.error.code; throw e; }
+  return j.result;
+};
 
 // Resolves once Firebase has decided whether someone is logged in.
 export const waitForUser = () => new Promise((res) => {
@@ -34,9 +48,9 @@ export function loadPricing(cb) {
   let cur = DEFAULT_PRICING;
   try { const c = JSON.parse(sessionStorage.getItem("wv-pricing")); if (c && c.single && c.all) cur = c; } catch {}
   cb(cur);
-  httpsCallable(functions, "getPricing")({}).then((r) => {
-    try { sessionStorage.setItem("wv-pricing", JSON.stringify(r.data)); } catch {}
-    cb(r.data);
+  call("getPricing").then((r) => {
+    try { sessionStorage.setItem("wv-pricing", JSON.stringify(r)); } catch {}
+    cb(r);
   }).catch(() => {});
 }
 export const rupees = (paise) => "₹" + (paise / 100).toLocaleString("en-IN");

@@ -1,0 +1,4 @@
+# Only needed if you deploy with the command line (npx wrangler deploy). Dashboard paste needs no file.
+name = "wishverse-api"
+main = "dist/worker.js"
+compatibility_date = "2025-01-01"

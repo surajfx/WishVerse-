@@ -84,7 +84,7 @@ async function load() {
   if (!user) { location.href = "login.html?next=account.html"; return; }
   let a;
   try { a = await call("getMyAccount"); }
-  catch (e) { $("#state").textContent = "Could not load your account. Please refresh."; return; }
+  catch (e) { $("#state").textContent = e.code === "SERVER_NOT_READY" ? e.message : "Could not load your account. Please refresh."; return; }
   $("#state").classList.add("hidden"); $("#body").classList.remove("hidden");
   $("#who").textContent = "Logged in as " + a.email;
   if (a.suspended) $("#suspendedBox").classList.remove("hidden");
