@@ -73,8 +73,13 @@ async function guard(fn) { try { say("Working…"); const r = await fn(); say("D
 (async () => {
   const user = auth.currentUser || await waitForUser();
   if (!user) { location.href = "login.html?next=admin.html"; return; }
-  let chk; try { chk = await call("adminCheck"); } catch { chk = { isAdmin: false }; }
-  if (!chk.isAdmin) { $("#gate").textContent = "You are not authorised to view this page."; return; }
+  let chk, err; try { chk = await call("adminCheck"); } catch (e) { err = e; chk = { isAdmin: false }; }
+  if (!chk.isAdmin) {
+    $("#gate").textContent = err
+      ? "Could not verify admin access: " + (err.message || err.code || "error") + " (" + (err.code || "no code") + ")"
+      : "You are not authorised to view this page. Signed in as " + (chk.email || user.email || "unknown") + ". Please sign in with the owner Google account.";
+    return;
+  }
   $("#gate").classList.add("hidden"); $("#app").classList.remove("hidden"); $("#me").textContent = (chk.isOwner ? "👑 Owner · " : "Admin · ") + chk.email;
   isOwner = !!chk.isOwner; if (isOwner) $("#adminsTab").classList.remove("hidden");
   document.querySelectorAll(".tab").forEach(b => b.onclick = () => { tab = b.dataset.t; document.querySelectorAll(".tab").forEach(x => x.classList.toggle("on", x === b)); render(); });
