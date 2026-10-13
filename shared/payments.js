@@ -61,7 +61,8 @@ export const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&a
 // hooks (optional): onOpen() when the Razorpay window opens, onVerifying() after the customer paid.
 export async function startCheckout(plan, cardId, hooks = {}) {
   await loadCheckoutScript();
-  const o = await call("createOrder", { plan, cardId });
+  let ref = ""; try { const r = JSON.parse(localStorage.getItem("wv-ref")); if (r && r.u && Date.now() - r.t < 30 * 86400000) ref = r.u; } catch {}
+  const o = await call("createOrder", { plan, cardId, ref });
   return new Promise((resolve) => {
     const rz = new window.Razorpay({
       key: o.keyId, order_id: o.orderId, amount: o.amount, currency: o.currency,
