@@ -51,6 +51,7 @@
       <h2>My plan</h2>
       <div id="plan"></div>
       <h2>My wishes</h2>
+      <p class="meta" style="margin:0 0 8px">Each wish link stays open for 10 days.</p>
       <div id="wishes"></div>
       <h2>My payments</h2>
       <div id="payments"></div>
@@ -95,7 +96,8 @@ async function load() {
   const credit = (c) => { const u = used(c.id), left = Math.max(per - u, 0), pct = Math.round(left / per * 100);
     return `<div class="credit"><b>${c.icon || ""} ${esc(c.title)}</b><span class="left">${left} of ${per} left</span><div class="bar"><i class="${left === 0 ? "zero" : left <= 2 ? "low" : ""}" style="width:${pct}%"></i></div></div>`; };
   let planHtml = "";
-  if (a.isAdmin) planHtml = `<div class="pay-row"><b>👑 ${a.isOwner ? "Owner" : "Admin"} access</b><div class="meta">All cards are free and unlimited for you.</div></div>`;
+  if (a.isCreator && !a.isAdmin) planHtml = `<div class="pay-row"><b>🎬 Creator access</b><div class="meta">All cards are free and unlimited for you. <a href="creator-dashboard.html" style="color:var(--primary)">Open creator dashboard →</a></div></div>`;
+  else if (a.isAdmin) planHtml = `<div class="pay-row"><b>👑 ${a.isOwner ? "Owner" : "Admin"} access</b><div class="meta">All cards are free and unlimited for you.</div></div>`;
   else if (a.all) {
     const list = [...cards].sort((x, y) => used(y.id) - used(x.id));
     planHtml = `<div class="pay-row"><div class="plan-head"><b>✦ All Cards Pass</b><span class="pill paid">active</span></div><div class="meta">Every card has its own ${per} creations. Cards you used are listed first.</div>${list.map(credit).join("")}</div>`;
@@ -107,7 +109,10 @@ async function load() {
   const base = a.shareBase || "https://asia-south1-surajfx2.cloudfunctions.net/wishShare";
   $("#wishes").innerHTML = a.wishes && a.wishes.length ? a.wishes.map(w => {
     const link = `${base}?id=${w.id}`;
-    return `<div class="pay-row wish-row"><div><b>${esc(title(w.templateId))}</b> for ${esc(w.to || "someone special")}<div class="meta">${fmtDate(w.createdAt)}</div></div>
+    const left = w.expiresAt ? Math.ceil((w.expiresAt - Date.now()) / 86400000) : null;
+    const life = w.expired ? "⏳ Link expired" : left != null ? `Link expires in ${left} day${left === 1 ? "" : "s"}` : "";
+    if (w.expired) return `<div class="pay-row wish-row"><div><b>${esc(title(w.templateId))}</b> for ${esc(w.to || "someone special")}<div class="meta">${fmtDate(w.createdAt)} · ${life}</div></div></div>`;
+    return `<div class="pay-row wish-row"><div><b>${esc(title(w.templateId))}</b> for ${esc(w.to || "someone special")}<div class="meta">${fmtDate(w.createdAt)} · ${life}</div></div>
     <div class="acts"><a class="btn btn-secondary small" href="${esc(link)}" target="_blank" rel="noopener">Open</a><button class="btn btn-secondary small" data-copy="${esc(link)}">Copy link</button><a class="btn btn-secondary small" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent("💌 I made a little surprise for you on WishVerse: " + link)}">WhatsApp</a></div></div>`;
   }).join("") : `<div class="pay-row meta">No wishes created yet.</div>`;
   document.querySelectorAll("[data-copy]").forEach(b => b.onclick = async () => { try { await navigator.clipboard.writeText(b.dataset.copy); b.textContent = "Copied ✓"; setTimeout(() => b.textContent = "Copy link", 1500); } catch {} });

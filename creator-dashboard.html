@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b1020">
+<title>Creator Dashboard — WishVerse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:14px 0}
+  .stat{background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:14px}
+  .stat b{display:block;font-size:24px;color:var(--text)}.stat span{font-size:12px;color:var(--muted)}
+  .row{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:12px 14px;margin-top:8px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+  .meta{color:var(--muted);font-size:13px;line-height:1.6}
+  .linkbox{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .linkbox input{flex:1;min-width:200px;padding:13px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font:inherit}
+  .pill{display:inline-block;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:700;background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}
+  .pill.reversed{background:color-mix(in srgb,var(--bad) 16%,transparent);color:var(--bad)}
+  .btn.small{min-height:40px;padding:9px 16px;border-radius:12px;font-size:14px}
+  .rates{width:100%;border-collapse:collapse;font-size:14px;margin-top:8px}
+  .rates td,.rates th{padding:8px 6px;border-bottom:1px solid var(--border);text-align:left;color:var(--text)}
+  .rates th{color:var(--muted);font-weight:600;font-size:12px}
+  .ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}
+  .upi{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.upi input{flex:1;min-width:180px;padding:12px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font:inherit}
+</style>
+<script src="shared/theme.js"></script>
+</head>
+<body>
+<main class="page-shell">
+  <div class="page-topbar"><a class="page-brand" href="index.html">Wish<span>Verse</span></a><a class="btn btn-secondary page-back" href="account.html">← Account</a></div>
+  <article class="page-content">
+    <div class="page-kicker">WISHVERSE · CREATOR</div>
+    <h1>Creator dashboard</h1>
+    <div id="state" class="form-note">Loading…</div>
+    <div id="body" class="hidden"></div>
+  </article>
+</main>
+<script type="module">
+import { auth, waitForUser, call, rupees, fmtDate, esc } from "./shared/payments.js";
+const $ = (s) => document.querySelector(s);
+let me = null;
+function render() {
+  const b = $("#body");
+  if (me.status === "none") { b.innerHTML = `<p>You have not applied yet.</p><a class="btn btn-primary" href="creator.html">Apply to the creator program</a>`; return; }
+  if (me.status === "pending") { b.innerHTML = `<p class="warn"><b>⏳ Your application is under review.</b></p><p class="meta">We will approve it soon. Check back here.</p>`; return; }
+  if (me.status === "rejected") { b.innerHTML = `<p class="bad"><b>Your application was not approved.</b></p><p class="meta">${esc(me.adminNote || "")}</p><a class="btn btn-secondary" href="creator.html">Apply again</a>`; return; }
+  const wa = "https://wa.me/?text=" + encodeURIComponent("💌 Make a beautiful personal wish for someone special on WishVerse: " + me.link);
+  const susp = me.status === "suspended" ? `<p class="bad"><b>Your creator account is suspended.</b> New sales are not credited. Please contact support.</p>` : "";
+  const sales = me.commissions.length ? me.commissions.map((c) => `<div class="row"><div><b>${c.plan === "all" ? "All Cards Pass" : esc(c.cardId)}</b><div class="meta">${fmtDate(c.createdAt)} · ${rupees(c.amount)} sale · ${c.pct}%</div></div><div><b>${rupees(c.commissionPaise)}</b> <span class="pill ${c.status === "reversed" ? "reversed" : ""}">${c.status === "reversed" ? "refunded" : "earned"}</span></div></div>`).join("") : `<div class="row meta">No sales yet. Share your link to get started.</div>`;
+  const pays = me.payouts.length ? me.payouts.map((p) => `<div class="row"><div><b>${rupees(p.amountPaise)}</b><div class="meta">${fmtDate(p.at)}${p.note ? " · " + esc(p.note) : ""}</div></div><span class="pill">paid</span></div>`).join("") : `<div class="row meta">No payouts yet.</div>`;
+  const rates = me.rates.length ? `<table class="rates"><tr><th>Plan / card</th><th>Price</th><th>Your %</th><th>You earn</th></tr>${me.rates.map((r) => `<tr><td>${esc(r.label)}</td><td>${rupees(r.amountPaise)}</td><td>${r.pct}%</td><td><b>${rupees(r.earnPaise)}</b></td></tr>`).join("")}</table>` : "";
+  const canPay = me.balancePaise >= me.minPayoutPaise;
+  b.innerHTML = `${susp}
+  <h2>Your link</h2>
+  <p class="meta">Anyone who buys after opening this link is credited to you for 30 days.</p>
+  <div class="linkbox"><input id="lk" readonly value="${esc(me.link)}"><button class="btn btn-primary small" id="cp">Copy</button><a class="btn btn-secondary small" target="_blank" rel="noopener" href="${esc(wa)}">WhatsApp</a></div>
+  <div class="stats">
+    <div class="stat"><b>${me.clicks}</b><span>Link visits</span></div>
+    <div class="stat"><b>${me.sales}</b><span>Sales</span></div>
+    <div class="stat"><b>${rupees(me.earnedPaise)}</b><span>Total earned</span></div>
+    <div class="stat"><b>${rupees(me.paidPaise)}</b><span>Paid to you</span></div>
+    <div class="stat"><b class="${canPay ? "ok" : ""}">${rupees(me.balancePaise)}</b><span>Balance${canPay ? " (payable now)" : " (payout at " + rupees(me.minPayoutPaise) + ")"}</span></div>
+  </div>
+  <h2>Your commission rates</h2>${rates}
+  <h2>Payout UPI ID</h2>
+  <p class="meta">Payouts are sent here by the WishVerse team.</p>
+  <div class="upi"><input id="upi" value="${esc(me.upi)}" placeholder="yourname@upi" autocapitalize="off"><button class="btn btn-secondary small" id="saveUpi">Save</button></div>
+  <div id="upiMsg" class="meta"></div>
+  <h2>Sales</h2>${sales}
+  <h2>Payouts</h2>${pays}
+  <p class="meta" style="margin-top:18px">🎬 As an approved creator, every card is free and unlimited for you. <a href="index.html" style="color:var(--primary)">Make a wish →</a></p>`;
+  $("#cp").onclick = async () => { try { await navigator.clipboard.writeText(me.link); $("#cp").textContent = "Copied ✓"; } catch { $("#lk").select(); } setTimeout(() => $("#cp").textContent = "Copy", 1500); };
+  $("#saveUpi").onclick = async () => {
+    const m = $("#upiMsg"); m.textContent = "Saving…";
+    try { await call("creatorUpdatePayout", { upi: $("#upi").value }); m.textContent = "Saved ✓"; m.className = "meta ok"; }
+    catch (e) { m.textContent = e.message || "Could not save"; m.className = "meta bad"; }
+  };
+}
+(async () => {
+  const u = auth.currentUser || await waitForUser();
+  if (!u) { location.href = "login.html?next=creator-dashboard.html"; return; }
+  try { me = await call("getMyCreator"); } catch (e) { $("#state").textContent = e.message || "Could not load. Please refresh."; return; }
+  $("#state").classList.add("hidden"); $("#body").classList.remove("hidden"); render();
+})();
+</script>
+</body>
+</html>

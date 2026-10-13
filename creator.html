@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b1020">
+<title>Creator Program — WishVerse</title>
+<meta name="description" content="Share WishVerse with your audience and earn a commission on every card sold through your link.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .perk-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin:18px 0}
+  .perk{background:var(--surface2);border:1px solid var(--border);border-radius:18px;padding:16px}
+  .perk b{display:block;font-size:17px;margin-bottom:4px;color:var(--text)}
+  .perk span{color:var(--muted);font-size:14px;line-height:1.6}
+  .steps{counter-reset:s;display:grid;gap:10px;margin:14px 0;padding:0;list-style:none}
+  .steps li{counter-increment:s;display:flex;gap:12px;align-items:flex-start;background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:13px 15px}
+  .steps li:before{content:counter(s);flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:700;background:linear-gradient(110deg,var(--primary),var(--secondary));color:#11182b}
+  .field{display:grid;gap:6px}
+  .field label{font-weight:600;font-size:14px;color:var(--text)}
+  .field small{color:var(--muted);font-size:12px}
+  .field input,.field textarea{width:100%;padding:13px 14px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font:inherit}
+  .field textarea{min-height:84px;resize:vertical}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:520px){.two{grid-template-columns:1fr}}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chips label{cursor:pointer}
+  .chips input{position:absolute;opacity:0;pointer-events:none}
+  .chips span{display:inline-block;padding:9px 14px;border-radius:99px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:14px}
+  .chips input:checked+span{background:linear-gradient(110deg,var(--primary),var(--secondary));color:#11182b;border-color:transparent;font-weight:700}
+  .statusbox{border-radius:18px;padding:18px;border:1px solid var(--border);background:var(--surface2);margin-top:18px}
+  .statusbox h3{margin:0 0 6px}
+  .ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}
+</style>
+<script src="shared/theme.js"></script>
+</head>
+<body>
+<main class="page-shell">
+  <div class="page-topbar"><a class="page-brand" href="index.html">Wish<span>Verse</span></a><a class="btn btn-secondary page-back" href="index.html">← Home</a></div>
+  <article class="page-content">
+    <div class="page-kicker">WISHVERSE · CREATOR PROGRAM</div>
+    <h1>Share WishVerse. Earn on every sale.</h1>
+    <p>If you make content about love, friendship or gifting, this is for you. You get your own link. Every time someone buys a card through it, you earn a commission.</p>
+
+    <div class="perk-grid">
+      <div class="perk"><b>💸 Commission per card</b><span>You earn a percentage of every sale made through your link. The rate for each card is shown in your dashboard.</span></div>
+      <div class="perk"><b>♾️ Unlimited access</b><span>Approved creators can use every card, free and unlimited, to make content.</span></div>
+      <div class="perk"><b>📊 Your own dashboard</b><span>See visits, sales, what you have earned and what has been paid to you.</span></div>
+      <div class="perk"><b>🏦 UPI payouts</b><span>Earnings are paid to your UPI ID once your balance reaches ₹100.</span></div>
+    </div>
+
+    <h2>How it works</h2>
+    <ol class="steps">
+      <li><div><b>Apply</b><br><span class="form-note" style="font-size:14px">Fill in the form below with your social profiles and UPI ID.</span></div></li>
+      <li><div><b>We review</b><br><span class="form-note" style="font-size:14px">We check your application and your status shows up on this page.</span></div></li>
+      <li><div><b>Get your link</b><br><span class="form-note" style="font-size:14px">Once approved you get a personal link like wishverse.surajfx.in/?ref=yourname</span></div></li>
+      <li><div><b>Share and earn</b><br><span class="form-note" style="font-size:14px">People who buy after opening your link are credited to you for 30 days.</span></div></li>
+    </ol>
+
+    <h2 id="apply">Apply now</h2>
+    <div id="state" class="form-note">Loading…</div>
+    <div id="gate" class="hidden"><p>Log in with Google to apply.</p><a class="btn btn-primary" id="loginBtn" href="login.html?next=creator.html">Continue with Google</a></div>
+    <div id="status" class="hidden"></div>
+    <form id="form" class="form-stack hidden" novalidate>
+      <div class="two">
+        <div class="field"><label for="fn">First name *</label><input id="fn" maxlength="40" autocomplete="given-name"></div>
+        <div class="field"><label for="ln">Last name *</label><input id="ln" maxlength="40" autocomplete="family-name"></div>
+      </div>
+      <div class="two">
+        <div class="field"><label for="ph">Phone number *</label><input id="ph" inputmode="numeric" maxlength="14" placeholder="10-digit number" autocomplete="tel"></div>
+        <div class="field"><label for="tg">Telegram <small>(optional)</small></label><input id="tg" maxlength="40" placeholder="@username"></div>
+      </div>
+      <div class="field"><label>Your social profiles * <small>Paste the full link for each one you use (at least one).</small></label>
+        <input data-soc="instagram" placeholder="Instagram link  https://instagram.com/…" inputmode="url">
+        <input data-soc="youtube" placeholder="YouTube link" inputmode="url">
+        <input data-soc="facebook" placeholder="Facebook link" inputmode="url">
+        <input data-soc="twitter" placeholder="Twitter / X link" inputmode="url">
+        <input data-soc="linkedin" placeholder="LinkedIn link" inputmode="url">
+        <input data-soc="tiktok" placeholder="TikTok link" inputmode="url">
+      </div>
+      <div class="field"><label for="upi">UPI ID <small>(for commission payouts, you can change it later)</small></label><input id="upi" maxlength="64" placeholder="yourname@upi" autocapitalize="off"></div>
+      <div class="field"><label>How will you promote WishVerse? *</label>
+        <div class="chips" id="promo"></div>
+      </div>
+      <div class="field"><label for="note">Anything else we should know? <small>(optional)</small></label><textarea id="note" maxlength="500"></textarea></div>
+      <div id="err" class="form-error"></div>
+      <button class="btn btn-primary" id="submit" type="submit">Submit application</button>
+      <p class="form-note">By applying you agree to our <a href="terms.html" style="color:var(--primary)">Terms</a>. Applications are reviewed by our team. Commissions are paid only on completed, non-refunded sales, and self-purchases do not earn commission.</p>
+    </form>
+  </article>
+</main>
+<script type="module">
+import { auth, waitForUser, call, esc } from "./shared/payments.js";
+const $ = (s) => document.querySelector(s);
+const PROMOS = ["Instagram Reels & Stories", "YouTube Videos & Shorts", "Facebook Posts & Groups", "WhatsApp Broadcast", "Twitter / X Posts", "TikTok Videos", "Telegram Channel", "Blog / Website Content", "Other"];
+$("#promo").innerHTML = PROMOS.map((p) => `<label><input type="checkbox" value="${esc(p)}"><span>${esc(p)}</span></label>`).join("");
+
+const box = (cls, title, html) => `<div class="statusbox"><h3 class="${cls}">${title}</h3><div class="form-note" style="font-size:14px">${html}</div></div>`;
+async function init() {
+  const u = auth.currentUser || await waitForUser();
+  $("#state").classList.add("hidden");
+  if (!u) { $("#gate").classList.remove("hidden"); return; }
+  let me;
+  try { me = await call("getMyCreator"); }
+  catch (e) { $("#state").classList.remove("hidden"); $("#state").textContent = e.message || "Could not load. Please refresh."; return; }
+  if (me.status === "none" || me.status === "rejected") {
+    if (me.status === "rejected") { $("#status").classList.remove("hidden"); $("#status").innerHTML = box("bad", "Your last application was not approved", esc(me.adminNote || "You are welcome to apply again with more details.")); }
+    $("#form").classList.remove("hidden");
+    return;
+  }
+  $("#status").classList.remove("hidden");
+  if (me.status === "pending") $("#status").innerHTML = box("warn", "⏳ Application under review", "Thanks! We will review your application soon. Come back to this page to see your status.");
+  else $("#status").innerHTML = box(me.status === "approved" ? "ok" : "bad", me.status === "approved" ? "✅ You are an approved creator" : "Your creator account is suspended", me.status === "approved" ? `<a class="btn btn-primary" href="creator-dashboard.html" style="margin-top:8px;display:inline-block">Open creator dashboard →</a>` : "Please contact support if you think this is a mistake.");
+}
+$("#form").addEventListener("submit", async (ev) => {
+  ev.preventDefault();
+  const err = $("#err"), btn = $("#submit"); err.textContent = "";
+  const socials = {}; document.querySelectorAll("[data-soc]").forEach((i) => { if (i.value.trim()) socials[i.dataset.soc] = i.value.trim(); });
+  const promo = [...document.querySelectorAll("#promo input:checked")].map((i) => i.value);
+  btn.disabled = true; btn.textContent = "Submitting…";
+  try {
+    await call("creatorApply", { firstName: $("#fn").value, lastName: $("#ln").value, phone: $("#ph").value, telegram: $("#tg").value, upi: $("#upi").value, socials, promo, note: $("#note").value });
+    $("#form").classList.add("hidden"); $("#status").classList.remove("hidden");
+    $("#status").innerHTML = box("ok", "🎉 Application sent", "We will review it and your status will show up here.");
+    window.scrollTo({ top: $("#apply").offsetTop - 20, behavior: "smooth" });
+  } catch (e) {
+    err.textContent = e.message === "ALREADY_APPLIED" ? "You have already applied. Refresh to see your status." : (e.message || "Could not submit. Please try again.");
+    btn.disabled = false; btn.textContent = "Submit application";
+  }
+});
+init();
+</script>
+</body>
+</html>

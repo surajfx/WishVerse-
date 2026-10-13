@@ -185,8 +185,8 @@ async function init() {
   try {
     const a = await call("getMyAccount");
     if (a.suspended) { document.getElementById("actions").innerHTML = ""; say("Your account is suspended. Please contact support.", false); return; }
-    if (a.isAdmin) {
-      document.getElementById("buy").innerHTML = `<p class="eyebrow" style="margin:0">Admin access ✓</p><div class="price"><b style="font-size:30px">Free &amp; unlimited</b></div>`;
+    if (a.isAdmin || a.isCreator) {
+      document.getElementById("buy").innerHTML = `<p class="eyebrow" style="margin:0">${a.isAdmin ? "Admin" : "Creator"} access ✓</p><div class="price"><b style="font-size:30px">Free &amp; unlimited</b></div>`;
       document.getElementById("actions").innerHTML = `<a class="cta main" href="index.html?create=${id}">✦ Create My Wish</a>${demoBtn}`;
       return;
     }

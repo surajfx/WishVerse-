@@ -54,6 +54,7 @@
       <button class="tab" data-t="pricing">Pricing</button>
       <button class="tab" data-t="grant">Give free plan</button>
       <button id="adminsTab" class="tab hidden" data-t="admins">Admins</button>
+      <button id="creatorsTab" class="tab hidden" data-t="creators">🎬 Creators<span id="crBadge" class="badge hidden"></span></button>
       <button class="tab" data-t="security">Bypass / Security<span id="secBadge" class="badge hidden"></span></button>
     </div>
     <div id="msg" class="msg"></div>
@@ -65,6 +66,7 @@ import { cards } from "./cards/index.js";
 import { auth, waitForUser, call, rupees, fmtDate, esc, DEFAULT_PRICING } from "./shared/payments.js";
 const $ = (s) => document.querySelector(s);
 const cardName = (id) => (cards.find(c => c.id === id) || {}).title || id;
+let creatorsData = null;
 let tab = "overview", pays = [], users = [], events = [], overview = null, isOwner = false, pending = [], prices = null, admins = null;
 
 const say = (t, bad) => { const m = $("#msg"); m.textContent = t; m.style.color = bad ? "#ff91b6" : "#75e6b0"; };
@@ -81,7 +83,7 @@ async function guard(fn) { try { say("Working…"); const r = await fn(); say("D
     return;
   }
   $("#gate").classList.add("hidden"); $("#app").classList.remove("hidden"); $("#me").textContent = (chk.isOwner ? "👑 Owner · " : "Admin · ") + chk.email;
-  isOwner = !!chk.isOwner; if (isOwner) $("#adminsTab").classList.remove("hidden");
+  isOwner = !!chk.isOwner; if (isOwner) { $("#adminsTab").classList.remove("hidden"); $("#creatorsTab").classList.remove("hidden"); }
   document.querySelectorAll(".tab").forEach(b => b.onclick = () => { tab = b.dataset.t; document.querySelectorAll(".tab").forEach(x => x.classList.toggle("on", x === b)); render(); });
   await refresh();
 })();
@@ -92,14 +94,67 @@ async function refresh() {
     [overview, { payments: pays }, { users }, { events }, { pending }, prices] = await Promise.all([
       call("adminOverview"), call("adminListPayments"), call("adminListUsers"), call("adminSecurityEvents"), call("adminListPending"), call("getPricing"),
     ]);
-    if (isOwner) admins = await call("adminListAdmins");
+    if (isOwner) { admins = await call("adminListAdmins"); creatorsData = await call("adminListCreators"); }
     say("");
   } catch (e) { say(e.message || "Could not load data", true); }
   const rf = pays.filter(p => p.refundRequest && p.refundRequest.status === "pending").length;
   $("#rfBadge").textContent = rf; $("#rfBadge").classList.toggle("hidden", !rf);
+  const crp = creatorsData ? creatorsData.creators.filter(x => x.status === "pending").length : 0;
+  $("#crBadge").textContent = crp; $("#crBadge").classList.toggle("hidden", !crp);
   const fl = users.filter(u => u.flags > 0).length;
   $("#secBadge").textContent = fl; $("#secBadge").classList.toggle("hidden", !fl);
   render();
+}
+
+
+/* ---------------- creators (owner only) ---------------- */
+const crDetail = {};
+function creatorsView(v) {
+  if (!creatorsData) { v.innerHTML = `<div class="none">Loading…</div>`; return; }
+  const { creators, cards, defaultPct, minPayoutPaise } = creatorsData;
+  const pill = (st) => `<span class="pill ${st === "approved" ? "paid" : st === "pending" ? "warn" : "failed"}">${st}</span>`;
+  const soc = (x) => Object.entries(x.socials || {}).map(([k, u]) => `<a href="${esc(u)}" target="_blank" rel="noopener" style="color:var(--primary)">${esc(k)}</a>`).join(" · ") || "—";
+  const pctRow = (x) => ["all", ...Object.keys(cards)].map(k => `<label style="display:flex;justify-content:space-between;gap:8px;align-items:center;margin:4px 0"><span>${esc(k === "all" ? "All Cards Pass" : cards[k])}</span><input data-pct="${k}" type="number" min="0" max="90" step="0.5" placeholder="${x.commissionPct}" value="${x.cardPct && x.cardPct[k] != null ? x.cardPct[k] : ""}" style="width:90px"></label>`).join("");
+  const card = (x) => {
+    let act = "";
+    if (x.status === "pending" || x.status === "rejected") act = `<div class="bar"><input data-f="username" placeholder="username (e.g. rahul)" style="min-width:170px" autocapitalize="off"><input data-f="pct" type="number" min="0" max="90" step="0.5" value="${defaultPct}" style="width:90px" title="Commission %"> <button class="btn btn-primary" data-act="approve">Approve</button> ${x.status === "pending" ? '<button class="btn btn-secondary" data-act="reject">Reject</button>' : ""}</div><div class="muted">Username becomes the link: wishverse.surajfx.in/?ref=<b>username</b>. Commission % is for every card; fine-tune per card after approving.</div>`;
+    else if (x.status === "approved") act = `<div class="muted">Link: <b>wishverse.surajfx.in/?ref=${esc(x.username)}</b></div>
+      <details style="margin-top:8px"><summary><b>Commission %</b> (default ${x.commissionPct}%)</summary>
+        <div style="max-width:380px;margin-top:8px"><label style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b>Default for all</b><input data-f="pct" type="number" min="0" max="90" step="0.5" value="${x.commissionPct}" style="width:90px"></label>
+        <div class="muted" style="margin:6px 0">Leave a card empty to use the default.</div>${pctRow(x)}<button class="btn btn-primary" data-act="savepct" style="margin-top:8px">Save rates</button></div></details>
+      <div class="bar" style="margin-top:10px"><input data-f="payamt" type="number" min="1" step="1" placeholder="₹ paid" style="width:110px"><input data-f="paynote" placeholder="UPI ref / note" style="min-width:150px"><button class="btn btn-secondary" data-act="payout">Mark paid</button>
+      <button class="btn btn-secondary" data-act="detail">View sales</button><button class="btn btn-secondary" data-act="suspend">Suspend</button></div>
+      ${x.balancePaise >= minPayoutPaise ? `<div class="ok" style="font-size:13px">Pay ${rupees(x.balancePaise)} to <b>${esc(x.upi || "(no UPI given)")}</b> then press Mark paid.</div>` : ""}`;
+    else act = `<div class="bar"><button class="btn btn-primary" data-act="unsuspend">Unsuspend</button><button class="btn btn-secondary" data-act="detail">View sales</button></div>`;
+    const det = crDetail[x.uid] ? `<div class="tbl" style="margin-top:8px"><table><tr><th>When</th><th>Item</th><th>Sale</th><th>%</th><th>Commission</th><th>Status</th></tr>${crDetail[x.uid].commissions.map(c => `<tr><td>${fmtDate(c.createdAt)}</td><td>${c.plan === "all" ? "All Cards" : esc(c.cardId)}</td><td>${rupees(c.amount)}</td><td>${c.pct}%</td><td>${rupees(c.commissionPaise)}</td><td>${c.status}</td></tr>`).join("") || '<tr><td colspan="6" class="muted">No sales</td></tr>'}</table>
+      <b>Payouts:</b> ${crDetail[x.uid].payouts.map(p => `${rupees(p.amountPaise)} (${fmtDate(p.at)})`).join(", ") || "none"}</div>` : "";
+    return `<div class="reqbox" data-uid="${x.uid}" style="max-width:none"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><div><b>${esc(x.name)}</b> ${pill(x.status)}<div class="muted">${esc(x.email)} · 📞 ${esc(x.phone)}${x.telegram ? " · TG " + esc(x.telegram) : ""}</div></div>
+      <div style="text-align:right"><div>Visits <b>${x.clicks}</b> · Sales <b>${x.sales}</b></div><div>Earned <b>${rupees(x.earnedPaise)}</b> · Paid <b>${rupees(x.paidPaise)}</b> · Owed <b class="${x.balancePaise > 0 ? "ok" : ""}">${rupees(x.balancePaise)}</b></div></div></div>
+      <div style="margin-top:6px">${soc(x)}</div><div class="muted">Promotes via: ${esc((x.promo || []).join(", ")) || "—"} · UPI: ${esc(x.upi || "—")}</div>${x.note ? `<div class="muted">“${esc(x.note)}”</div>` : ""}
+      <div style="margin-top:10px">${act}</div>${det}</div>`;
+  };
+  v.innerHTML = `<p class="muted">Creators who applied through the Creator Program. Approve them, set their commission, and mark payouts after you pay them by UPI. Approved creators get every card free and unlimited. Pay out when the owed balance reaches ${rupees(minPayoutPaise)}.</p>` + (creators.length ? creators.map(card).join("") : `<div class="none">No creator applications yet.</div>`);
+  v.querySelectorAll("[data-act]").forEach(b => b.onclick = async () => {
+    const root = b.closest("[data-uid]"), uid = root.dataset.uid, f = (n) => (root.querySelector(`[data-f="${n}"]`) || {}).value;
+    const act = b.dataset.act;
+    const reload = async () => { creatorsData = await call("adminListCreators"); render(); };
+    if (act === "detail") { await guard(async () => { crDetail[uid] = await call("adminCreatorDetail", { uid }); render(); }); return; }
+    if (act === "reject" && !confirm("Reject this application?")) return;
+    if (act === "suspend" && !confirm("Suspend this creator? Their link stops earning and their free access ends.")) return;
+    await guard(async () => {
+      if (act === "approve" || act === "reject" || act === "suspend" || act === "unsuspend") {
+        await call("adminCreatorDecide", { uid, action: act, username: f("username"), commissionPct: f("pct") });
+      } else if (act === "savepct") {
+        const cardPct = {}; root.querySelectorAll("[data-pct]").forEach(i => { if (i.value !== "") cardPct[i.dataset.pct] = i.value; });
+        await call("adminSetCreatorCommission", { uid, commissionPct: f("pct"), cardPct });
+      } else if (act === "payout") {
+        if (!confirm(`Record a payout of ₹${f("payamt")}? Only press this after you have actually paid.`)) throw new Error("Cancelled");
+        await call("adminRecordPayout", { uid, amount: f("payamt"), note: f("paynote") });
+        delete crDetail[uid];
+      }
+      await reload();
+    });
+  });
 }
 
 const planName = (p) => (p.plan === "all" ? "All Cards Pass" : "One Card · " + cardName(p.cardId)) + (p.status === "granted" || p.status === "revoked" ? " (free)" : "");
@@ -116,6 +171,7 @@ function render() {
   if (tab === "pricing") return pricingView(v);
   if (tab === "grant") return grantView(v);
   if (tab === "admins") return adminsView(v);
+  if (tab === "creators") return creatorsView(v);
 }
 
 function overviewHtml() {
