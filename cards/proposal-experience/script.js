@@ -255,5 +255,5 @@ document.getElementById('replayBtn').addEventListener('click', ()=>{
   noMoves = 0; noBtn.style.left=''; noBtn.style.top=''; noBtn.style.opacity='1'; noBtn.textContent='No'; dodgeIndicator.classList.remove('show');
   showScreen(1);
 });
-document.getElementById('downloadBtn').addEventListener('click', function(){ this.textContent = 'Saved ✓'; });
+if (window.WVKeepsake) WVKeepsake.bind('downloadBtn', TO);
       
