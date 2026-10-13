@@ -1,4 +1,3 @@
-const canvasScript=document.createElement("script");canvasScript.src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";document.head.appendChild(canvasScript);
 
 const firebaseConfig = {
   apiKey: "AIzaSyDhH_fplGM0SYhXYQyGEmSgsxchuUgi43I",
@@ -490,16 +489,19 @@ function closeSharedExperience(){
 }
 $("#sharedBack").onclick = closeSharedExperience;
 $("#watchAgain").onclick = () => { sharedStep = 0; renderSharedStage(); };
-$("#downloadKeepsake").onclick = async () => {
-  const target = document.querySelector(".final-card");
-  if (!target) return;
-  if (!window.html2canvas) { toast("Download engine is loading…"); return; }
-  const canvas = await window.html2canvas(target, {backgroundColor:null, scale:2, useCORS:true});
-  const a = document.createElement("a");
-  a.download = `wishverse-${(sharedWish?.to||"keepsake").replace(/[^a-z0-9]+/gi,"-").toLowerCase()}.png`;
-  a.href = canvas.toDataURL("image/png");
-  a.click();
-};
+(function(){
+  const sc = document.createElement("script");
+  sc.src = "cards/keepsake.js";
+  sc.onload = () => window.WVKeepsake && window.WVKeepsake.bind("downloadKeepsake", () => (sharedWish && sharedWish.to) || "keepsake", ".final-card");
+  document.head.appendChild(sc);
+})();
+function showLinkGone(expired){
+  document.body.classList.add("shared-mode");
+  const sec = $("#sharedExperience");
+  sec.classList.remove("hidden");
+  $("#sharedActions").classList.add("hidden");
+  $("#sharedStage").innerHTML = `<div style="text-align:center;padding:60px 18px;max-width:420px;margin:0 auto"><div style="font-size:54px">⏳</div><h2 style="margin:14px 0 8px">${expired ? "This wish link has expired" : "This wish link is not available"}</h2><p style="opacity:.8;line-height:1.6">${expired ? "WishVerse links stay open for 10 days. Ask the sender to create a new one, or make your own." : "The link may be mistyped or removed."}</p><p style="margin-top:22px"><a class="btn btn-primary" href="${location.pathname}">Make your own wish ✦</a></p></div>`;
+}
 async function loadSharedWish(){
   const id = new URLSearchParams(location.search).get("wish");
   if (!id) return;
@@ -507,10 +509,15 @@ async function loadSharedWish(){
     if (!firebaseReady || !db) await initFirebase();
     const { getDoc, doc } = firestoreApi;
     const snap = await getDoc(doc(db, "wishes", id));
-    if (!snap.exists()) throw new Error("This wish link is not available.");
-    showSharedExperience(snap.data());
+    if (!snap.exists()) return showLinkGone(false);
+    const w = snap.data();
+    const exp = w.expiresAt && w.expiresAt.toMillis ? w.expiresAt.toMillis() : (w.createdAt && w.createdAt.toMillis ? w.createdAt.toMillis() + 10*24*3600*1000 : 0);
+    if (exp && Date.now() >= exp) return showLinkGone(true);
+    showSharedExperience(w);
   } catch (e) {
     console.error(e);
+    // Firestore rules refuse to read a wish after its 10 days are over
+    if (e && (e.code === "permission-denied" || /permission/i.test(e.message || ""))) return showLinkGone(true);
     toast(e.message || "This wish could not be loaded.");
   }
 }
