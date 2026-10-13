@@ -200,4 +200,4 @@ document.getElementById('replayBtn').addEventListener('click', ()=>{
   letterStarted = false; notebook.classList.remove('show'); continueBtn5.classList.remove('show'); nbBody.innerHTML='';
   showScreen(1);
 });
-document.getElementById('downloadBtn').addEventListener('click', function(){ this.textContent = 'Saved ✓'; });
+if (window.WVKeepsake) WVKeepsake.bind('downloadBtn', TO);
