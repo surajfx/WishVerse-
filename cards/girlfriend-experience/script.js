@@ -323,6 +323,6 @@ document.getElementById('continueBtn6').addEventListener('click', ()=>showScreen
 document.getElementById('continueBtn7').addEventListener('click', ()=>showScreen(9));
 document.getElementById('continueBtn8').addEventListener('click', ()=>showScreen(10));
 document.getElementById('replayBtn').addEventListener('click', ()=>showScreen(1));
-document.getElementById('downloadBtn').addEventListener('click', function(){ this.textContent = 'Saved ✓'; });
+if (window.WVKeepsake) WVKeepsake.bind('downloadBtn', TO);
 fillProgress(screens[1]);
           
