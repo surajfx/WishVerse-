@@ -416,6 +416,6 @@ document.getElementById('replayBtn').addEventListener('click', ()=>{
   showScreen(1);
   setTimeout(()=>showScreen(2), 1500);
 });
-document.getElementById('downloadBtn').addEventListener('click', function(){ this.textContent = 'Saved ✓'; });
+if (window.WVKeepsake) WVKeepsake.bind('downloadBtn', TO);
 
 fillProgress(screens[2]);
