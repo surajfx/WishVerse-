@@ -12,3 +12,15 @@ try {
     }
   }
 } catch {}
+
+// Lifetime link: once the visitor is logged in, tell the server which creator sent them (first creator wins).
+(async () => {
+  try {
+    const r = JSON.parse(localStorage.getItem(KEY)); if (!r || !r.u || Date.now() - r.t > 30 * DAY) return;
+    if (localStorage.getItem("wv-ref-claimed") === r.u) return;
+    const { waitForUser, call } = await import("./payments.js");
+    const user = await waitForUser(); if (!user) return;
+    await call("claimRef", { ref: r.u });
+    localStorage.setItem("wv-ref-claimed", r.u);
+  } catch {}
+})();

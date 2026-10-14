@@ -84,7 +84,7 @@ export function payWithPopup(o) {
       box.innerHTML = `<button class="pm-x" aria-label="Close">×</button>
         <div class="pm-ico">${esc(o.icon || "✨")}</div><h3>${esc(o.name)}</h3>
         <div class="pm-price">${esc(o.price)}<small>one-time</small></div>
-        <ul class="pm-list">${(o.perks || ["Unlocks instantly after payment", "7 creations for each unlocked card", "Pay with UPI, cards, netbanking or wallets"]).map((p) => `<li><i>✓</i>${esc(p)}</li>`).join("")}</ul>
+        <ul class="pm-list">${(o.perks || ["Unlocks instantly after payment", "Several creations for each unlocked card", "Pay with UPI, cards, netbanking or wallets"]).map((p) => `<li><i>✓</i>${esc(p)}</li>`).join("")}</ul>
         ${note ? `<div class="pm-note">${esc(note)}</div>` : ""}
         <button class="pm-btn" id="pmGo" style="margin-top:14px">Pay ${esc(o.price)} securely</button>
         <button class="pm-btn ghost" id="pmNo">Not now</button>

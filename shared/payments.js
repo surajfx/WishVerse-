@@ -40,7 +40,15 @@ export const waitForUser = () => new Promise((res) => {
 });
 export const logout = () => signOut(auth);
 
-export const DEFAULT_PRICING = { single: { amount: 3500, old: 29900 }, all: { amount: 9900, old: 99900 } };
+export const DEFAULT_PRICING = { single: { amount: 3500, old: 29900 }, all: { amount: 9900, old: 99900 }, cards: {}, usesPerCard: 7 };
+// Price / free / bundle settings of one card (admin can set them per card).
+export function cardPrice(pr, id) {
+  pr = pr || DEFAULT_PRICING;
+  const c = (pr.cards && pr.cards[id]) || {};
+  const own = Number.isInteger(c.amount);
+  const single = pr.single || DEFAULT_PRICING.single;
+  return { amount: own ? c.amount : single.amount, old: own ? (c.old || 0) : (single.old || 0), free: !!c.free, bonus: Array.isArray(c.bonus) ? c.bonus : [] };
+}
 export const inr = (paise) => "₹" + (paise / 100).toLocaleString("en-IN", { maximumFractionDigits: 2 });
 export const offPct = (a, o) => (o > a ? Math.round((1 - a / o) * 100) : 0);
 // Calls cb(prices) right away with cached/default prices, then again with the live ones.
