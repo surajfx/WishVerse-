@@ -1,0 +1,1060 @@
+/* ==========================================================
+   SORRY EXPERIENCE — DESIGN SYSTEM & SCREEN STYLES
+   ========================================================== */
+:root {
+  --bg-loading: #05030D;
+  --bg-dark-navy: #080A12;
+  --bg-charcoal: #12121D;
+  --bg-plum-start: #100811;
+  --bg-plum-end: #1B0B19;
+  --bg-envelope-start: #080706;
+  --bg-envelope-end: #17100D;
+  --bg-letter: #090807;
+
+  --primary-pink: #E91E63;
+  --coral: #FF7A65;
+  --heart-pink: #D92369;
+  --muted-gold: #D7A66C;
+  --healing-glow: #FF73B5;
+
+  --letter-paper: #F5EBDD;
+  --keepsake-paper: #F6F1E5;
+  --text-on-dark: #E6DCE7;
+  --text-on-paper: #5E554D;
+
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
+  --font-handwritten: 'Caveat', cursive;
+  --font-script: 'Great Vibes', cursive;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
+  font-family: var(--font-sans);
+  color: var(--text-on-dark);
+  background-color: var(--bg-dark-navy);
+  transition: background 0.8s ease;
+}
+
+/* Screen-Specific Body Backgrounds */
+body[data-screen="1"] { background: var(--bg-loading); }
+body[data-screen="2"] { background: linear-gradient(160deg, #080A12 0%, #12121D 100%); }
+body[data-screen="3"] { background: radial-gradient(circle at center, #17100D 0%, #080706 100%); }
+body[data-screen="4"],
+body[data-screen="5"] { background: var(--bg-letter); }
+body[data-screen="6"],
+body[data-screen="7"] { background: linear-gradient(160deg, #080A12 0%, #14121E 100%); }
+body[data-screen="8"],
+body[data-screen="9"],
+body[data-screen="10"] { background: linear-gradient(160deg, var(--bg-plum-start) 0%, var(--bg-plum-end) 100%); }
+body[data-screen="11"] { background: linear-gradient(180deg, #080D1B 0%, #11182A 100%); }
+body[data-screen="12"] { background: radial-gradient(circle at center, #4A2609 0%, #170D05 100%); }
+body[data-screen="13"] { background: #080A12; }
+
+/* Rain Canvas */
+#rainCanvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+body[data-screen="2"] #rainCanvas,
+body[data-screen="6"] #rainCanvas {
+  opacity: 1;
+}
+body[data-screen="7"] #rainCanvas {
+  opacity: 0.35;
+}
+
+/* Music Toggle Button */
+.music-toggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 50;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 15px;
+  border-radius: 999px;
+  background: rgba(18, 18, 29, 0.75);
+  border: 1px solid rgba(230, 220, 231, 0.2);
+  color: var(--text-on-dark);
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.music-toggle:hover,
+.music-toggle:focus-visible {
+  border-color: var(--primary-pink);
+  box-shadow: 0 0 14px rgba(233, 30, 99, 0.35);
+  outline: none;
+}
+.hidden {
+  display: none !important;
+}
+
+/* Main Experience Layout */
+.experience-container {
+  position: relative;
+  z-index: 5;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+}
+
+.screen {
+  display: none;
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.65s ease, transform 0.65s ease;
+}
+.screen.active {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.content-box {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.center-stack {
+  gap: 20px;
+}
+
+/* ==========================================
+   SCREEN 01 — LOADING
+   ========================================== */
+.loader-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+.progress-ring-container {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.progress-ring {
+  transform: rotate(-90deg);
+}
+.progress-ring-bg {
+  fill: none;
+  stroke: rgba(98, 90, 112, 0.25);
+  stroke-width: 6;
+}
+.progress-ring-fill {
+  fill: none;
+  stroke: #A855F7;
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-dasharray: 314.16;
+  stroke-dashoffset: 314.16;
+  filter: drop-shadow(0 0 8px #6D28D9);
+  transition: stroke-dashoffset 0.15s linear;
+}
+.progress-glow {
+  position: absolute;
+  width: 85px;
+  height: 85px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(109, 40, 217, 0.38) 0%, transparent 70%);
+  animation: pulseGlow 2.4s infinite ease-in-out;
+}
+.progress-percent {
+  position: absolute;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #D9D2E5;
+}
+.loading-title {
+  font-size: 0.98rem;
+  font-weight: 500;
+  color: #D9D2E5;
+  letter-spacing: 0.02em;
+}
+.brand-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.25em;
+  color: #625A70;
+  text-transform: uppercase;
+}
+.watermark {
+  position: fixed;
+  bottom: 18px;
+  font-size: 0.72rem;
+  color: #625A70;
+  opacity: 0.65;
+  letter-spacing: 0.08em;
+}
+
+/* ==========================================
+   SCREEN 02 — SOMEONE HAS SOMETHING TO SAY
+   ========================================== */
+.intro-heart-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+.heart-aura {
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(229, 46, 119, 0.35) 0%, transparent 70%);
+  animation: pulseGlow 2.8s infinite ease-in-out;
+}
+.broken-heart-svg {
+  position: relative;
+  z-index: 2;
+  filter: drop-shadow(0 0 18px rgba(229, 46, 119, 0.45));
+  animation: floatSlow 3.5s infinite ease-in-out;
+}
+.serif-heading-lg {
+  font-family: var(--font-serif);
+  font-size: clamp(1.85rem, 5vw, 2.45rem);
+  font-weight: 700;
+  color: #F5F0F5;
+  line-height: 1.2;
+}
+.supporting-text {
+  font-size: 0.98rem;
+  line-height: 1.6;
+  color: #A7A5B5;
+  max-width: 360px;
+}
+.supporting-text span {
+  color: #F5F0F5;
+  font-weight: 600;
+}
+
+.btn-primary-gradient {
+  margin-top: 10px;
+  padding: 14px 36px;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #E91E63 0%, #FF7A65 100%);
+  color: #FFFFFF;
+  font-family: var(--font-sans);
+  font-size: 0.98rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  box-shadow: 0 8px 25px rgba(233, 30, 99, 0.4);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.btn-primary-gradient:hover,
+.btn-primary-gradient:focus-visible {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 12px 30px rgba(255, 122, 101, 0.55);
+  outline: none;
+}
+
+/* ==========================================
+   SCREEN 03 — SEALED APOLOGY ENVELOPE
+   ========================================== */
+.gold-section-heading {
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #D7A66C;
+  margin-bottom: 12px;
+}
+.envelope-stage {
+  cursor: pointer;
+  perspective: 1000px;
+  padding: 20px 0;
+  outline: none;
+}
+.envelope-wrapper {
+  position: relative;
+  width: min(330px, 86vw);
+  height: 220px;
+  background: #D8C4A3;
+  border-radius: 8px;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.65), 0 0 0 1px #8C765E;
+  transition: transform 0.4s ease;
+}
+.envelope-stage:hover .envelope-wrapper,
+.envelope-stage:focus-visible .envelope-wrapper {
+  transform: translateY(-4px) scale(1.02);
+}
+.envelope-back {
+  position: absolute;
+  inset: 0;
+  background: #CBB594;
+  border-radius: 8px;
+}
+.envelope-letter-preview {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  top: 16px;
+  height: 160px;
+  background: #F5EBDD;
+  border-radius: 4px;
+  padding: 18px;
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: #8A6658;
+  font-size: 1.05rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  transition: transform 0.6s ease;
+}
+.envelope-front {
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #D8C4A3 48%, #CEB997 50%);
+  clip-path: polygon(0 0, 50% 52%, 100% 0, 100% 100%, 0 100%);
+  z-index: 3;
+}
+.envelope-flap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 125px;
+  background: #CBB594;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  transform-origin: top center;
+  transition: transform 0.65s ease;
+  z-index: 4;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  box-shadow: 0 4px 10px rgba(140, 118, 94, 0.35);
+}
+.envelope-wrapper.opening .envelope-flap {
+  transform: rotateX(180deg);
+  z-index: 1;
+}
+.envelope-wrapper.opening .envelope-letter-preview {
+  transform: translateY(-55px);
+}
+.envelope-seal {
+  position: absolute;
+  top: 52%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #8C174C;
+  color: #F5EBDD;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.35);
+  z-index: 5;
+  transition: opacity 0.35s ease;
+}
+.envelope-wrapper.opening .envelope-seal {
+  opacity: 0;
+}
+.envelope-instruction {
+  position: absolute;
+  bottom: 18px;
+  width: 100%;
+  text-align: center;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 0.95rem;
+  color: #8D806E;
+  z-index: 6;
+}
+
+/* ==========================================
+   SCREEN 04 & 05 — SINCERE APOLOGY LETTER
+   ========================================== */
+.letter-screen-stack {
+  gap: 16px;
+}
+.letter-paper {
+  width: 100%;
+  max-width: 440px;
+  background-color: var(--letter-paper);
+  border: 1px solid #C9B59C;
+  border-radius: 6px;
+  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.75);
+  padding: 28px 24px 24px;
+  text-align: left;
+  position: relative;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 29px,
+    #D8C7B5 30px
+  );
+  animation: letterSlideUp 0.75s ease forwards;
+}
+.letter-inner {
+  position: relative;
+  z-index: 2;
+}
+.letter-greeting {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 600;
+  font-size: 1.35rem;
+  color: #8A6658;
+  margin-bottom: 14px;
+}
+.letter-body {
+  font-family: var(--font-handwritten);
+  font-size: 1.28rem;
+  line-height: 30px;
+  color: #6B5147;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.letter-line {
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.letter-line.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+.letter-signature {
+  font-family: var(--font-script);
+  font-size: 1.9rem;
+  color: #C18B49;
+  text-align: right;
+  margin-top: 16px;
+  margin-bottom: 10px;
+}
+.letter-polaroids {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+  padding-top: 8px;
+}
+.mini-polaroid {
+  width: 118px;
+  background: #FAF7F0;
+  padding: 7px 7px 20px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
+  border: 1px solid #E5DEC9;
+  transition: transform 0.3s ease;
+}
+.mini-polaroid.polaroid-left {
+  transform: rotate(-6deg) translateX(10px);
+}
+.mini-polaroid.polaroid-right {
+  transform: rotate(5deg) translateX(-10px);
+}
+.mini-photo-box {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: #DDD;
+}
+.mini-photo-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.letter-continue-wrap {
+  opacity: 0;
+  transform: scale(0.92);
+  pointer-events: none;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.letter-continue-wrap.visible {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+
+/* ==========================================
+   SCREEN 06 & 07 — HEAL THE HEART
+   ========================================== */
+.upper-sans-heading {
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #E6DCE7;
+}
+.heal-instruction {
+  font-size: 0.92rem;
+  font-style: italic;
+  color: #A7A5B5;
+}
+.heart-repair-stage {
+  position: relative;
+  width: 260px;
+  height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 10px 0;
+}
+.repair-heart-glow {
+  position: absolute;
+  width: 190px;
+  height: 190px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(217, 35, 105, 0.35) 0%, transparent 70%);
+  transition: transform 0.6s ease, background 0.6s ease;
+}
+.repair-heart-glow.restored {
+  transform: scale(1.25);
+  background: radial-gradient(circle, rgba(255, 78, 154, 0.65) 0%, transparent 72%);
+}
+.repair-heart-svg {
+  position: relative;
+  z-index: 2;
+  filter: drop-shadow(0 0 20px rgba(217, 35, 105, 0.45));
+  transition: filter 0.6s ease, transform 0.6s ease;
+}
+.repair-heart-svg.restored {
+  filter: drop-shadow(0 0 32px #FF4E9A);
+  transform: scale(1.05);
+}
+.heart-crack {
+  fill: none;
+  stroke: #2B0619;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 90;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 0.65s ease, opacity 0.65s ease;
+}
+.heart-crack.healed {
+  stroke-dashoffset: 90;
+  opacity: 0;
+}
+.repair-particle {
+  position: absolute;
+  z-index: 5;
+  width: 30px;
+  height: 30px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 2px solid #FFFFFF;
+  background: radial-gradient(circle, #FFFFFF 15%, #FF73B5 60%, rgba(255, 115, 181, 0) 100%);
+  box-shadow: 0 0 16px #FF73B5, 0 0 28px #F32673;
+  cursor: pointer;
+  animation: particlePulse 1.6s infinite ease-in-out;
+  transition: transform 0.35s ease, opacity 0.35s ease;
+}
+.repair-particle:hover,
+.repair-particle:focus-visible {
+  transform: translate(-50%, -50%) scale(1.25);
+  outline: none;
+}
+.repair-particle.healed {
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+  pointer-events: none;
+}
+.heart-restored-badge {
+  position: absolute;
+  z-index: 6;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.55rem;
+  font-weight: 600;
+  color: #F4E9F2;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.7);
+  opacity: 0;
+  transform: scale(0.85);
+  pointer-events: none;
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.heart-restored-badge.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+.heal-progress-wrap {
+  width: 100%;
+  max-width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.heal-progress-track {
+  width: 100%;
+  height: 10px;
+  background: #282536;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.heal-progress-bar {
+  width: 0%;
+  height: 100%;
+  background: #F32673;
+  border-radius: 999px;
+  transition: width 0.45s ease, background 0.45s ease;
+}
+.heal-progress-bar.completed {
+  background: linear-gradient(90deg, #FF6A8F 0%, #FF8B5A 100%);
+}
+.heal-counter {
+  font-size: 0.85rem;
+  color: #E6DCE7;
+}
+
+/* ==========================================
+   SCREEN 08, 09, 10 — MEMORY LANE
+   ========================================== */
+.memory-heading {
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: #D4A15D;
+}
+.memory-subtitle {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.2rem;
+  color: #E6DCE7;
+  margin-top: -8px;
+}
+.polaroid-stage {
+  margin: 8px 0;
+}
+.main-polaroid {
+  width: min(300px, 82vw);
+  background: #F6F1E8;
+  padding: 14px 14px 26px;
+  border-radius: 4px;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.65);
+  transform: rotate(-2deg);
+  cursor: pointer;
+  transition: transform 0.45s ease, opacity 0.35s ease;
+  outline: none;
+}
+.main-polaroid.switching {
+  opacity: 0;
+  transform: rotate(4deg) scale(0.94);
+}
+.polaroid-photo-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: #222;
+}
+.polaroid-photo-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: filter 0.85s ease, transform 0.6s ease;
+}
+.grayscale-photo {
+  filter: grayscale(100%) contrast(1.05);
+}
+.color-revealed {
+  filter: grayscale(0%) contrast(1);
+}
+.color-reveal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(16, 8, 17, 0.42);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.5s ease;
+}
+.color-reveal-overlay span {
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgba(16, 8, 17, 0.78);
+  color: #F6F1E8;
+  font-size: 0.8rem;
+  letter-spacing: 0.03em;
+  border: 1px solid rgba(246, 241, 232, 0.3);
+}
+.color-reveal-overlay.hidden-overlay {
+  opacity: 0;
+  pointer-events: none;
+}
+.polaroid-caption {
+  font-family: var(--font-handwritten);
+  font-size: 1.55rem;
+  color: #5E554D;
+  margin-top: 14px;
+}
+.memory-controls {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-top: 6px;
+}
+.mem-nav-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid rgba(230, 220, 231, 0.18);
+  background: #241723;
+  color: #F6F1E8;
+  font-size: 1.35rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.25s ease, opacity 0.25s ease;
+}
+.mem-nav-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.mem-nav-btn:not(:disabled):hover {
+  background: #362235;
+}
+.memory-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.pagination-dots {
+  display: flex;
+  gap: 8px;
+}
+.pagination-dots .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(230, 220, 231, 0.28);
+  transition: background 0.3s ease, transform 0.3s ease;
+}
+.pagination-dots .dot.active {
+  background: #F04486;
+  transform: scale(1.25);
+}
+.memory-counter {
+  font-size: 0.78rem;
+  color: #A7A5B5;
+}
+
+/* ==========================================
+   SCREEN 11 — A GARDEN AWAITS YOUR GRACE
+   ========================================== */
+.grace-panel {
+  width: 100%;
+  max-width: 380px;
+  background: #151B2A;
+  border: 1px solid #252B3B;
+  border-radius: 20px;
+  padding: 42px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+}
+.dove-icon-wrap {
+  animation: floatSlow 3.4s infinite ease-in-out;
+}
+.grace-message {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.45rem;
+  color: #B8B7C8;
+}
+.btn-forgive {
+  width: 100%;
+  padding: 15px 28px;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #FF765B 0%, #E91E63 100%);
+  color: #FFFFFF;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 26px rgba(233, 30, 99, 0.4);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.btn-forgive:hover,
+.btn-forgive:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(255, 118, 91, 0.55);
+  outline: none;
+}
+.btn-need-time {
+  background: transparent;
+  border: none;
+  color: #8890A6;
+  font-size: 0.84rem;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+.time-respect-note {
+  font-size: 0.86rem;
+  line-height: 1.55;
+  color: #B8B7C8;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 12px 14px;
+  border-radius: 10px;
+}
+
+/* ==========================================
+   SCREEN 12 — A NEW BEGINNING BLOOMS
+   ========================================== */
+.golden-radial-glow {
+  position: fixed;
+  width: 360px;
+  height: 360px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(141, 85, 23, 0.45) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 1;
+}
+.bloom-glass-panel {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  max-width: 400px;
+  background: rgba(72, 43, 17, 0.55);
+  border: 1px solid #65451F;
+  border-radius: 22px;
+  padding: 34px 26px;
+  backdrop-filter: blur(12px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+.bloom-doves {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 12px;
+  font-size: 1.35rem;
+}
+.floating-dove {
+  animation: floatSlow 3.2s infinite ease-in-out;
+}
+.sunrise-illustration svg {
+  border-radius: 18px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+}
+.bloom-thank-you {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 2rem;
+  color: #F6F2E8;
+}
+.bloom-subtext {
+  font-size: 1rem;
+  color: #F7B74B;
+}
+.bloom-flowers-row {
+  display: flex;
+  gap: 12px;
+  font-size: 1.15rem;
+}
+.btn-keepsake-next {
+  margin-top: 8px;
+  padding: 12px 26px;
+  border-radius: 999px;
+  border: 1px solid #F7B74B;
+  background: rgba(247, 183, 75, 0.16);
+  color: #F6F2E8;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.25s ease;
+}
+.btn-keepsake-next:hover {
+  background: rgba(247, 183, 75, 0.3);
+}
+
+/* ==========================================
+   SCREEN 13 — FINAL SINCERE APOLOGY KEEPSAKE
+   ========================================== */
+.keepsake-screen-stack {
+  gap: 20px;
+}
+.keepsake-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--keepsake-paper);
+  border: 2px solid #B7C6B0;
+  border-radius: 18px;
+  padding: 30px 24px;
+  color: var(--text-on-paper);
+  box-shadow: 0 20px 55px rgba(0, 0, 0, 0.7), 0 0 24px rgba(183, 198, 176, 0.15);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+.keepsake-upper-title {
+  font-family: var(--font-serif);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  color: #63795C;
+  text-transform: uppercase;
+}
+.keepsake-script-title {
+  font-family: var(--font-script);
+  font-size: 2.5rem;
+  font-weight: 400;
+  color: #64775A;
+  margin: 2px 0;
+}
+.keepsake-subtitle {
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  color: #88977D;
+  text-transform: uppercase;
+}
+.keepsake-collage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 8px 0;
+  height: 125px;
+}
+.collage-polaroid {
+  width: 96px;
+  background: #FFFFFF;
+  padding: 5px 5px 16px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.16);
+  border: 1px solid #E2DEC9;
+}
+.collage-polaroid img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+}
+.c-pol-1 { transform: rotate(-8deg) translateX(14px); z-index: 1; }
+.c-pol-2 { transform: rotate(2deg) translateY(-4px); z-index: 3; }
+.c-pol-3 { transform: rotate(9deg) translateX(-14px); z-index: 2; }
+
+.keepsake-body {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.08rem;
+  line-height: 1.55;
+  color: #5E554D;
+  max-width: 340px;
+}
+.keepsake-signature {
+  font-family: var(--font-script);
+  font-size: 1.85rem;
+  color: #758A6B;
+}
+.keepsake-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  width: 100%;
+}
+.btn-download-keepsake {
+  padding: 13px 26px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(135deg, #F5CC62 0%, #EAB84B 100%);
+  color: #1F190E;
+  font-family: var(--font-sans);
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 22px rgba(234, 184, 75, 0.35);
+  transition: transform 0.2s ease;
+}
+.btn-download-keepsake:hover {
+  transform: translateY(-2px);
+}
+.btn-watch-again {
+  padding: 13px 24px;
+  border-radius: 999px;
+  background: #15151B;
+  border: 1px solid #34343B;
+  color: #E6DCE7;
+  font-family: var(--font-sans);
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+.btn-watch-again:hover {
+  border-color: #88977D;
+}
+
+/* ==========================================
+   KEYFRAME ANIMATIONS & REDUCED MOTION
+   ========================================== */
+@keyframes pulseGlow {
+  0%, 100% { transform: scale(1); opacity: 0.75; }
+  50% { transform: scale(1.12); opacity: 1; }
+}
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+@keyframes particlePulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.22); }
+}
+@keyframes letterSlideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
