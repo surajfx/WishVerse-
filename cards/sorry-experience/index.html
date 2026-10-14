@@ -1,1 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Sincere Apology</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Cormorant+Garamond:ital@0;1&family=Great+Vibes&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
 
+<div class="rain" id="rain"></div>
+<div class="sound-toggle">♪</div>
+
+<!-- 1: Loading -->
+<div class="screen" id="screen1">
+  <div></div>
+  <div><div class="loader-ring"></div><div class="loading-text">Preparing Your Masterpiece… <span id="loadPct">0%</span></div><div class="loading-brand">WishVerse Studio</div></div>
+  <div></div>
+</div>
+
+<!-- 2: Someone has something to say -->
+<div class="screen hidden" id="screen2">
+  <div></div>
+  <div>
+    <div class="broken-heart">💔</div>
+    <div class="say-heading">Someone has something to say…</div>
+    <p class="say-sub" id="saySub">Hey ___, a heartfelt message from ___ awaits you.</p>
+  </div>
+  <button class="cta-btn" id="openLetterBtn">Open the Letter</button>
+</div>
+
+<!-- 3: Envelope -->
+<div class="screen hidden" id="screen3">
+  <div class="label-up h-gold">A Sincere Apology ✉</div>
+  <div>
+    <div class="envelope-wrap" id="envelopeWrap"><div class="envelope-body"></div><div class="envelope-flap"></div></div>
+    <div class="env-hint">Tap to open</div>
+  </div>
+  <div></div>
+</div>
+
+<!-- 4: Letter -->
+<div class="screen hidden" id="screen4">
+  <div class="label-up h-gold">A Sincere Apology</div>
+  <div class="paper" id="paper">
+    <div class="greeting" id="greeting">Dear ___,</div>
+    <div class="letter-body" id="letterBody"></div>
+    <div class="letter-sig" id="letterSig">— Someone</div>
+    <div class="mini-polas">
+      <div class="mini-pola a"><div class="ph" id="miniA"></div></div>
+      <div class="mini-pola b"><div class="ph" id="miniB"></div></div>
+    </div>
+  </div>
+  <button class="cta-btn hidden-btn" id="continueLetterBtn" style="margin-top:16px;">Continue</button>
+</div>
+
+<!-- 5: Heal the heart -->
+<div class="screen hidden" id="screen5">
+  <div>
+    <div class="label-up" style="color:#E6DCE7;">Heal The Heart 💗</div>
+    <p class="italic-sub" style="margin-top:8px;">Tap each glowing particle to mend the cracks…</p>
+  </div>
+  <div>
+    <div class="heal-heart" id="healHeart">
+      <svg viewBox="0 0 200 180">
+        <path class="heart-body" d="M100 170 C 20 110, 10 50, 55 30 C 80 18, 100 35, 100 48 C 100 35, 120 18, 145 30 C 190 50, 180 110, 100 170 Z"/>
+        <path class="crack" id="crack1" d="M100 48 L92 70 L104 88"/>
+        <path class="crack" id="crack2" d="M60 45 L72 66 L62 84"/>
+        <path class="crack" id="crack3" d="M140 45 L130 66 L142 82"/>
+        <path class="crack" id="crack4" d="M104 88 L96 112 L108 130"/>
+        <path class="crack" id="crack5" d="M45 80 L64 98 L56 116"/>
+        <path class="crack" id="crack6" d="M155 80 L138 100 L146 118"/>
+      </svg>
+    </div>
+    <div class="heal-progress"><div class="heal-fill" id="healFill"></div></div>
+    <div class="heal-count" id="healCount">0 / 6 cracks healed</div>
+  </div>
+  <div class="restored" id="restoredMsg">Heart restored! 💗</div>
+</div>
+
+<!-- 6: Memory lane -->
+<div class="screen hidden" id="screen6">
+  <div>
+    <div class="label-up h-gold">Memory Lane</div>
+    <p class="italic-sub" style="margin-top:6px;">This is what I'm fighting for 🌸</p>
+  </div>
+  <div>
+    <div class="pola" id="pola">
+      <div class="photo" id="memPhoto"><div class="tap-note">Tap to reveal in color</div></div>
+      <div class="cap" id="memCap">Memory 1</div>
+    </div>
+    <div class="mem-nav">
+      <button class="nav-btn" id="prevBtn">‹</button>
+      <div class="dots" id="memDots"></div>
+      <button class="nav-btn" id="nextBtn">›</button>
+    </div>
+    <div class="mem-counter" id="memCounter">1 / 3</div>
+  </div>
+  <button class="cta-btn hidden-btn" id="gardenBtn">The Garden Awaits 🌸</button>
+</div>
+
+<!-- 7: Forgive -->
+<div class="screen hidden" id="screen7" style="background:linear-gradient(#080D1B,#11182A);">
+  <div></div>
+  <div class="grace-panel">
+    <span class="dove">🕊️</span>
+    <p class="grace-text">A garden awaits your grace…</p>
+    <button class="cta-btn" id="forgiveBtn" style="width:100%;">I Forgive You 🌸</button>
+  </div>
+  <div></div>
+</div>
+
+<!-- 8: New beginning -->
+<div class="screen hidden" id="screen8">
+  <div class="sunrise-bg"></div>
+  <span class="float-dove" style="left:10%; top:14%;">🕊️</span>
+  <span class="float-dove" style="right:10%; top:22%; animation-delay:1.2s;">🕊️</span>
+  <div></div>
+  <div class="glass-panel">
+    <div class="illus"><div class="sun"></div><div class="hill"></div></div>
+    <div class="thanks" id="thanksLine">Thank you.</div>
+    <div class="bloom">A new beginning blooms. 🌸</div>
+    <div class="flowers">🌸 🌷 🌸</div>
+  </div>
+  <button class="cta-btn hidden-btn" id="toKeepsakeBtn" style="position:relative; z-index:2;">See the Keepsake</button>
+</div>
+
+<!-- 9: Keepsake -->
+<div class="screen hidden" id="screen9">
+  <div class="keep-card">
+    <div class="keep-head">Sincere Apology</div>
+    <div class="keep-to" id="keepTo">To ___</div>
+    <div class="keep-sub">Sincere thoughts and healing hopes</div>
+    <div class="collage">
+      <div class="piece p1"><div class="ph"></div></div>
+      <div class="piece p2"><div class="ph"></div></div>
+    </div>
+    <p class="keep-msg" id="keepMsg">I'm sorry, and I'm ready to do better. 💗</p>
+    <div class="keep-sig" id="keepSig">with love, Someone</div>
+  </div>
+  <div class="final-buttons">
+    <button class="keepsake-btn primary" id="downloadBtn">⇩ Download Keepsake</button>
+    <button class="keepsake-btn ghost" id="replayBtn">↻ Watch Again</button>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
