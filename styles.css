@@ -345,3 +345,18 @@ body{min-height:100vh;background-repeat:no-repeat}
 /* share buttons after creating a wish */
 .share-actions{display:flex;gap:10px;margin:12px 0;flex-wrap:wrap}
 .share-actions .btn{flex:1 1 140px;text-align:center;text-decoration:none}
+
+/* Create Wish popup */
+body.modal-lock{overflow:hidden}
+.pick-panel{padding:30px 22px 24px;width:min(680px,100%)}
+.pick-panel h2{font-family:var(--font-head);font-size:28px;margin:0 0 6px;color:var(--text)}
+.pick-sub{color:var(--muted);margin:0 0 18px}
+.pick-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media(min-width:620px){.pick-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.pick-card{display:flex;flex-direction:column;justify-content:flex-end;gap:2px;min-height:128px;border-radius:20px;padding:14px;color:#fff;text-decoration:none;position:relative;overflow:hidden;transition:transform .15s}
+.pick-card:active{transform:scale(.97)}
+.pick-ic{font-size:34px;position:absolute;top:12px;right:14px;filter:drop-shadow(0 4px 10px rgba(0,0,0,.3))}
+.pick-card strong{font-size:16px;line-height:1.2;text-shadow:0 2px 8px rgba(0,0,0,.35)}
+.pick-card small{opacity:.85;font-weight:600}
+
+#pickModal{z-index:300}

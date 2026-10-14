@@ -52,6 +52,7 @@
       <button class="tab" data-t="plan99">Paid buyers</button>
       <button class="tab" data-t="users">Users</button>
       <button class="tab" data-t="pricing">Pricing</button>
+      <button class="tab" data-t="cardcfg">🃏 Cards: price / free / bundle</button>
       <button class="tab" data-t="grant">Give free plan</button>
       <button id="adminsTab" class="tab hidden" data-t="admins">Admins</button>
       <button id="creatorsTab" class="tab hidden" data-t="creators">🎬 Creators<span id="crBadge" class="badge hidden"></span></button>
@@ -169,6 +170,7 @@ function render() {
   if (tab === "users") return usersView(v);
   if (tab === "security") return securityView(v);
   if (tab === "pricing") return pricingView(v);
+  if (tab === "cardcfg") return cardCfgView(v);
   if (tab === "grant") return grantView(v);
   if (tab === "admins") return adminsView(v);
   if (tab === "creators") return creatorsView(v);
@@ -278,6 +280,31 @@ function pricingView(v) {
     const d = { single: $("#ps").value, singleOld: $("#pso").value, all: $("#pa").value, allOld: $("#pao").value };
     if (await guard(() => call("adminSetPricing", d))) refresh();
   };
+}
+
+function cardCfgView(v) {
+  const p = prices || DEFAULT_PRICING, cfgs = p.cards || {};
+  const r = (x) => x ? x / 100 : "";
+  v.innerHTML = `<h3 class="h" style="margin-top:0">Cards: price, free and bundles</h3>
+  <p class="muted">Leave <b>Price</b> empty to use the One Card price (₹${r(p.single.amount)}). <b>Free</b> makes the card free for every logged-in user. <b>Bundle</b>: people who buy this card also get the ticked cards free. Changes apply instantly.</p>
+  <div class="form" style="max-width:520px;margin-bottom:18px"><b>Creations allowed per card</b>
+    <div class="row"><label>Per user, per card<input id="usesN" type="number" min="1" max="100" value="${p.usesPerCard || 7}"></label></div>
+    <button class="btn btn-primary" id="saveUses">Save</button></div>
+  ${cards.map(c => { const x = cfgs[c.id] || {}; return `<div class="form" style="margin-bottom:14px" data-card="${c.id}">
+    <b>${c.icon} ${esc(c.title)} ${x.free ? '<span class="pill pending">FREE</span>' : ""}${x.amount ? ` <span class="pill">₹${x.amount / 100}</span>` : ""}${(x.bonus || []).length ? ` <span class="pill">+${x.bonus.length} bundle</span>` : ""}</b>
+    <div class="row"><label>Price ₹<input data-f="price" type="number" min="1" step="0.5" placeholder="${r(p.single.amount)}" value="${x.amount ? x.amount / 100 : ""}"></label>
+    <label>Old price ₹ (crossed out)<input data-f="old" type="number" min="0" value="${x.old ? x.old / 100 : ""}"></label></div>
+    <label style="display:flex;gap:10px;align-items:center"><input data-f="free" type="checkbox" style="width:auto" ${x.free ? "checked" : ""}> Free for everyone</label>
+    <details><summary class="muted" style="cursor:pointer">🎁 Bundle: also give these cards free (${(x.bonus || []).length} chosen)</summary>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">${cards.filter(o => o.id !== c.id).map(o => `<label style="display:flex;gap:6px;align-items:center;border:1px solid var(--border);border-radius:99px;padding:6px 12px;font-size:13px"><input data-b="${o.id}" type="checkbox" style="width:auto" ${(x.bonus || []).includes(o.id) ? "checked" : ""}>${esc(o.title)}</label>`).join("")}</div></details>
+    <button class="btn btn-primary" data-savecard="${c.id}">Save ${esc(c.title)}</button></div>`; }).join("")}`;
+  $("#saveUses").onclick = async () => { if (await guard(() => call("adminSetUses", { usesPerCard: $("#usesN").value }))) refresh(); };
+  v.querySelectorAll("[data-savecard]").forEach(b => b.onclick = async () => {
+    const box = v.querySelector(`[data-card="${b.dataset.savecard}"]`);
+    const d = { cardId: b.dataset.savecard, price: box.querySelector('[data-f="price"]').value, old: box.querySelector('[data-f="old"]').value,
+      free: box.querySelector('[data-f="free"]').checked, bonus: [...box.querySelectorAll("[data-b]:checked")].map(i => i.dataset.b) };
+    if (await guard(() => call("adminSetCardConfig", d))) refresh();
+  });
 }
 
 function grantView(v) {

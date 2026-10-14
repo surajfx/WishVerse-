@@ -79,17 +79,26 @@
 
 <script type="module">
 import { cards } from "./cards/index.js";
-import { auth, waitForUser, call, loadPricing, inr, offPct } from "./shared/payments.js";
+import { auth, waitForUser, call, loadPricing, inr, offPct, cardPrice } from "./shared/payments.js";
+import { mountDesignSlider } from "./shared/design-slider.js";
+import { designsFor } from "./cards/designs.js";
 import { payWithPopup } from "./shared/pay-modal.js";
 let PR = null;
 function applyPricing(pr) {
   PR = pr;
+  const cfg = cardPrice(pr, id);
+  const vals = { single: [cfg.amount, cfg.old], all: [pr.all.amount, pr.all.old] };
   ["single", "all"].forEach(k => {
-    const a = pr[k].amount, o = pr[k].old, off = offPct(a, o);
+    const [a, o] = vals[k], off = offPct(a, o);
     document.querySelectorAll(`[data-new="${k}"]`).forEach(e => e.textContent = inr(a));
     document.querySelectorAll(`[data-old="${k}"]`).forEach(e => e.textContent = off ? inr(o) : "");
     document.querySelectorAll(`[data-off="${k}"]`).forEach(e => { e.textContent = off ? off + "% OFF" : ""; e.style.display = off ? "" : "none"; });
   });
+  document.querySelectorAll("[data-uses]").forEach(e => e.textContent = pr.usesPerCard || 7);
+  const names = (cfg.bonus || []).map(b => (cards.find(c => c.id === b) || {}).title).filter(Boolean);
+  const bn = document.getElementById("bonusNote");
+  if (bn) bn.innerHTML = names.length ? `<p class="secure" style="margin:10px 0 0;color:#12a56a">🎁 Buy this card and get <b>${names.map(esc).join(", ")}</b> free too.</p>` : "";
+  if (typeof paint === "function") paint();
 }
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const id = new URLSearchParams(location.search).get("id");
@@ -103,6 +112,8 @@ function render() {
   page.innerHTML = `
   <div class="hero ${card.art}"><div class="ic">${card.icon}</div><h2>${esc(card.finalTitle)}</h2><p>${esc(card.openIntro)}</p></div>
 
+  <div class="box" id="dzBox"><p class="eyebrow">Choose a design</p><div id="dz"></div></div>
+
   <div class="box">
     <span class="pill">${card.icon} ${esc(card.category.toUpperCase())}</span>
     <h1 class="t">${esc(card.title)} ${card.icon}</h1>
@@ -111,13 +122,14 @@ function render() {
     <div id="buy">
       <div class="price"><b data-new="single">₹35</b><s data-old="single"></s><span class="off" data-off="single"></span></div>
       <p class="secure" style="margin:6px 0 0">for this card · or all cards for <b data-new="all">₹99</b></p>
+      <div id="bonusNote"></div>
     </div>
     <hr>
     <p class="eyebrow">What you get</p>
     <ul class="ck">
       <li>Animated step-by-step wish experience</li>
       <li>Your names, message &amp; photos</li>
-      <li>Up to 7 creations for this card</li>
+      <li>Up to <span data-uses>7</span> creations for this card</li>
       <li>Magic shareable link</li>
       <li>Downloadable keepsake image</li>
       <li>No ads inside the experience</li>
@@ -128,7 +140,7 @@ function render() {
     <div class="info">
       <div><small>HOW IT'S DELIVERED</small><b>Shareable web link</b></div>
       <div><small>CUSTOMIZABLE</small><b>Names, message &amp; photos</b></div>
-      <div><small>USES PER CARD</small><b>7 creations</b></div>
+      <div><small>USES PER CARD</small><b><span data-uses>7</span> creations</b></div>
       <div><small>FORMAT</small><b>Works on any phone, no app</b></div>
     </div>
   </div>
@@ -146,7 +158,7 @@ function render() {
   <details><summary>What is ${esc(card.title)}?</summary><p>${esc(card.desc)} It opens as a private animated page with your own message and photos.</p></details>
   <details><summary>How do I send it?</summary><p>After you create it, you get a link. Copy it and send it on WhatsApp, Instagram or anywhere else.</p></details>
   <details><summary>Can I preview before paying?</summary><p>Yes, tap <b>Live Demo</b> to watch the full experience with sample details first.</p></details>
-  <details><summary>How many times can I create this card?</summary><p>The single-card plan gives up to 7 creations for this card. The All Cards Pass gives 7 creations for every card, separately.</p></details>
+  <details><summary>How many times can I create this card?</summary><p>The single-card plan gives up to <span data-uses>7</span> creations for this card. The All Cards Pass gives the same for every card, separately.</p></details>
   <details><summary>What if my payment fails or something goes wrong?</summary><p>Open <a href="account.html" style="color:#d81b60">My Account</a> and use <b>Report problem</b> on that payment, or read our <a href="refund.html" style="color:#d81b60">refund policy</a>.</p></details>
 
   <div class="more"><h4>Explore more wish cards</h4><p>Find the right card for every moment.</p>
@@ -155,49 +167,69 @@ function render() {
 }
 
 function say(t, ok) { const m = document.getElementById("msg"); m.textContent = t; m.style.color = ok ? "#12a56a" : "#d81b60"; }
-const demoBtn = `<a class="cta alt" href="index.html?demo=${id}">👁 Live Demo</a>`;
-function showBuy() {
-  document.getElementById("actions").innerHTML = `
-    <button class="cta main" id="buy1">✨ Get This Card (<span data-new="single">₹35</span>)</button>
-    <button class="cta dark" id="buyAll">💎 All Cards Pass (<span data-new="all">₹99</span>)</button>${demoBtn}`;
+let curDesign = "classic"; try { curDesign = sessionStorage.getItem("wv-design-" + id) || "classic"; } catch {}
+let acct = null; // null until the account is known
+const demoBtn = () => `<a class="cta alt" href="index.html?demo=${id}&design=${encodeURIComponent(curDesign)}">👁 Live Demo</a>`;
+const createHref = () => `index.html?create=${id}&design=${encodeURIComponent(curDesign)}`;
+const usesNow = () => (acct && acct.usesPerCard) || (PR && PR.usesPerCard) || 7;
+
+function paint() {
+  const box = document.getElementById("buy"), act = document.getElementById("actions");
+  if (!box || !act) return;
+  const cfg = cardPrice(PR, id);
+  if (acct && acct.suspended) { act.innerHTML = ""; say("Your account is suspended. Please contact support.", false); return; }
+  if (acct && (acct.isAdmin || acct.isCreator)) {
+    box.innerHTML = `<p class="eyebrow" style="margin:0">${acct.isAdmin ? "Admin" : "Creator"} access ✓</p><div class="price"><b style="font-size:30px">Free &amp; unlimited</b></div>`;
+    act.innerHTML = `<a class="cta main" href="${createHref()}">✦ Create My Wish</a>${demoBtn()}`; return;
+  }
+  const owned = acct && (acct.all || acct.cards.includes(id));
+  if (owned || cfg.free) {
+    const left = usesNow() - ((acct && acct.usage && acct.usage[id]) || 0);
+    box.innerHTML = `<p class="eyebrow" style="margin:0">${owned ? "Unlocked ✓" : "Free card 🎁"}</p><div class="price"><b style="font-size:30px">${left} of ${usesNow()}</b><span class="lead">creations left</span></div>`;
+    act.innerHTML = left > 0
+      ? `<a class="cta main" href="${createHref()}">✦ Create My Wish</a>${demoBtn()}`
+      : `<button class="cta alt" disabled>All ${usesNow()} creations used</button>${demoBtn()}`;
+    return;
+  }
+  box.innerHTML = `<div class="price"><b data-new="single">${inr(cfg.amount)}</b><s data-old="single"></s><span class="off" data-off="single"></span></div>
+    <p class="secure" style="margin:6px 0 0">for this card · or all cards for <b data-new="all">${inr(PR.all.amount)}</b></p><div id="bonusNote"></div>`;
+  const off = offPct(cfg.amount, cfg.old);
+  box.querySelector("[data-old]").textContent = off ? inr(cfg.old) : ""; const ofe = box.querySelector("[data-off]"); ofe.textContent = off ? off + "% OFF" : ""; ofe.style.display = off ? "" : "none";
+  const names = (cfg.bonus || []).map(b => (cards.find(c => c.id === b) || {}).title).filter(Boolean);
+  if (names.length) box.querySelector("#bonusNote").innerHTML = `<p class="secure" style="margin:10px 0 0;color:#12a56a">🎁 Buy this card and get <b>${names.map(esc).join(", ")}</b> free too.</p>`;
+  act.innerHTML = `
+    <button class="cta main" id="buy1">✨ Get This Card (<span data-new="single">${inr(cfg.amount)}</span>)</button>
+    <button class="cta dark" id="buyAll">💎 All Cards Pass (<span data-new="all">${inr(PR.all.amount)}</span>)</button>${demoBtn()}`;
   const go = (plan, btn) => async () => {
     const u = auth.currentUser || await waitForUser();
     if (!u) { location.href = "login.html?next=" + encodeURIComponent("card.html?id=" + id); return; }
     const cardDef = cards.find(x => x.id === id) || {};
-    const price = inr(((PR || {})[plan] || { amount: plan === "all" ? 9900 : 3500 }).amount);
+    const price = inr(plan === "all" ? PR.all.amount : cardPrice(PR, id).amount);
+    const n = usesNow();
     btn.disabled = true; say("", true);
-    const r = await payWithPopup({
+    await payWithPopup({
       plan, cardId: plan === "single" ? id : null, icon: plan === "all" ? "💎" : (cardDef.icon || "✨"),
       name: plan === "all" ? "All Cards Pass" : (cardDef.title || "One Card"), price,
-      perks: plan === "all" ? ["Every card unlocked", "7 creations for each card", "Pay with UPI, cards, netbanking or wallets"] : ["This card unlocked instantly", "7 creations for this card", "Pay with UPI, cards, netbanking or wallets"],
+      perks: plan === "all" ? ["Every card unlocked", `${n} creations for each card`, "Pay with UPI, cards, netbanking or wallets"]
+        : ["This card unlocked instantly", `${n} creations for this card`, ...(names.length ? [`Free bonus: ${names.join(", ")}`] : []), "Pay with UPI, cards, netbanking or wallets"],
       doneLabel: "Create my wish ✦", onDone: () => location.reload(),
     });
     btn.disabled = false;
   };
-  loadPricing(applyPricing);
   document.getElementById("buy1").onclick = go("single", document.getElementById("buy1"));
   document.getElementById("buyAll").onclick = go("all", document.getElementById("buyAll"));
 }
 async function init() {
-  showBuy();
+  PR = PR || { single: { amount: 3500, old: 0 }, all: { amount: 9900, old: 0 }, cards: {}, usesPerCard: 7 };
+  mountDesignSlider(document.getElementById("dz"), card, {
+    selected: curDesign,
+    onSelect: (d) => { curDesign = d; try { sessionStorage.setItem("wv-design-" + id, d); } catch {} paint(); },
+    demoHref: (d) => `index.html?demo=${id}&design=${encodeURIComponent(d)}`,
+  });
+  paint();
   const u = auth.currentUser || await waitForUser();
   if (!u) return;
-  try {
-    const a = await call("getMyAccount");
-    if (a.suspended) { document.getElementById("actions").innerHTML = ""; say("Your account is suspended. Please contact support.", false); return; }
-    if (a.isAdmin || a.isCreator) {
-      document.getElementById("buy").innerHTML = `<p class="eyebrow" style="margin:0">${a.isAdmin ? "Admin" : "Creator"} access ✓</p><div class="price"><b style="font-size:30px">Free &amp; unlimited</b></div>`;
-      document.getElementById("actions").innerHTML = `<a class="cta main" href="index.html?create=${id}">✦ Create My Wish</a>${demoBtn}`;
-      return;
-    }
-    if (a.all || a.cards.includes(id)) {
-      const left = a.usesPerCard - (a.usage[id] || 0);
-      document.getElementById("buy").innerHTML = `<p class="eyebrow" style="margin:0">Unlocked ✓</p><div class="price"><b style="font-size:30px">${left} of ${a.usesPerCard}</b><span class="lead">creations left</span></div>`;
-      document.getElementById("actions").innerHTML = left > 0
-        ? `<a class="cta main" href="index.html?create=${id}">✦ Create My Wish</a>${demoBtn}`
-        : `<button class="cta alt" disabled>All ${a.usesPerCard} creations used</button>${demoBtn}`;
-    }
-  } catch { /* stay on the buy view */ }
+  try { acct = await call("getMyAccount"); paint(); } catch { /* stay on the buy view */ }
 }
 if (card) { document.title = `${card.title} — WishVerse`; render(); loadPricing(applyPricing); init(); }
 </script>

@@ -29,6 +29,8 @@
   .chips input{position:absolute;opacity:0;pointer-events:none}
   .chips span{display:inline-block;padding:9px 14px;border-radius:99px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:14px}
   .chips input:checked+span{background:linear-gradient(110deg,var(--primary),var(--secondary));color:#11182b;border-color:transparent;font-weight:700}
+  .topcta{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:20px 0 6px}.topcta-note{color:var(--muted);font-size:14px;font-weight:600}
+  #apply{margin:18px 0 8px;scroll-margin-top:16px}
   .statusbox{border-radius:18px;padding:18px;border:1px solid var(--border);background:var(--surface2);margin-top:18px}
   .statusbox h3{margin:0 0 6px}
   .ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}
@@ -41,28 +43,18 @@
   <article class="page-content">
     <div class="page-kicker">WISHVERSE · CREATOR PROGRAM</div>
     <h1>Share WishVerse. Earn on every sale.</h1>
-    <p>If you make content about love, friendship or gifting, this is for you. You get your own link. Every time someone buys a card through it, you earn a commission.</p>
+    <p>If you make content about love, friendship or gifting, this is for you. You get your own link. Every time someone buys a card through it, you earn <b>20% commission, for life</b>.</p>
 
-    <div class="perk-grid">
-      <div class="perk"><b>💸 Commission per card</b><span>You earn a percentage of every sale made through your link. The rate for each card is shown in your dashboard.</span></div>
-      <div class="perk"><b>♾️ Unlimited access</b><span>Approved creators can use every card, free and unlimited, to make content.</span></div>
-      <div class="perk"><b>📊 Your own dashboard</b><span>See visits, sales, what you have earned and what has been paid to you.</span></div>
-      <div class="perk"><b>🏦 UPI payouts</b><span>Earnings are paid to your UPI ID once your balance reaches ₹100.</span></div>
+    <div id="topCta" class="topcta">
+      <button class="btn btn-primary" id="applyBtn" type="button">Apply now <b>→</b></button>
+      <span class="topcta-note">Free to join · 20% lifetime commission</span>
     </div>
-
-    <h2>How it works</h2>
-    <ol class="steps">
-      <li><div><b>Apply</b><br><span class="form-note" style="font-size:14px">Fill in the form below with your social profiles and UPI ID.</span></div></li>
-      <li><div><b>We review</b><br><span class="form-note" style="font-size:14px">We check your application and your status shows up on this page.</span></div></li>
-      <li><div><b>Get your link</b><br><span class="form-note" style="font-size:14px">Once approved you get a personal link like wishverse.surajfx.in/?ref=yourname</span></div></li>
-      <li><div><b>Share and earn</b><br><span class="form-note" style="font-size:14px">People who buy after opening your link are credited to you for 30 days.</span></div></li>
-    </ol>
-
-    <h2 id="apply">Apply now</h2>
-    <div id="state" class="form-note">Loading…</div>
-    <div id="gate" class="hidden"><p>Log in with Google to apply.</p><a class="btn btn-primary" id="loginBtn" href="login.html?next=creator.html">Continue with Google</a></div>
+    <div id="state" class="form-note hidden">Loading…</div>
     <div id="status" class="hidden"></div>
-    <form id="form" class="form-stack hidden" novalidate>
+    <section id="apply" class="hidden">
+      <h2>Apply now</h2>
+      <div id="gate" class="hidden"><p>Log in with Google to apply.</p><a class="btn btn-primary" id="loginBtn" href="login.html?next=creator.html%3Fapply%3D1">Continue with Google</a></div>
+    <form id="form" class="form-stack" novalidate>
       <div class="two">
         <div class="field"><label for="fn">First name *</label><input id="fn" maxlength="40" autocomplete="given-name"></div>
         <div class="field"><label for="ln">Last name *</label><input id="ln" maxlength="40" autocomplete="family-name"></div>
@@ -88,6 +80,23 @@
       <button class="btn btn-primary" id="submit" type="submit">Submit application</button>
       <p class="form-note">By applying you agree to our <a href="terms.html" style="color:var(--primary)">Terms</a>. Applications are reviewed by our team. Commissions are paid only on completed, non-refunded sales, and self-purchases do not earn commission.</p>
     </form>
+    </section>
+
+    <div class="perk-grid">
+      <div class="perk"><b>💸 20% lifetime commission</b><span>You earn 20% of every sale made through your link, and everyone you bring stays yours for life. Your owner may set a special rate per card, shown in your dashboard.</span></div>
+      <div class="perk"><b>♾️ Unlimited access</b><span>Approved creators can use every card, free and unlimited, to make content.</span></div>
+      <div class="perk"><b>📊 Your own dashboard</b><span>See visits, sales, what you have earned and what has been paid to you.</span></div>
+      <div class="perk"><b>🏦 UPI payouts</b><span>Earnings are paid to your UPI ID once your balance reaches ₹100.</span></div>
+    </div>
+
+    <h2>How it works</h2>
+    <ol class="steps">
+      <li><div><b>Apply</b><br><span class="form-note" style="font-size:14px">Tap the Apply now button at the top and fill in your social profiles and UPI ID.</span></div></li>
+      <li><div><b>We review</b><br><span class="form-note" style="font-size:14px">We check your application and your status shows up on this page.</span></div></li>
+      <li><div><b>Get your link</b><br><span class="form-note" style="font-size:14px">Once approved you get a personal link like wishverse.surajfx.in/?ref=yourname</span></div></li>
+      <li><div><b>Share and earn</b><br><span class="form-note" style="font-size:14px">Everyone who signs up through your link stays linked to you for life. You earn on every purchase they ever make.</span></div></li>
+    </ol>
+
   </article>
 </main>
 <script type="module">
@@ -97,18 +106,25 @@ const PROMOS = ["Instagram Reels & Stories", "YouTube Videos & Shorts", "Faceboo
 $("#promo").innerHTML = PROMOS.map((p) => `<label><input type="checkbox" value="${esc(p)}"><span>${esc(p)}</span></label>`).join("");
 
 const box = (cls, title, html) => `<div class="statusbox"><h3 class="${cls}">${title}</h3><div class="form-note" style="font-size:14px">${html}</div></div>`;
+let me = null, user = null;
+const openApply = () => {
+  $("#apply").classList.remove("hidden");
+  if (!user) { $("#gate").classList.remove("hidden"); $("#form").classList.add("hidden"); }
+  else { $("#gate").classList.add("hidden"); $("#form").classList.remove("hidden"); }
+  $("#apply").scrollIntoView({ behavior: "smooth", block: "start" });
+};
+$("#applyBtn").onclick = openApply;
 async function init() {
-  const u = auth.currentUser || await waitForUser();
-  $("#state").classList.add("hidden");
-  if (!u) { $("#gate").classList.remove("hidden"); return; }
-  let me;
+  user = auth.currentUser || await waitForUser();
+  if (!user) { if (new URLSearchParams(location.search).get("apply")) openApply(); return; }
   try { me = await call("getMyCreator"); }
   catch (e) { $("#state").classList.remove("hidden"); $("#state").textContent = e.message || "Could not load. Please refresh."; return; }
   if (me.status === "none" || me.status === "rejected") {
     if (me.status === "rejected") { $("#status").classList.remove("hidden"); $("#status").innerHTML = box("bad", "Your last application was not approved", esc(me.adminNote || "You are welcome to apply again with more details.")); }
-    $("#form").classList.remove("hidden");
+    if (new URLSearchParams(location.search).get("apply")) openApply();
     return;
   }
+  $("#topCta").classList.add("hidden");
   $("#status").classList.remove("hidden");
   if (me.status === "pending") $("#status").innerHTML = box("warn", "⏳ Application under review", "Thanks! We will review your application soon. Come back to this page to see your status.");
   else $("#status").innerHTML = box(me.status === "approved" ? "ok" : "bad", me.status === "approved" ? "✅ You are an approved creator" : "Your creator account is suspended", me.status === "approved" ? `<a class="btn btn-primary" href="creator-dashboard.html" style="margin-top:8px;display:inline-block">Open creator dashboard →</a>` : "Please contact support if you think this is a mistake.");
@@ -121,9 +137,9 @@ $("#form").addEventListener("submit", async (ev) => {
   btn.disabled = true; btn.textContent = "Submitting…";
   try {
     await call("creatorApply", { firstName: $("#fn").value, lastName: $("#ln").value, phone: $("#ph").value, telegram: $("#tg").value, upi: $("#upi").value, socials, promo, note: $("#note").value });
-    $("#form").classList.add("hidden"); $("#status").classList.remove("hidden");
+    $("#apply").classList.add("hidden"); $("#topCta").classList.add("hidden"); $("#status").classList.remove("hidden");
     $("#status").innerHTML = box("ok", "🎉 Application sent", "We will review it and your status will show up here.");
-    window.scrollTo({ top: $("#apply").offsetTop - 20, behavior: "smooth" });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   } catch (e) {
     err.textContent = e.message === "ALREADY_APPLIED" ? "You have already applied. Refresh to see your status." : (e.message || "Could not submit. Please try again.");
     btn.disabled = false; btn.textContent = "Submit application";

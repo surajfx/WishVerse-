@@ -27,7 +27,7 @@
     <div class="price-row"><span class="old-price" data-old="single"></span><span class="new-price" data-new="single">₹35</span><span class="discount" data-off="single"></span></div>
     <ul>
       <li>1 selected wish card</li>
-      <li>Up to 7 creations for that card</li>
+      <li>Several creations for that card</li>
       <li>Personalize your message & photos</li>
       <li>Share your finished wish</li>
     </ul>
@@ -78,7 +78,7 @@ document.querySelectorAll("[data-plan]").forEach(btn => btn.onclick = async () =
   const r = await payWithPopup({
     plan, cardId: cid, icon: plan === "all" ? "💎" : (card ? card.icon : "✨"),
     name: plan === "all" ? "All Cards Pass" : (card ? card.title : "One Card"), price,
-    perks: plan === "all" ? ["Every card unlocked", "7 creations for each card", "Pay with UPI, cards, netbanking or wallets"] : ["This card unlocked instantly", "7 creations for this card", "Pay with UPI, cards, netbanking or wallets"],
+    perks: plan === "all" ? ["Every card unlocked", "Several creations for each card", "Pay with UPI, cards, netbanking or wallets"] : ["This card unlocked instantly", "Several creations for this card", "Pay with UPI, cards, netbanking or wallets"],
     doneLabel: "Create my wish ✦", onDone: () => location.href = "index.html#explore",
   });
   if (!r.ok) say("", true);

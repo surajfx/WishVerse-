@@ -32,6 +32,7 @@ async function initFirebase(){
 // experience: its own colours (via the theme-<id> CSS class), its own
 // copy for every step, its own memory captions and its own final reveal.
 import { cards } from "./cards/index.js";
+import { designOf } from "./cards/designs.js";
 
 let selectedCard = cards[0];
 let activeCategory = "All";
@@ -43,7 +44,6 @@ const wishGrid = $("#wishGrid");
 const favoriteGrid = $("#favoriteGrid");
 const featuredGrid = $("#featuredGrid");
 const featuredIds = ["proposal","girlfriend","boyfriend","miss","sorry","birthday"];
-const CINEMATIC_CARDS = ["girlfriend","boyfriend","proposal","miss","birthday"];
 
 function categories() {
   return ["All", ...new Set(cards.map(c => c.category))];
@@ -120,97 +120,6 @@ function openCard(id) {
 
 function closeModal(id) { $(id).classList.add("hidden"); }
 
-const GF_DEFAULTS = {
-  notes: [
-    "Every little moment with you feels like this.",
-    "I keep coming back to this one in my head.",
-    "Small, silly, and completely ours.",
-    "You made an ordinary day feel like this."
-  ],
-  boxLetter: "Every little thing about you makes an ordinary day feel like a memory worth keeping. I just wanted you to know that.",
-  reasons: [
-    "Because you make every ordinary day feel like a good one.",
-    "Because you listen, even when I ramble about nothing.",
-    "Because your laugh is my favourite sound.",
-    "Because you believe in me even when I doubt myself.",
-    "Because being loved by you feels like home."
-  ]
-};
-const MISS_DEFAULTS = {
-  notes: [
-    'Every quiet moment, you cross my mind.',
-    'I wonder if you see the same moon tonight.',
-    'I still make two cups out of habit.',
-    ''
-  ],
-  boxLetter: "someone is missing you deeply right now.",
-  reasons: []
-};
-const BIRTHDAY_DEFAULTS = {
-  notes: [
-    'First Photo Together ❤️',
-    'The Day We Met ✨',
-    'Our Craziest Moment 😂',
-    "A Memory I'll Never Forget 🌸"
-  ],
-  boxLetter: "Thank you for being in my life.",
-  reasons: []
-};
-const PROPOSAL_DEFAULTS = {
-  notes: [
-    "I knew even back then I wanted forever with you.",
-    "This is one of my favourite memories of us.",
-    "Small moment, but I think about it often.",
-    "This is when I started imagining our future."
-  ],
-  boxLetter: "I've been carrying something for a while now, something I've been meaning to ask you.",
-  reasons: [
-    "Because I want forever, not just today.",
-    "Because you feel like home, wherever we are.",
-    "Because I want to build a life with you, not just share one.",
-    "Because every version of my future has you in it.",
-    "Because loving you is the easiest decision I have ever made."
-  ]
-};
-let gfCollageIdx = [];
-
-function openCustomize() {
-  if (!selectedCard) selectedCard = cards[0];
-  closeModal("#cardModal");
-  $("#wishForm").classList.remove("hidden");
-  $("#createdResult").classList.add("hidden");
-  $("#customizeTitle").textContent = `Create ${selectedCard.title} ${selectedCard.icon}`;
-  $("#messageInput").value = selectedCard.example;
-  $("#messageInput").placeholder = selectedCard.formHint;
-  $("#messageExample").textContent = `Example: ${selectedCard.example}`;
-  uploadedImageUrls = []; gfCollageIdx = [];
-  $("#uploadStatus").textContent = "";
-  const isGirlfriend = CINEMATIC_CARDS.includes(selectedCard.id);
-  $("#girlfriendExtra").classList.toggle("hidden", !isGirlfriend);
-  $("#gfCollagePicker").classList.add("hidden");
-  $("#gfCollageThumbs").innerHTML = "";
-  if (isGirlfriend) {
-    const isProposal = selectedCard.id === "proposal";
-    const isMiss = selectedCard.id === "miss";
-    const isBirthday = selectedCard.id === "birthday";
-    const d = isProposal ? PROPOSAL_DEFAULTS : isMiss ? MISS_DEFAULTS : isBirthday ? BIRTHDAY_DEFAULTS : GF_DEFAULTS;
-    d.notes.forEach((v,i)=>{ $(`#gfNote${i+1}`).value = v; });
-    $("#gfBoxLetter").value = d.boxLetter;
-    const noReasons = isProposal || isMiss || isBirthday;
-    $("#gfReasonsWrap").classList.toggle("hidden", noReasons);
-    if (!noReasons) d.reasons.forEach((v,i)=>{ $(`#gfReason${i+1}`).value = v; });
-    $("#gfNotesTitle").innerHTML = isProposal
-      ? `Gallery captions <span class="optional">(shown under each of your 4 photos)</span>`
-      : isMiss
-      ? `3 longing-letter messages <span class="optional">(4th field unused for this card)</span>`
-      : isBirthday
-      ? `4 memory captions <span class="optional">(a 5th is added automatically)</span>`
-      : `4 little memories <span class="optional">(shown behind each photo)</span>`;
-    $("#gfLetterTitle").textContent = isProposal ? "the ring box message" : isMiss ? "the opening message" : isBirthday ? "the memory capsule thank-you line" : "the memory box letter";
-  }
-  $("#customizeModal").classList.remove("hidden");
-}
-
 function toast(message) {
   const t = $("#toast"); t.textContent = message; t.classList.add("show");
   setTimeout(() => t.classList.remove("show"), 2500);
@@ -229,98 +138,56 @@ async function uploadToCloudinary(file) {
 }
 
 $("#searchInput").addEventListener("input", renderCards);
-$("#heroCreate").onclick = () => { selectedCard = cards[0]; openCustomize(); };
-$("#customizeBtn").onclick = openCustomize;
-$("#demoBtn").onclick = () => {
-  closeModal("#cardModal");
-  showSharedExperience({templateId:selectedCard.id, templateTitle:selectedCard.title, category:selectedCard.category, from:"Someone who cares", to:"Your Special Person", message:selectedCard.desc, imageUrl:""}, true);
-};
-document.querySelectorAll("[data-close-modal]").forEach(x => x.onclick = () => closeModal("#cardModal"));
-document.querySelectorAll("[data-close-customize]").forEach(x => x.onclick = () => closeModal("#customizeModal"));
 $("#themeToggle").onclick = () => {
   document.documentElement.classList.toggle("light");
   localStorage.setItem("wishverse-theme", document.documentElement.classList.contains("light") ? "light" : "dark");
 };
 if (localStorage.getItem("wishverse-theme")==="light") document.documentElement.classList.add("light");
 
-// Photo upload notes: photo 1 = main/favourite photo, photo 2 = a beautiful
-// memory, photo 3 = a fun moment, photo 4 = a special memory. If the person
-// uploads fewer than four, the memory steps fall back to an elegant
-// placeholder instead of a broken image.
-$("#imageInput").onchange = async e => {
-  const files = [...e.target.files].slice(0,4); if (!files.length) return;
-  $("#uploadStatus").textContent = `Uploading ${files.length} photo${files.length>1?"s":""}...`;
-  try { uploadedImageUrls = []; for (const file of files) { const url = await uploadToCloudinary(file); if (url) uploadedImageUrls.push(url); } $("#uploadStatus").textContent = uploadedImageUrls.length ? `${uploadedImageUrls.length} photo${uploadedImageUrls.length>1?"s":""} uploaded successfully.` : "Photos selected."; }
-  catch { uploadedImageUrls = []; $("#uploadStatus").textContent = "Upload failed. You can continue without photos."; }
-  renderGfCollagePicker();
-};
+/* "Create Wish" popup: shows every card; tapping one opens that card's page. */
+function openPicker() {
+  const grid = $("#pickGrid");
+  if (!grid.dataset.ready) {
+    grid.innerHTML = cards.map(c => `<a class="pick-card ${c.art}" href="card.html?id=${encodeURIComponent(c.id)}"><span class="pick-ic">${c.icon}</span><strong>${c.title}</strong><small>${c.category}</small></a>`).join("");
+    grid.dataset.ready = "1";
+  }
+  $("#pickModal").classList.remove("hidden");
+  document.body.classList.add("modal-lock");
+}
+function closePicker() { $("#pickModal").classList.add("hidden"); document.body.classList.remove("modal-lock"); }
+$("#heroCreate").onclick = openPicker;
+document.querySelectorAll("[data-close-pick]").forEach(x => x.onclick = closePicker);
+document.addEventListener("keydown", e => { if (e.key === "Escape") closePicker(); });
 
-function renderGfCollagePicker(){
-  if (!selectedCard || !CINEMATIC_CARDS.includes(selectedCard.id)) return;
-  const wrap = $("#gfCollageThumbs");
-  if (!uploadedImageUrls.length) { $("#gfCollagePicker").classList.add("hidden"); wrap.innerHTML = ""; gfCollageIdx = []; return; }
-  if (!gfCollageIdx.length) gfCollageIdx = uploadedImageUrls.map((_,i)=>i).slice(0,2);
-  $("#gfCollagePicker").classList.remove("hidden");
-  wrap.innerHTML = uploadedImageUrls.map((url,i) =>
-    `<div class="gf-thumb${gfCollageIdx.includes(i)?" selected":""}" data-idx="${i}"><img src="${escapeHTML(url)}"><span class="gf-thumb-badge">✓</span></div>`
-  ).join("");
-  wrap.querySelectorAll(".gf-thumb").forEach(el => el.onclick = () => {
-    const idx = Number(el.dataset.idx);
-    if (gfCollageIdx.includes(idx)) { gfCollageIdx = gfCollageIdx.filter(i => i !== idx); }
-    else { if (gfCollageIdx.length >= 2) gfCollageIdx.shift(); gfCollageIdx.push(idx); }
-    renderGfCollagePicker();
+/* Creating a wish: the step-by-step wizard (shared/wizard.js). */
+async function openCustomize(card, designId) {
+  const pay = await import("./shared/payments.js");
+  const user = pay.auth.currentUser || await pay.waitForUser();
+  if (!user) {
+    toast("Please log in to create your wish.");
+    setTimeout(() => location.href = "login.html?next=" + encodeURIComponent("card.html?id=" + card.id), 1100);
+    return;
+  }
+  const { openWizard } = await import("./shared/wizard.js");
+  openWizard({
+    card, designId, upload: uploadToCloudinary, toast,
+    onClose: () => { history.replaceState(null, "", location.pathname); },
+    submit: async (payload) => {
+      try {
+        const res = await pay.call("createWish", payload);
+        // Preview-friendly link (WhatsApp/Instagram read card title + picture from it), falls back to the plain link.
+        return { link: res.shareUrl || `${location.origin}${location.pathname}?wish=${res.id}` };
+      } catch (error) {
+        console.error(error);
+        const m = String(error && error.message || "");
+        if (m.includes("NO_ENTITLEMENT")) { setTimeout(() => location.href = "card.html?id=" + card.id, 1500); throw new Error("Unlock this card first to create your wish."); }
+        if (m.includes("LIMIT_REACHED")) throw new Error("You have used all creations for this card.");
+        if (m.includes("SUSPENDED")) throw new Error("Your account is suspended. Please contact support.");
+        throw new Error("Could not save your wish. Please try again.");
+      }
+    },
   });
 }
-
-$("#wishForm").onsubmit = async e => {
-  e.preventDefault();
-  const payload = {
-    templateId: selectedCard.id, templateTitle: selectedCard.title,
-    category: selectedCard.category, from: $("#fromInput").value.trim(),
-    to: $("#toInput").value.trim(), message: $("#messageInput").value.trim(),
-    imageUrl: uploadedImageUrls[0] || "", imageUrls: uploadedImageUrls
-  };
-  if (CINEMATIC_CARDS.includes(selectedCard.id)) {
-    payload.gfNotes = [1,2,3,4].map(i => $(`#gfNote${i}`).value.trim() || GF_DEFAULTS.notes[i-1]);
-    payload.gfBoxLetter = $("#gfBoxLetter").value.trim() || GF_DEFAULTS.boxLetter;
-    payload.gfReasons = [1,2,3,4,5].map(i => $(`#gfReason${i}`).value.trim() || GF_DEFAULTS.reasons[i-1]);
-    payload.gfCollage = (gfCollageIdx.length ? gfCollageIdx : [0,1]).map(i => uploadedImageUrls[i]).filter(Boolean);
-  }
-  try {
-    const pay = await import("./shared/payments.js");
-    const user = pay.auth.currentUser || await pay.waitForUser();
-    if (!user) {
-      toast("Please log in to create your wish.");
-      setTimeout(() => location.href = "login.html?next=pricing.html%3Fcard%3D" + selectedCard.id, 1200);
-      return;
-    }
-    const res = await pay.call("createWish", payload);
-    // Preview-friendly link (WhatsApp/Instagram read card title + picture from it), falls back to the plain link.
-    const link = res.shareUrl || `${location.origin}${location.pathname}?wish=${res.id}`;
-    $("#shareLink").value = link;
-    const msg = `💌 I made a little surprise for you on WishVerse. Tap to open it: ${link}`;
-    $("#shareWhatsApp").href = "https://wa.me/?text=" + encodeURIComponent(msg);
-    $("#shareNative").style.display = navigator.share ? "" : "none";
-    $("#shareNative").onclick = () => navigator.share({ title: "A surprise for you 💌", text: "I made a little surprise for you on WishVerse.", url: link }).catch(() => {});
-    $("#wishForm").classList.add("hidden"); $("#createdResult").classList.remove("hidden");
-    toast("Wish saved successfully");
-  } catch (error) {
-    console.error(error);
-    const m = String(error && error.message || "");
-    if (m.includes("NO_ENTITLEMENT")) {
-      toast("Unlock this card first to create your wish.");
-      setTimeout(() => location.href = "pricing.html?card=" + selectedCard.id, 1300);
-    } else if (m.includes("LIMIT_REACHED")) toast("You have used all 7 creations for this card.");
-    else if (m.includes("SUSPENDED")) toast("Your account is suspended. Please contact support.");
-    else toast("Could not save your wish. Please try again.");
-  }
-};
-
-$("#copyLink").onclick = async () => {
-  await navigator.clipboard.writeText($("#shareLink").value);
-  toast("Link copied");
-};
-$("#closeAfterCreate").onclick = () => closeModal("#customizeModal");
 
 /* =========================================================================
    SHARED CINEMATIC WISH EXPERIENCE
@@ -332,6 +199,7 @@ $("#closeAfterCreate").onclick = () => closeModal("#customizeModal");
 let sharedWish = null;
 let sharedStep = 0;
 let sharedIsDemo = false;
+let demoReturn = "";
 let sharedSteps = [];
 let statusInterval = null;
 
@@ -383,7 +251,7 @@ function renderGirlfriendExperience(w){
   const boxletter = encodeURIComponent(w.gfBoxLetter || "");
   const reasons = encodeURIComponent((w.gfReasons || []).join("|"));
   const collage = encodeURIComponent((w.gfCollage && w.gfCollage.length ? w.gfCollage : getPhotos(w).slice(0,2)).join(","));
-  const folder = `cards/${w.templateId}-experience/index.html`;
+  const folder = (designOf(w.templateId, w.designId).path) || `cards/${w.templateId}-experience/index.html`;
   $("#sharedStage").innerHTML = `<iframe class="girlfriend-frame" src="${folder}?to=${to}&from=${from}&msg=${msg}&photos=${photos}&notes=${notes}&boxletter=${boxletter}&reasons=${reasons}&collage=${collage}" title="A little surprise" allow="autoplay"></iframe>`;
 }
 
@@ -394,7 +262,7 @@ function showSharedExperience(wish, isDemo=false){
   $("#sharedExperience").classList.remove("hidden");
   $("#sharedActions").classList.add("hidden");
   const progressBar = document.querySelector(".shared-progress");
-  if (CINEMATIC_CARDS.includes(card.id)) {
+  if (designOf(card.id, wish.designId).path) {
     if (progressBar) progressBar.classList.add("hidden");
     $("#sharedExperience").classList.add("girlfriend-live");
     $("#sharedExperience").classList.toggle("no-topbar", !isDemo);
@@ -484,6 +352,7 @@ function renderSharedStage(){
 
 function closeSharedExperience(){
   stopStatusRotation();
+  if (sharedIsDemo && demoReturn) { location.href = demoReturn; return; }
   if (sharedIsDemo) { $("#sharedExperience").classList.add("hidden"); $("#sharedExperience").classList.remove("girlfriend-live"); $("#sharedActions").classList.add("hidden"); document.body.classList.remove("shared-mode"); return; }
   location.href = location.pathname;
 }
@@ -555,8 +424,11 @@ if (menuToggle) {
   const pick = cards.find(c => c.id === (qs.get("create") || qs.get("demo")));
   if (pick && !sharedId) {
     selectedCard = pick;
-    if (qs.get("create")) openCustomize();
-    else showSharedExperience({templateId:pick.id, templateTitle:pick.title, category:pick.category, from:"Someone who cares", to:"Your Special Person", message:pick.desc, imageUrl:""}, true);
+    if (qs.get("create")) openCustomize(pick, qs.get("design"));
+    else {
+      demoReturn = "card.html?id=" + encodeURIComponent(pick.id);
+      showSharedExperience({templateId:pick.id, designId:qs.get("design")||"classic", templateTitle:pick.title, category:pick.category, from:"Someone who cares", to:"Your Special Person", message:pick.desc, imageUrl:""}, true);
+    }
   }
 })();
 
