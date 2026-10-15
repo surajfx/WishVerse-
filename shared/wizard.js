@@ -16,7 +16,10 @@ const PRO = {
 const MISS = { notes: ["Every quiet moment, you cross my mind.", "I wonder if you see the same moon tonight.", "I still make two cups out of habit.", ""], boxLetter: "someone is missing you deeply right now.", reasons: GF.reasons };
 const BDAY = { notes: ["First Photo Together ❤️", "The Day We Met ✨", "Our Craziest Moment 😂", "A Memory I'll Never Forget 🌸"], boxLetter: "Thank you for being in my life.", reasons: GF.reasons };
 
+const SORRY = { notes: ["Every memory with you is something I treasure.", "I still smile when I remember this day.", "This is what I'm fighting for.", ""], boxLetter: "I have something I need to say to you…", reasons: GF.reasons };
+
 const CIN = {
+  sorry: { d: SORRY, memTitle: "Memory", noteLabel: "A caption for this memory", letterTitle: "The opening line", letterSub: "The first line they see, before they open your letter.", reasons: false, notes: 3, photos: 3 },
   girlfriend: { d: GF, memTitle: "Memory", noteLabel: "A little note behind this photo", letterTitle: "The memory box letter", letterSub: "Shown when she opens the memory box.", reasons: true, notes: 4 },
   boyfriend: { d: GF, memTitle: "Memory", noteLabel: "A little note behind this photo", letterTitle: "The memory box letter", letterSub: "Shown when he opens the memory box.", reasons: true, notes: 4 },
   proposal: { d: PRO, memTitle: "Gallery photo", noteLabel: "Caption under this photo", letterTitle: "The ring box message", letterSub: "Shown when the ring box opens.", reasons: false, notes: 4 },
@@ -90,7 +93,7 @@ export function openWizard({ card, designId, upload, submit, toast = () => {}, o
   if (dsg.length > 1) steps.push({ k: "design" });
   steps.push({ k: "names" });
   if (cin) {
-    for (let i = 0; i < 4; i++) steps.push({ k: "memory", i });
+    for (let i = 0; i < (cin.photos || 4); i++) steps.push({ k: "memory", i });
     steps.push({ k: "letter" });
     if (cin.reasons) steps.push({ k: "reasons" });
     steps.push({ k: "message" });
@@ -131,7 +134,7 @@ export function openWizard({ card, designId, upload, submit, toast = () => {}, o
       <label class="wz-f"><span>Your name</span><input type="text" id="fFrom" maxlength="40" placeholder="e.g. Rahul" value="${esc(S.from)}" autocomplete="off"></label>` };
     if (st.k === "memory") {
       const i = st.i, hasNote = i < cin.notes;
-      return { ic: "📸", h: `${cin.memTitle} ${i + 1} of 4`, sub: "Add a photo (optional). You can skip it, the card shows a pretty placeholder.", html: `
+      return { ic: "📸", h: `${cin.memTitle} ${i + 1} of ${cin.photos || 4}`, sub: "Add a photo (optional). You can skip it, the card shows a pretty placeholder.", html: `
         ${photoTile(i, "Tap to add photo")}
         ${hasNote ? `<label class="wz-f" style="margin-top:14px"><span>${esc(cin.noteLabel)} <small>(optional)</small></span><textarea id="fNote" maxlength="140" rows="2" placeholder="${esc(def.notes[i])}">${esc(S.notes[i])}</textarea>${S.notes[i] ? "" : '<button type="button" class="wz-chip" data-fill="note">✨ Use this suggestion</button>'}</label>` : ""}` };
     }
