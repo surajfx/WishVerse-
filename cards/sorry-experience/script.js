@@ -157,7 +157,7 @@ document.getElementById('forgiveBtn').addEventListener('click', ()=>{
 document.getElementById('toKeepsakeBtn').addEventListener('click', ()=>showScreen(9));
 
 // 9 keepsake
-document.getElementById('downloadBtn').addEventListener('click', function(){ this.textContent = 'Saved ✓'; });
+if (window.WVKeepsake) WVKeepsake.bind('downloadBtn', TO, '.keep-card');
 document.getElementById('replayBtn').addEventListener('click', ()=>{
   envOpened = false; envelopeWrap.classList.remove('open');
   letterStarted = false; paper.classList.remove('show'); continueLetterBtn.classList.remove('show'); letterBody.innerHTML='';
