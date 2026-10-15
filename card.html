@@ -178,8 +178,8 @@ function paint() {
   if (!box || !act) return;
   const cfg = cardPrice(PR, id);
   if (acct && acct.suspended) { act.innerHTML = ""; say("Your account is suspended. Please contact support.", false); return; }
-  if (acct && (acct.isAdmin || acct.isCreator)) {
-    box.innerHTML = `<p class="eyebrow" style="margin:0">${acct.isAdmin ? "Admin" : "Creator"} access ✓</p><div class="price"><b style="font-size:30px">Free &amp; unlimited</b></div>`;
+  if (acct && acct.isAdmin) {
+    box.innerHTML = `<p class="eyebrow" style="margin:0">${acct.isOwner ? "Owner" : "Admin"} access ✓</p><div class="price"><b style="font-size:30px">Free &amp; unlimited</b></div>`;
     act.innerHTML = `<a class="cta main" href="${createHref()}">✦ Create My Wish</a>${demoBtn()}`; return;
   }
   const owned = acct && (acct.all || acct.cards.includes(id));

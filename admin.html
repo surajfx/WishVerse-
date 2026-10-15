@@ -124,7 +124,7 @@ function creatorsView(v) {
         <div style="max-width:380px;margin-top:8px"><label style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b>Default for all</b><input data-f="pct" type="number" min="0" max="90" step="0.5" value="${x.commissionPct}" style="width:90px"></label>
         <div class="muted" style="margin:6px 0">Leave a card empty to use the default.</div>${pctRow(x)}<button class="btn btn-primary" data-act="savepct" style="margin-top:8px">Save rates</button></div></details>
       <div class="bar" style="margin-top:10px"><input data-f="payamt" type="number" min="1" step="1" placeholder="₹ paid" style="width:110px"><input data-f="paynote" placeholder="UPI ref / note" style="min-width:150px"><button class="btn btn-secondary" data-act="payout">Mark paid</button>
-      <button class="btn btn-secondary" data-act="detail">View sales</button><button class="btn btn-secondary" data-act="suspend">Suspend</button></div>
+      <button class="btn btn-secondary" data-act="detail">View sales</button><button class="btn btn-secondary" data-act="gift">🎁 Give free plan</button><button class="btn btn-secondary" data-act="suspend">Suspend</button></div>
       ${x.balancePaise >= minPayoutPaise ? `<div class="ok" style="font-size:13px">Pay ${rupees(x.balancePaise)} to <b>${esc(x.upi || "(no UPI given)")}</b> then press Mark paid.</div>` : ""}`;
     else act = `<div class="bar"><button class="btn btn-primary" data-act="unsuspend">Unsuspend</button><button class="btn btn-secondary" data-act="detail">View sales</button></div>`;
     const det = crDetail[x.uid] ? `<div class="tbl" style="margin-top:8px"><table><tr><th>When</th><th>Item</th><th>Sale</th><th>%</th><th>Commission</th><th>Status</th></tr>${crDetail[x.uid].commissions.map(c => `<tr><td>${fmtDate(c.createdAt)}</td><td>${c.plan === "all" ? "All Cards" : esc(c.cardId)}</td><td>${rupees(c.amount)}</td><td>${c.pct}%</td><td>${rupees(c.commissionPaise)}</td><td>${c.status}</td></tr>`).join("") || '<tr><td colspan="6" class="muted">No sales</td></tr>'}</table>
@@ -134,14 +134,20 @@ function creatorsView(v) {
       <div style="margin-top:6px">${soc(x)}</div><div class="muted">Promotes via: ${esc((x.promo || []).join(", ")) || "—"} · UPI: ${esc(x.upi || "—")}</div>${x.note ? `<div class="muted">“${esc(x.note)}”</div>` : ""}
       <div style="margin-top:10px">${act}</div>${det}</div>`;
   };
-  v.innerHTML = `<p class="muted">Creators who applied through the Creator Program. Approve them, set their commission, and mark payouts after you pay them by UPI. Approved creators get every card free and unlimited. Pay out when the owed balance reaches ${rupees(minPayoutPaise)}.</p>` + (creators.length ? creators.map(card).join("") : `<div class="none">No creator applications yet.</div>`);
+  v.innerHTML = `<p class="muted">Creators who applied through the Creator Program. Approve them, set their commission, and mark payouts after you pay them by UPI. Creators do <b>not</b> get free cards automatically. To give a creator a card or the All Cards Pass, press <b>🎁 Give free plan</b> on their row. Pay out when the owed balance reaches ${rupees(minPayoutPaise)}.</p>` + (creators.length ? creators.map(card).join("") : `<div class="none">No creator applications yet.</div>`);
   v.querySelectorAll("[data-act]").forEach(b => b.onclick = async () => {
     const root = b.closest("[data-uid]"), uid = root.dataset.uid, f = (n) => (root.querySelector(`[data-f="${n}"]`) || {}).value;
     const act = b.dataset.act;
     const reload = async () => { creatorsData = await call("adminListCreators"); render(); };
+    if (act === "gift") {
+      const em = (creators.find(c => c.uid === uid) || {}).email || "";
+      tab = "grant"; document.querySelectorAll(".tab").forEach(x => x.classList.toggle("on", x.dataset.t === "grant")); render();
+      const ge = document.getElementById("ge"); if (ge) { ge.value = em; ge.scrollIntoView({ block: "center" }); }
+      return;
+    }
     if (act === "detail") { await guard(async () => { crDetail[uid] = await call("adminCreatorDetail", { uid }); render(); }); return; }
     if (act === "reject" && !confirm("Reject this application?")) return;
-    if (act === "suspend" && !confirm("Suspend this creator? Their link stops earning and their free access ends.")) return;
+    if (act === "suspend" && !confirm("Suspend this creator? Their link stops earning.")) return;
     await guard(async () => {
       if (act === "approve" || act === "reject" || act === "suspend" || act === "unsuspend") {
         await call("adminCreatorDecide", { uid, action: act, username: f("username"), commissionPct: f("pct") });
