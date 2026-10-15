@@ -12,7 +12,7 @@
 // ============================================================================
 
 // Cards that already have their own full animated page (the first design of these cards).
-const OWN_PAGE = ["proposal", "girlfriend", "boyfriend", "miss", "birthday"];
+const OWN_PAGE = ["proposal", "girlfriend", "boyfriend", "miss", "birthday", "sorry"];
 
 export const extraDesigns = {
   // Example (remove the two slashes to try it once the folder exists):
